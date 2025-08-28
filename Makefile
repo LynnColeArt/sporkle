@@ -5,7 +5,7 @@
 FC = gfortran
 CC = gcc
 BASE_FFLAGS = -O3 -fopenmp -march=native -funroll-loops -ftree-vectorize -ffast-math -Wall
-BASE_CFLAGS = -O2 -Wall
+BASE_CFLAGS = -O2 -Wall -march=native -mavx -mavx2 -mavx512f
 FFLAGS = $(BASE_FFLAGS)
 CFLAGS = $(BASE_CFLAGS)
 
@@ -50,23 +50,12 @@ ifeq ($(UNAME_S),Linux)
         HAS_OPENGL := $(shell test -f /usr/lib/x86_64-linux-gnu/libGL.so.1 && echo yes)
         HAS_VULKAN := $(shell test -f /usr/lib/x86_64-linux-gnu/libvulkan.so.1 && echo yes)
         
-        # Only proceed if we have the required libraries
-        ifeq ($(HAS_OPENGL),yes)
-            LDFLAGS += -lGL -lEGL -fopenmp
-            CFLAGS += -DHAS_OPENGL
-            GPU_BACKEND = opengl
-            $(info GPU Backend: OpenGL enabled)
-        else
-            $(info Warning: OpenGL libraries not found, falling back to CPU)
-            GPU_TYPE := CPU
-        endif
-        
-        ifeq ($(HAS_VULKAN),yes)
-            LDFLAGS += -lvulkan
-            CFLAGS += -DHAS_VULKAN
-            GPU_BACKEND_ALT = vulkan
-            $(info Vulkan: Available for experimental use)
-        endif
+        # GPU backends are currently disabled - use CPU only
+        $(info GPU libraries detected but backends disabled during Sprint 4 cleanup)
+        $(info Forcing CPU-only mode until Kronos integration)
+        GPU_TYPE := CPU
+        GPU_BACKEND = cpu
+        LDFLAGS += -fopenmp
     else
         # No supported GPU found, use CPU configuration
         GPU_TYPE = CPU
@@ -104,18 +93,8 @@ COMMON_MODULES = \
     $(SRC_DIR)/sporkle_kernels.f90 \
     $(SRC_DIR)/sporkle_safe_kernels.f90 \
     $(SRC_DIR)/sporkle_platform.f90 \
-    $(SRC_DIR)/gl_constants.f90 \
-    $(SRC_DIR)/sporkle_gpu_kernels.f90 \
-    $(SRC_DIR)/sporkle_glsl_generator.f90 \
-    $(SRC_DIR)/sporkle_rdna_shader_generator.f90 \
-    $(SRC_DIR)/sporkle_dynamic_shader_system.f90 \
     $(SRC_DIR)/sporkle_adaptive_kernel.f90 \
     $(SRC_DIR)/sporkle_kernel_variants.f90 \
-    $(SRC_DIR)/sporkle_shader_parser.f90 \
-    $(SRC_DIR)/sporkle_fortran_shaders.f90 \
-    $(SRC_DIR)/sporkle_fortran_params.f90 \
-    $(SRC_DIR)/sporkle_shader_parser_v2.f90 \
-    $(SRC_DIR)/sporkle_fortran_shaders_v2.f90 \
     $(SRC_DIR)/sporkle_universal_device_selector.f90 \
     $(SRC_DIR)/sporkle_hardware_profiler.f90 \
     $(SRC_DIR)/sporkle_autotuner_enhanced.f90
@@ -123,108 +102,90 @@ COMMON_MODULES = \
 # Platform-specific modules
 ifeq ($(PLATFORM),LINUX)
     ifeq ($(GPU_TYPE),AMD)
+        # GPU backends temporarily disabled during Sprint 4 cleanup
+        # Will be replaced with Kronos integration
         PLATFORM_MODULES = \
-            $(SRC_DIR)/sporkle_gpu_safe_detect.f90 \
-            $(SRC_DIR)/sporkle_gpu_backend_detect.f90 \
-            $(SRC_DIR)/sporkle_gpu_backend.f90 \
-            $(SRC_DIR)/sporkle_amdgpu_direct.f90 \
-            $(SRC_DIR)/sporkle_amdgpu_shader_binary.f90 \
-            $(SRC_DIR)/sporkle_amdgpu_memory.f90 \
-            $(SRC_DIR)/sporkle_amdgpu_shaders.f90 \
-            $(SRC_DIR)/amdgpu_device.f90 \
-            $(SRC_DIR)/sporkle_pm4_packets.f90 \
-            $(SRC_DIR)/sporkle_gpu_va_allocator.f90 \
-            $(SRC_DIR)/sporkle_rdna3_shaders.f90 \
-            $(SRC_DIR)/sporkle_pm4_compute.f90 \
-            $(SRC_DIR)/production/gpu_safety_guards.f90
+            $(SRC_DIR)/reference/universal_memory_optimization.f90 \
+            $(SRC_DIR)/reference/gemm_simd_optimized.f90 \
+            $(SRC_DIR)/reference/cpu_conv2d_reference.f90 \
+            $(SRC_DIR)/production/timing_helpers.f90 \
+            $(SRC_DIR)/production/gemm_simd_optimized_v2.f90 \
+            $(SRC_DIR)/production/gemm_simd_prefetch.f90 \
+            $(SRC_DIR)/production/gemm_simd_streaming.f90 \
+            $(SRC_DIR)/production/cpu_conv2d_adaptive_fixed.f90
+            # Archived GPU modules - see /attic for reference:
+            # $(SRC_DIR)/sporkle_gpu_safe_detect.f90
+            # $(SRC_DIR)/sporkle_gpu_backend_detect.f90
+            # $(SRC_DIR)/sporkle_gpu_backend.f90
+            # $(SRC_DIR)/sporkle_amdgpu_direct.f90
+            # $(SRC_DIR)/sporkle_amdgpu_shader_binary.f90
+            # $(SRC_DIR)/sporkle_amdgpu_memory.f90
+            # $(SRC_DIR)/sporkle_amdgpu_shaders.f90
+            # $(SRC_DIR)/amdgpu_device.f90
+            # $(SRC_DIR)/sporkle_pm4_packets.f90
+            # $(SRC_DIR)/sporkle_gpu_va_allocator.f90
+            # $(SRC_DIR)/sporkle_rdna3_shaders.f90
+            # $(SRC_DIR)/sporkle_pm4_compute.f90
+            # $(SRC_DIR)/production/gpu_safety_guards.f90
             
+        # OpenGL backend archived - achieved 3,630 GFLOPS
+        # See /attic/opengl_backend for reference
         ifeq ($(HAS_OPENGL),yes)
-            PLATFORM_MODULES += $(SRC_DIR)/production/gpu_opengl_interface.f90 \
-                                $(SRC_DIR)/sporkle_gpu_opengl.f90 \
-                                $(SRC_DIR)/sporkle_gpu_dispatch.f90 \
-                                $(SRC_DIR)/reference/universal_memory_optimization.f90 \
-                                $(SRC_DIR)/reference/gemm_simd_optimized.f90 \
-                                $(SRC_DIR)/reference/cpu_conv2d_reference.f90 \
-                                $(SRC_DIR)/production/timing_helpers.f90 \
-                                $(SRC_DIR)/production/gemm_simd_optimized_v2.f90 \
-                                $(SRC_DIR)/production/cpu_conv2d_adaptive.f90 \
-                                $(SRC_DIR)/production/gpu_fence_primitives.f90 \
-                                $(SRC_DIR)/production/gpu_opengl_interface_fence.f90 \
-                                $(SRC_DIR)/production/gpu_unified_buffers.f90 \
-                                $(SRC_DIR)/production/gpu_opengl_zero_copy.f90 \
-                                $(SRC_DIR)/production/gpu_async_executor.f90 \
-                                $(SRC_DIR)/production/sporkle_conv2d.f90 \
-                                $(SRC_DIR)/production/sporkle_conv2d_juggling.f90 \
-                                $(SRC_DIR)/production/sporkle_conv2d_juggling_fence.f90 \
-                                $(SRC_DIR)/production/sporkle_conv2d_auto_selector.f90 \
-                                $(SRC_DIR)/production/gpu_program_cache.f90 \
-                                $(SRC_DIR)/production/gpu_opengl_cached.f90 \
-                                $(SRC_DIR)/production/gpu_binary_cache.f90 \
-                                $(SRC_DIR)/production/gpu_program_cache_v2.f90 \
-                                $(SRC_DIR)/production/gpu_program_cache_threadsafe.f90 \
-                                $(SRC_DIR)/production/gpu_ring_buffer.f90 \
-                                $(SRC_DIR)/production/pm4_conv2d_builder.f90 \
-                                $(SRC_DIR)/production/pm4_submit.f90 \
-                                $(SRC_DIR)/production/pm4_buffer_raii.f90 \
-                                $(SRC_DIR)/production/pm4_safe_submit.f90 \
-                                # $(SRC_DIR)/production/gpu_dynamic_shader_cache.f90 \
-                                $(SRC_DIR)/production/sporkle_conv2d_v3.f90
-            PLATFORM_C_SOURCES += $(SRC_DIR)/reference/gpu_opengl_reference.c \
-                                  $(SRC_DIR)/gpu_dynamic_shader_exec.c \
-                                  $(SRC_DIR)/production/aligned_alloc.c \
-                                  $(SRC_DIR)/production/pm4_submit_impl.c
+            # OpenGL detection still runs, but modules disabled
+            $(info OpenGL detected but backend archived - using CPU only)
         endif
         
+        # C sources for CPU implementation
+        PLATFORM_C_SOURCES += $(SRC_DIR)/production/aligned_alloc.c \
+                              $(SRC_DIR)/production/prefetch_wrapper.c \
+                              $(SRC_DIR)/production/streaming_wrapper.c
+        
+        # Vulkan backend archived - see /attic/vulkan_stubs
         ifeq ($(HAS_VULKAN),yes)
-            PLATFORM_MODULES += $(SRC_DIR)/production/gpu_vulkan_interface.f90
-            PLATFORM_C_SOURCES += $(SRC_DIR)/production/gpu_vulkan_backend.c \
-                                  $(SRC_DIR)/production/glsl_to_spirv.c \
-                                  $(SRC_DIR)/production/conv2d_spirv_bytecode.c \
-                                  $(SRC_DIR)/production/valid_spirv_generator.c \
-                                  $(SRC_DIR)/production/minimal_valid_spirv.c \
-                                  $(SRC_DIR)/production/vulkan_buffer_utils.c \
-                                  $(SRC_DIR)/production/vulkan_timing.c
+            # Vulkan detection still runs, but modules disabled
+            $(info Vulkan detected but backend archived - using CPU only)
         endif
     endif
     
     ifeq ($(GPU_TYPE),NVIDIA)
+        # NVIDIA backend archived - waiting for Kronos integration
+        $(info NVIDIA GPU detected but backend archived - using CPU only)
         PLATFORM_MODULES = \
-            $(SRC_DIR)/sporkle_gpu_safe_detect.f90 \
-            $(SRC_DIR)/sporkle_gpu_backend_detect.f90 \
-            $(SRC_DIR)/sporkle_gpu_backend.f90 \
-            $(SRC_DIR)/sporkle_nvidia_opengl.f90 \
-            $(SRC_DIR)/sporkle_nvidia_persistent.f90 \
-            $(SRC_DIR)/sporkle_nvidia_zerocopy.f90 \
-            $(SRC_DIR)/sporkle_nvidia_summit.f90
+            $(SRC_DIR)/reference/universal_memory_optimization.f90 \
+            $(SRC_DIR)/reference/gemm_simd_optimized.f90 \
+            $(SRC_DIR)/reference/cpu_conv2d_reference.f90 \
+            $(SRC_DIR)/production/timing_helpers.f90 \
+            $(SRC_DIR)/production/gemm_simd_optimized_v2.f90 \
+            $(SRC_DIR)/production/gemm_simd_prefetch.f90 \
+            $(SRC_DIR)/production/gemm_simd_streaming.f90 \
+            $(SRC_DIR)/production/cpu_conv2d_adaptive_fixed.f90
             
-        ifeq ($(HAS_OPENGL),yes)
-            PLATFORM_MODULES += $(SRC_DIR)/production/gpu_opengl_interface.f90 \
-                                $(SRC_DIR)/sporkle_gpu_dispatch.f90 \
-                                $(SRC_DIR)/production/universal_memory_optimization.f90 \
-                                $(SRC_DIR)/reference/gemm_simd_optimized.f90 \
-                                $(SRC_DIR)/production/gemm_simd_optimized_v2.f90 \
-                                $(SRC_DIR)/reference/cpu_conv2d_reference.f90 \
-                                $(SRC_DIR)/production/timing_helpers.f90 \
-                                $(SRC_DIR)/production/cpu_conv2d_adaptive.f90 \
-                                $(SRC_DIR)/production/gpu_fence_primitives.f90 \
-                                $(SRC_DIR)/production/gpu_async_executor.f90 \
-                                $(SRC_DIR)/production/sporkle_conv2d_v2.f90 \
-                                $(SRC_DIR)/production/gpu_program_cache.f90 \
-                                $(SRC_DIR)/production/gpu_binary_cache.f90 \
-                                $(SRC_DIR)/production/gpu_program_cache_threadsafe.f90
-        endif
+        # C sources for CPU implementation
+        PLATFORM_C_SOURCES += $(SRC_DIR)/production/aligned_alloc.c \
+                              $(SRC_DIR)/production/prefetch_wrapper.c \
+                              $(SRC_DIR)/production/streaming_wrapper.c
     endif
     
     ifeq ($(GPU_TYPE),CPU)
-        # CPU-only configuration - minimal dependencies
+        # CPU-only configuration
         PLATFORM_MODULES = \
-            $(SRC_DIR)/cpu_device.f90 \
-            $(SRC_DIR)/reference/cpu_conv2d_reference.f90 \
+            $(SRC_DIR)/reference/universal_memory_optimization.f90 \
             $(SRC_DIR)/reference/gemm_simd_optimized.f90 \
-            $(SRC_DIR)/production/gemm_simd_optimized_v2.f90 \
+            $(SRC_DIR)/reference/cpu_conv2d_reference.f90 \
             $(SRC_DIR)/production/timing_helpers.f90 \
-            $(SRC_DIR)/production/cpu_conv2d_adaptive.f90 \
-            $(SRC_DIR)/reference/universal_memory_optimization.f90
+            $(SRC_DIR)/production/hardware_detection.f90 \
+            $(SRC_DIR)/production/device_capabilities.f90 \
+            $(SRC_DIR)/production/sporkle_fence.f90 \
+            $(SRC_DIR)/production/gemm_simd_optimized_v2.f90 \
+            $(SRC_DIR)/production/gemm_simd_prefetch.f90 \
+            $(SRC_DIR)/production/gemm_simd_streaming.f90 \
+            $(SRC_DIR)/production/cpu_conv2d_adaptive_fixed.f90 \
+            $(SRC_DIR)/cpu_device.f90
+        
+        # C sources for CPU implementation
+        PLATFORM_C_SOURCES += $(SRC_DIR)/production/aligned_alloc.c \
+                              $(SRC_DIR)/production/prefetch_wrapper.c \
+                              $(SRC_DIR)/production/streaming_wrapper.c
         
         # No GPU libraries needed for CPU-only build
         LDFLAGS += -fopenmp
@@ -234,17 +195,32 @@ ifeq ($(PLATFORM),LINUX)
 endif
 
 ifeq ($(PLATFORM),MACOS)
+    # Metal backend temporarily disabled during Sprint 4 cleanup
+    $(info macOS detected but Metal backend archived - using CPU only)
     PLATFORM_MODULES = \
-        $(SRC_DIR)/sporkle_gpu_metal.f90 \
-        $(SRC_DIR)/sporkle_memory_metal.f90 \
-        $(SRC_DIR)/sporkle_metal_kernels.f90 \
-        $(SRC_DIR)/sporkle_amx.f90 \
-        $(SRC_DIR)/sporkle_neural_engine.f90 \
-        $(SRC_DIR)/sporkle_apple_orchestrator.f90
+        $(SRC_DIR)/reference/universal_memory_optimization.f90 \
+        $(SRC_DIR)/reference/gemm_simd_optimized.f90 \
+        $(SRC_DIR)/reference/cpu_conv2d_reference.f90 \
+        $(SRC_DIR)/production/timing_helpers.f90 \
+        $(SRC_DIR)/production/gemm_simd_optimized_v2.f90 \
+        $(SRC_DIR)/production/gemm_simd_prefetch.f90 \
+        $(SRC_DIR)/production/gemm_simd_streaming.f90 \
+        $(SRC_DIR)/production/cpu_conv2d_adaptive_fixed.f90
         
     PLATFORM_C_SOURCES = \
-        $(SRC_DIR)/metal_wrapper.m \
-        $(SRC_DIR)/coreml_bridge_simple.m
+        $(SRC_DIR)/production/aligned_alloc.c \
+        $(SRC_DIR)/production/prefetch_wrapper.c \
+        $(SRC_DIR)/production/streaming_wrapper.c
+        
+    # Archived Metal modules - see reference/sparkle for original:
+    # $(SRC_DIR)/sporkle_gpu_metal.f90
+    # $(SRC_DIR)/sporkle_memory_metal.f90
+    # $(SRC_DIR)/sporkle_metal_kernels.f90
+    # $(SRC_DIR)/sporkle_amx.f90
+    # $(SRC_DIR)/sporkle_neural_engine.f90
+    # $(SRC_DIR)/sporkle_apple_orchestrator.f90
+    # $(SRC_DIR)/metal_wrapper.m
+    # $(SRC_DIR)/coreml_bridge_simple.m
 endif
 
 # All modules
@@ -273,14 +249,17 @@ info:
 	@echo "Build dir: $(BUILD_DIR)"
 	@echo ""
 	@echo "Available targets:"
-	@echo "  make cpu                - Full CPU stack (AVX-512, OpenMP, adaptive tiling)"
-	@echo "  make apple              - Full Apple stack (Metal, Neural Engine, AMX)"
-	@echo "  make amd                - Full AMD stack (OpenGL, PM4, async pipeline)"
-	@echo "  make nvidia             - Full NVIDIA stack (OpenGL, persistent kernels)"
-	@echo ""
-	@echo "Development targets:"
+	@echo "  make cpu                - CPU implementation (AVX-512, OpenMP, adaptive tiling)"
 	@echo "  make info               - Show platform detection"
 	@echo "  make clean              - Clean build artifacts"
+	@echo "  make test_cpu           - Run CPU tests"
+	@echo ""
+	@echo "Note: GPU backends temporarily disabled during Sprint 4 cleanup"
+	@echo "      See /attic for archived implementations:"
+	@echo "      - OpenGL backend (achieved 3,630 GFLOPS)"
+	@echo "      - PM4 native attempt (educational)"
+	@echo "      - Vulkan stubs (incomplete)"
+	@echo "      Kronos integration coming soon!"
 	@echo ""
 
 # Platform detection test
@@ -527,6 +506,16 @@ $(BUILD_DIR)/%.o: $(SRC_DIR)/%.c
 $(BUILD_DIR)/production/%.o: $(SRC_DIR)/production/%.c
 	@echo "⚙️  Compiling $< (production C)..."
 	$(CC) $(BASE_CFLAGS) $(CFLAGS) -c $< -o $@
+
+# CPU device test
+test_cpu: $(BUILD_DIR)/test_cpu_device
+	@echo "🚀 Running CPU device test..."
+	@./$(BUILD_DIR)/test_cpu_device
+
+$(BUILD_DIR)/test_cpu_device: $(OBJECTS) $(C_OBJECTS) tests/test_cpu_device.f90
+	@echo "🔨 Building CPU device test..."
+	$(FC) $(FFLAGS) -I$(BUILD_DIR) $(OBJECTS) $(C_OBJECTS) \
+		tests/test_cpu_device.f90 -o $@ $(LDFLAGS)
 
 # Clean
 clean:

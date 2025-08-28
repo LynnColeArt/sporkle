@@ -107,6 +107,16 @@ When we hit a bug, we celebrate the learning opportunity. Each bug brings us clo
 
 **Current Achievement**: 6.5x speedup with async executor, 3,630 GFLOPS aggregate throughput
 
+## Build System Note (Jan 28, 2025)
+**IMPORTANT**: The smart Makefile (just called `Makefile`) is the ONLY correct one to use. It contains:
+- Intelligent platform detection for Linux/macOS
+- GPU vendor detection (AMD/NVIDIA/Intel)
+- Library detection (OpenGL/Vulkan)
+- Automatic fallback to CPU-only mode
+- Proper module dependency ordering
+
+Never create alternative Makefiles - always update the smart one!
+
 ## GPU Compute Status: ASYNC EXECUTOR DEPLOYED ✅
 - **Single Kernel Performance**: 451 GFLOPS via OpenGL compute shaders
 - **Async Pipeline Performance**: 3,630 GFLOPS aggregate (6.5x speedup)
