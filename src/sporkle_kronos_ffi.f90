@@ -42,43 +42,43 @@ module sporkle_kronos_ffi
   ! C function interfaces
   interface
     ! Context management
-    function kronos_create_context_c() bind(C, name="kronos_create_context") result(ctx)
+    function kronos_create_context_c() bind(C, name="kronos_compute_create_context") result(ctx)
       import :: c_ptr
       type(c_ptr) :: ctx
     end function kronos_create_context_c
     
-    subroutine kronos_destroy_context_c(ctx) bind(C, name="kronos_destroy_context")
+    subroutine kronos_destroy_context_c(ctx) bind(C, name="kronos_compute_destroy_context")
       import :: c_ptr
       type(c_ptr), value :: ctx
     end subroutine kronos_destroy_context_c
     
     ! Buffer management
-    function kronos_create_buffer_c(ctx, size) bind(C, name="kronos_create_buffer") result(buf)
+    function kronos_create_buffer_c(ctx, size) bind(C, name="kronos_compute_create_buffer") result(buf)
       import :: c_ptr, c_size_t
       type(c_ptr), value :: ctx
       integer(c_size_t), value :: size
       type(c_ptr) :: buf
     end function kronos_create_buffer_c
     
-    subroutine kronos_destroy_buffer_c(ctx, buf) bind(C, name="kronos_destroy_buffer")
+    subroutine kronos_destroy_buffer_c(ctx, buf) bind(C, name="kronos_compute_destroy_buffer")
       import :: c_ptr
       type(c_ptr), value :: ctx, buf
     end subroutine kronos_destroy_buffer_c
     
-    function kronos_map_buffer_c(ctx, buf) bind(C, name="kronos_map_buffer") result(ptr)
+    function kronos_map_buffer_c(ctx, buf) bind(C, name="kronos_compute_map_buffer") result(ptr)
       import :: c_ptr
       type(c_ptr), value :: ctx, buf
       type(c_ptr) :: ptr
     end function kronos_map_buffer_c
     
-    subroutine kronos_unmap_buffer_c(ctx, buf) bind(C, name="kronos_unmap_buffer")
+    subroutine kronos_unmap_buffer_c(ctx, buf) bind(C, name="kronos_compute_unmap_buffer")
       import :: c_ptr
       type(c_ptr), value :: ctx, buf
     end subroutine kronos_unmap_buffer_c
     
     ! Pipeline management
     function kronos_create_pipeline_c(ctx, spirv_data, spirv_size) &
-        bind(C, name="kronos_create_pipeline") result(pipe)
+        bind(C, name="kronos_compute_create_pipeline") result(pipe)
       import :: c_ptr, c_size_t
       type(c_ptr), value :: ctx, spirv_data
       integer(c_size_t), value :: spirv_size
@@ -93,7 +93,7 @@ module sporkle_kronos_ffi
     ! Dispatch and synchronization
     function kronos_dispatch_c(ctx, pipe, buffers, num_buffers, &
                               global_x, global_y, global_z) &
-        bind(C, name="kronos_dispatch") result(fence)
+        bind(C, name="kronos_compute_dispatch") result(fence)
       import :: c_ptr, c_int, c_size_t
       type(c_ptr), value :: ctx, pipe, buffers
       integer(c_int), value :: num_buffers
@@ -102,7 +102,7 @@ module sporkle_kronos_ffi
     end function kronos_dispatch_c
     
     function kronos_wait_fence_c(ctx, fence, timeout_ns) &
-        bind(C, name="kronos_wait_fence") result(status)
+        bind(C, name="kronos_compute_wait_fence") result(status)
       import :: c_ptr, c_int, c_int64_t
       type(c_ptr), value :: ctx, fence
       integer(c_int64_t), value :: timeout_ns

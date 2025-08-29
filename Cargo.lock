@@ -25,17 +25,24 @@ checksum = "4a5f13b858c8d314ee3e8f639011f7ccefe71f97f96e50151fb991f267928e2c"
 
 [[package]]
 name = "kronos-compute"
-version = "0.1.0"
+version = "0.1.5-rc2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c6078fa5d758c11e718dace6e28da78c515f67006b3ef67763c5765b8633f01a"
+checksum = "d61c6a40eb19c1fca75a5c36842d1faa64c334d88970fb7d1a10de259e4bdb56"
 dependencies = [
  "bitflags",
+ "lazy_static",
  "libc",
  "log",
  "serde",
  "serde_json",
  "thiserror",
 ]
+
+[[package]]
+name = "lazy_static"
+version = "1.5.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "bbd2bcb4c963f2ddae06a2efc7e9f3591312473c50c6685e1f298068316e66fe"
 
 [[package]]
 name = "libc"

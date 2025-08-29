@@ -21,7 +21,7 @@ module spirv_shaders
   !   uint i = gl_GlobalInvocationID.x;
   !   c[i] = a[i] + b[i];
   ! }
-  integer(c_int32_t), parameter :: vector_add_spirv(*) = [ &
+  integer(c_int32_t), target :: vector_add_spirv(6) = [ &
     int(z'07230203', c_int32_t), & ! Magic
     int(z'00010000', c_int32_t), & ! Version 1.0
     int(z'00000000', c_int32_t), & ! Generator
@@ -33,7 +33,7 @@ module spirv_shaders
   ]
   
   ! Conv2D shader placeholder
-  integer(c_int32_t), parameter :: conv2d_spirv(*) = [ &
+  integer(c_int32_t), target :: conv2d_spirv(6) = [ &
     int(z'07230203', c_int32_t), & ! Magic
     int(z'00010000', c_int32_t), & ! Version 1.0
     int(z'00000000', c_int32_t), & ! Generator
@@ -45,22 +45,22 @@ module spirv_shaders
   
 contains
   
-  subroutine get_vector_add_spirv(spirv_ptr, spirv_size)
-    integer(c_int8_t), pointer, intent(out) :: spirv_ptr(:)
+  function get_vector_add_spirv(spirv_size) result(spirv_ptr)
     integer(c_size_t), intent(out) :: spirv_size
+    type(c_ptr) :: spirv_ptr
     
     spirv_size = size(vector_add_spirv) * 4_c_size_t
-    spirv_ptr => transfer(c_loc(vector_add_spirv), spirv_ptr, [spirv_size])
+    spirv_ptr = c_loc(vector_add_spirv)
     
-  end subroutine get_vector_add_spirv
+  end function get_vector_add_spirv
   
-  subroutine get_conv2d_spirv(spirv_ptr, spirv_size)
-    integer(c_int8_t), pointer, intent(out) :: spirv_ptr(:)
+  function get_conv2d_spirv(spirv_size) result(spirv_ptr)
     integer(c_size_t), intent(out) :: spirv_size
+    type(c_ptr) :: spirv_ptr
     
     spirv_size = size(conv2d_spirv) * 4_c_size_t
-    spirv_ptr => transfer(c_loc(conv2d_spirv), spirv_ptr, [spirv_size])
+    spirv_ptr = c_loc(conv2d_spirv)
     
-  end subroutine get_conv2d_spirv
+  end function get_conv2d_spirv
   
 end module spirv_shaders

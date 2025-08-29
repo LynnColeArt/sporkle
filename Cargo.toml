@@ -13,7 +13,7 @@ path = "src/rust/lib.rs"
 crate-type = ["staticlib", "cdylib"]
 
 [dependencies]
-kronos-compute = "0.1.0"
+kronos-compute = { version = "0.1.5-rc2", features = ["implementation"] }
 
 [build-dependencies]
 cc = "1.0"

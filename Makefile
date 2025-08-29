@@ -544,6 +544,43 @@ $(BUILD_DIR)/kronos_c_bridge.o: src/kronos_c_bridge.c
 	@echo "⚙️  Compiling Kronos C bridge..."
 	$(CC) $(BASE_CFLAGS) -c src/kronos_c_bridge.c -o $@
 
+# Kronos Conv2D test
+test_kronos_conv2d: $(BUILD_DIR)/test_kronos_conv2d
+	@echo "🚀 Running Kronos Conv2D test..."
+	@./$(BUILD_DIR)/test_kronos_conv2d
+
+$(BUILD_DIR)/test_kronos_conv2d: $(KRONOS_MODULES) tests/test_kronos_conv2d.f90
+	@echo "🔨 Building Kronos Conv2D test..."
+	$(FC) $(BASE_FFLAGS) -I$(BUILD_DIR) \
+		$(KRONOS_MODULES) \
+		tests/test_kronos_conv2d.f90 -o $@ \
+		-L./target/release -lsporkle_kronos \
+		-Wl,-rpath,./target/release $(LDFLAGS)
+
+# Kronos modules list
+KRONOS_MODULES = \
+	$(BUILD_DIR)/common/kinds.o \
+	$(BUILD_DIR)/sporkle_types.o \
+	$(BUILD_DIR)/production/sporkle_error_handling.o \
+	$(BUILD_DIR)/sporkle_kronos_ffi.o \
+	$(BUILD_DIR)/kronos_device.o \
+	$(BUILD_DIR)/spirv_shaders.o \
+	$(BUILD_DIR)/production/sporkle_kronos_conv2d.o \
+	$(BUILD_DIR)/sporkle_warning_stub.o
+
+$(BUILD_DIR)/kronos_device.o: src/kronos_device.f90 $(BUILD_DIR)/sporkle_kronos_ffi.o $(BUILD_DIR)/sporkle_types.o
+	@echo "📦 Compiling Kronos device module..."
+	$(FC) $(BASE_FFLAGS) -c src/kronos_device.f90 -o $@ -J$(BUILD_DIR)
+
+$(BUILD_DIR)/spirv_shaders.o: src/spirv_shaders.f90 $(BUILD_DIR)/common/kinds.o
+	@echo "📦 Compiling SPIR-V shaders module..."
+	$(FC) $(BASE_FFLAGS) -c src/spirv_shaders.f90 -o $@ -J$(BUILD_DIR)
+
+$(BUILD_DIR)/production/sporkle_kronos_conv2d.o: src/production/sporkle_kronos_conv2d.f90 \
+		$(BUILD_DIR)/sporkle_kronos_ffi.o $(BUILD_DIR)/spirv_shaders.o
+	@echo "📦 Compiling Kronos Conv2D module..."
+	$(FC) $(BASE_FFLAGS) -c src/production/sporkle_kronos_conv2d.f90 -o $@ -J$(BUILD_DIR)
+
 # Clean
 clean:
 	@echo "🧹 Cleaning $(PLATFORM) build..."

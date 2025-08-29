@@ -1,1 +1,0 @@
-/media/lynn/big_drive/workspaces/fortran-experiment/target/release/libsporkle_kronos.a: /media/lynn/big_drive/workspaces/fortran-experiment/build.rs /media/lynn/big_drive/workspaces/fortran-experiment/src/rust/lib.rs

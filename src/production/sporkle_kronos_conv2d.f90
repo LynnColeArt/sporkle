@@ -5,8 +5,9 @@ module sporkle_kronos_conv2d
   
   use kinds
   use iso_c_binding
-  use sporkle_types
-  use sporkle_error_handling
+  ! No need for sporkle_types - kronos types come from sporkle_kronos_ffi
+  use sporkle_error_handling, only: sporkle_error => sporkle_warning, &
+                                     SPORKLE_SUCCESS, SPORKLE_FAILURE => SPORKLE_ERR_INVALID
   use sporkle_kronos_ffi
   use spirv_shaders
   implicit none
@@ -45,8 +46,9 @@ contains
     type(kronos_fence) :: fence
     integer :: H_out, W_out
     integer(c_size_t) :: global_size(3)
-    integer(c_int8_t), pointer :: spirv_data(:)
+    type(c_ptr) :: spirv_ptr
     integer(c_size_t) :: spirv_size
+    integer(c_int8_t), pointer :: spirv_data(:)
     
     status = SPORKLE_FAILURE
     
@@ -56,7 +58,8 @@ contains
     
     ! Initialize pipeline if needed
     if (.not. pipeline_initialized) then
-      call get_conv2d_spirv(spirv_data, spirv_size)
+      spirv_ptr = get_conv2d_spirv(spirv_size)
+      call c_f_pointer(spirv_ptr, spirv_data, [spirv_size])
       conv2d_pipeline = kronos_create_pipeline(ctx, spirv_data, spirv_size)
       
       if (.not. c_associated(conv2d_pipeline%handle)) then

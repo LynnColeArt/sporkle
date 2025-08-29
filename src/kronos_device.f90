@@ -5,8 +5,12 @@ module kronos_device
   
   use kinds
   use iso_c_binding
-  use sporkle_types
-  use sporkle_error_handling
+  use sporkle_types, only: sporkle_buffer, compute_device, DEVICE_GPU_AMD, &
+                           device_capabilities
+  use sporkle_error_handling, only: sporkle_error => sporkle_warning, &
+                                     sporkle_info => sporkle_warning, &
+                                     ERR_SUCCESS => SPORKLE_SUCCESS, &
+                                     ERR_FAILURE => SPORKLE_ERR_INVALID
   use sporkle_kronos_ffi
   implicit none
   private
@@ -14,19 +18,27 @@ module kronos_device
   ! Public API
   public :: create_kronos_device
   
+  ! Interface for C function we need directly
+  interface
+    subroutine kronos_destroy_buffer_c(ctx, buf) bind(C, name="kronos_compute_destroy_buffer")
+      import :: c_ptr
+      type(c_ptr), value :: ctx
+      type(c_ptr), value :: buf
+    end subroutine kronos_destroy_buffer_c
+  end interface
+  
   ! Kronos device type
-  type, extends(sporkle_device) :: kronos_device_t
+  type, extends(compute_device) :: kronos_device_t
     type(kronos_context) :: ctx
     logical :: initialized = .false.
   contains
-    procedure :: get_name => kronos_get_name
-    procedure :: get_type => kronos_get_type
     procedure :: allocate => kronos_allocate
     procedure :: deallocate => kronos_deallocate
     procedure :: memcpy => kronos_memcpy
     procedure :: execute => kronos_execute
     procedure :: synchronize => kronos_synchronize
-    procedure :: cleanup => kronos_cleanup
+    procedure :: get_info => kronos_get_info
+    procedure :: cleanup => kronos_device_cleanup
   end type kronos_device_t
   
   ! Buffer tracking
@@ -43,7 +55,7 @@ module kronos_device
 contains
   
   function create_kronos_device() result(device)
-    class(sporkle_device), allocatable :: device
+    class(compute_device), allocatable :: device
     type(kronos_device_t), allocatable :: kronos_dev
     
     allocate(kronos_dev)
@@ -59,29 +71,27 @@ contains
       call sporkle_error("Failed to initialize Kronos context")
     end if
     
+    ! Set device info
+    call kronos_dev%get_info()
+    
     device = kronos_dev
     
   end function create_kronos_device
   
-  function kronos_get_name(self) result(name)
-    class(kronos_device_t), intent(in) :: self
-    character(len=:), allocatable :: name
+  subroutine kronos_get_info(self)
+    class(kronos_device_t), intent(inout) :: self
     
-    name = "Kronos GPU (Vulkan Compute)"
+    ! Set device information
+    self%name = "Kronos GPU (Vulkan Compute)"
+    self%device_type = DEVICE_GPU_AMD
+    self%is_available = self%initialized
     
-  end function kronos_get_name
+  end subroutine kronos_get_info
   
-  function kronos_get_type(self) result(dtype)
-    class(kronos_device_t), intent(in) :: self
-    integer :: dtype
-    
-    dtype = DEVICE_GPU
-    
-  end function kronos_get_type
-  
-  function kronos_allocate(self, size_bytes) result(buffer)
-    class(kronos_device_t), intent(in) :: self
+  function kronos_allocate(self, size_bytes, pinned) result(buffer)
+    class(kronos_device_t), intent(inout) :: self
     integer(i64), intent(in) :: size_bytes
+    logical, intent(in), optional :: pinned
     type(sporkle_buffer) :: buffer
     
     type(kronos_buffer) :: kbuf
@@ -89,7 +99,7 @@ contains
     
     if (.not. self%initialized) then
       buffer%data = c_null_ptr
-      buffer%size = 0
+      buffer%size_bytes = 0
       return
     end if
     
@@ -98,8 +108,8 @@ contains
     
     if (c_associated(kbuf%handle)) then
       buffer%data = kbuf%handle  ! Store handle for now
-      buffer%size = size_bytes
-      buffer%device_id = DEVICE_GPU
+      buffer%size_bytes = size_bytes
+      buffer%owning_device = 0  ! TODO: proper device ID
       
       ! Register buffer
       if (num_buffers < MAX_BUFFERS) then
@@ -109,14 +119,14 @@ contains
       end if
     else
       buffer%data = c_null_ptr
-      buffer%size = 0
+      buffer%size_bytes = 0
       call sporkle_error("Failed to allocate Kronos buffer")
     end if
     
   end function kronos_allocate
   
   subroutine kronos_deallocate(self, buffer)
-    class(kronos_device_t), intent(in) :: self
+    class(kronos_device_t), intent(inout) :: self
     type(sporkle_buffer), intent(inout) :: buffer
     
     integer :: i
@@ -140,13 +150,14 @@ contains
     end do
     
     buffer%data = c_null_ptr
-    buffer%size = 0
+    buffer%size_bytes = 0
     
   end subroutine kronos_deallocate
   
   function kronos_memcpy(self, dst, src, size_bytes) result(status)
-    class(kronos_device_t), intent(in) :: self
-    type(sporkle_buffer), intent(in) :: dst, src
+    class(kronos_device_t), intent(inout) :: self
+    type(sporkle_buffer), intent(inout) :: dst
+    type(sporkle_buffer), intent(in) :: src
     integer(i64), intent(in) :: size_bytes
     integer :: status
     
@@ -154,8 +165,9 @@ contains
     type(kronos_buffer) :: src_kbuf, dst_kbuf
     integer :: i
     logical :: found_src, found_dst
+    integer(c_int8_t), pointer :: src_data(:), dst_data(:)
     
-    status = SPORKLE_FAILURE
+    status = ERR_FAILURE
     
     if (.not. self%initialized) return
     if (size_bytes <= 0) return
@@ -200,24 +212,18 @@ contains
     call kronos_unmap_buffer(self%ctx, src_kbuf)
     call kronos_unmap_buffer(self%ctx, dst_kbuf)
     
-    status = SPORKLE_SUCCESS
-    
-  contains
-    subroutine dummy_declaration()
-      ! Dummy to make contains valid
-      integer(c_int8_t), pointer :: src_data(:), dst_data(:)
-    end subroutine
+    status = ERR_SUCCESS
     
   end function kronos_memcpy
   
   function kronos_execute(self, kernel_name, args, grid_size, block_size) result(status)
-    class(kronos_device_t), intent(in) :: self
+    class(kronos_device_t), intent(inout) :: self
     character(len=*), intent(in) :: kernel_name
-    type(kernel_arguments), intent(in) :: args
-    integer(i64), intent(in) :: grid_size, block_size
+    type(c_ptr), intent(in) :: args(:)
+    integer(i32), intent(in) :: grid_size(3), block_size(3)
     integer :: status
     
-    status = SPORKLE_FAILURE
+    status = ERR_FAILURE
     
     if (.not. self%initialized) return
     
@@ -233,16 +239,16 @@ contains
   end function kronos_execute
   
   function kronos_synchronize(self) result(status)
-    class(kronos_device_t), intent(in) :: self
+    class(kronos_device_t), intent(inout) :: self
     integer :: status
     
     ! Kronos uses explicit fence synchronization
     ! Nothing to do here for device-wide sync
-    status = SPORKLE_SUCCESS
+    status = ERR_SUCCESS
     
   end function kronos_synchronize
   
-  subroutine kronos_cleanup(self)
+  subroutine kronos_device_cleanup(self)
     class(kronos_device_t), intent(inout) :: self
     
     integer :: i
@@ -260,6 +266,6 @@ contains
     call kronos_cleanup(self%ctx)
     self%initialized = .false.
     
-  end subroutine kronos_cleanup
+  end subroutine kronos_device_cleanup
   
 end module kronos_device

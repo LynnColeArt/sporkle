@@ -1,5 +1,7 @@
 // Quick check to see what kronos_compute exports
 fn main() {
-    // This will fail to compile but show us what's available
-    let _ = kronos_compute::;
+    // List the available items from kronos_compute
+    use kronos_compute::{Context, Buffer, Pipeline};
+    
+    println!("kronos_compute types available!");
 }
