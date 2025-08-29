@@ -1,11 +1,6 @@
-use cc::Build;
-
 fn main() {
-    // Build the C bridge
-    Build::new()
-        .file("src/kronos_c_bridge.c")
-        .include("src")
-        .compile("kronos_c_bridge");
+    // The Rust library provides the C FFI directly,
+    // so we don't need to build the C bridge
     
     // Tell cargo to link against Vulkan
     println!("cargo:rustc-link-lib=vulkan");

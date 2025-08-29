@@ -522,13 +522,15 @@ test_kronos: $(BUILD_DIR)/test_kronos_basic
 	@echo "🚀 Running Kronos FFI test..."
 	@./$(BUILD_DIR)/test_kronos_basic
 
-$(BUILD_DIR)/test_kronos_basic: $(BUILD_DIR)/sporkle_kronos_ffi.o $(BUILD_DIR)/kronos_mock.o tests/test_kronos_basic.f90
+$(BUILD_DIR)/test_kronos_basic: $(BUILD_DIR)/sporkle_kronos_ffi.o $(BUILD_DIR)/kronos_c_bridge.o tests/test_kronos_basic.f90
 	@echo "🔨 Building Kronos FFI test..."
 	$(FC) $(BASE_FFLAGS) -I$(BUILD_DIR) \
 		$(BUILD_DIR)/common/kinds.o \
 		$(BUILD_DIR)/sporkle_kronos_ffi.o \
-		$(BUILD_DIR)/kronos_mock.o \
-		tests/test_kronos_basic.f90 -o $@ $(LDFLAGS)
+		$(BUILD_DIR)/kronos_c_bridge.o \
+		tests/test_kronos_basic.f90 -o $@ \
+		-L./target/release -lsporkle_kronos \
+		-Wl,-rpath,./target/release $(LDFLAGS)
 
 $(BUILD_DIR)/sporkle_kronos_ffi.o: src/sporkle_kronos_ffi.f90 $(BUILD_DIR)/common/kinds.o
 	@echo "📦 Compiling Kronos FFI module..."
@@ -537,6 +539,10 @@ $(BUILD_DIR)/sporkle_kronos_ffi.o: src/sporkle_kronos_ffi.f90 $(BUILD_DIR)/commo
 $(BUILD_DIR)/kronos_mock.o: src/kronos_mock.c
 	@echo "⚙️  Compiling Kronos mock C bridge..."
 	$(CC) $(BASE_CFLAGS) -c src/kronos_mock.c -o $@
+
+$(BUILD_DIR)/kronos_c_bridge.o: src/kronos_c_bridge.c
+	@echo "⚙️  Compiling Kronos C bridge..."
+	$(CC) $(BASE_CFLAGS) -c src/kronos_c_bridge.c -o $@
 
 # Clean
 clean:

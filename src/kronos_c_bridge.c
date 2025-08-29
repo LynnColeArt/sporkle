@@ -22,8 +22,7 @@ typedef void* kronos_fence_t;
 #define KRONOS_ERROR_COMPILE -3
 #define KRONOS_ERROR_INVALID -4
 
-/* Rust FFI functions from kronos-compute crate
- * These are provided by the kronos_compute_sys generated bindings */
+/* Rust FFI functions from our sporkle_kronos library */
 extern kronos_context_t kronos_compute_create_context(void);
 extern void kronos_compute_destroy_context(kronos_context_t ctx);
 
