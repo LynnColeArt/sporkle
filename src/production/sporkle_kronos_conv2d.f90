@@ -19,11 +19,12 @@ module sporkle_kronos_conv2d
   type(kronos_pipeline), save :: conv2d_pipeline
   logical, save :: pipeline_initialized = .false.
   
-  ! Push constant structure matching GLSL
+  ! Parameters structure matching shader layout
   type, bind(C) :: conv2d_params
-    integer(c_int32_t) :: C          ! Input channels
+    integer(c_int32_t) :: N          ! Batch size
     integer(c_int32_t) :: H          ! Input height
     integer(c_int32_t) :: W          ! Input width
+    integer(c_int32_t) :: C          ! Input channels
     integer(c_int32_t) :: K          ! Output channels
     integer(c_int32_t) :: kernel_size
     integer(c_int32_t) :: stride
@@ -42,13 +43,15 @@ contains
     integer :: status
     
     type(conv2d_params) :: params
-    type(kronos_buffer) :: buffers(3)
+    type(kronos_buffer) :: buffers(4), params_buf
     type(kronos_fence) :: fence
     integer :: H_out, W_out
     integer(c_size_t) :: global_size(3)
     type(c_ptr) :: spirv_ptr
     integer(c_size_t) :: spirv_size
     integer(c_int8_t), pointer :: spirv_data(:)
+    type(c_ptr) :: params_ptr
+    type(conv2d_params), pointer :: params_data
     
     status = SPORKLE_FAILURE
     
@@ -60,7 +63,8 @@ contains
     if (.not. pipeline_initialized) then
       spirv_ptr = get_conv2d_spirv(spirv_size)
       call c_f_pointer(spirv_ptr, spirv_data, [spirv_size])
-      conv2d_pipeline = kronos_create_pipeline(ctx, spirv_data, spirv_size)
+      ! Convert bytes to words for kronos_create_pipeline
+      conv2d_pipeline = kronos_create_pipeline(ctx, spirv_data, spirv_size / 4)
       
       if (.not. c_associated(conv2d_pipeline%handle)) then
         call sporkle_error("Failed to create conv2d pipeline")
@@ -70,9 +74,10 @@ contains
     end if
     
     ! Set up parameters
-    params%C = C
+    params%N = N
     params%H = H
     params%W = W
+    params%C = C
     params%K = K
     params%kernel_size = kernel_size
     params%stride = stride
@@ -80,10 +85,40 @@ contains
     params%H_out = H_out
     params%W_out = W_out
     
+    ! Create parameters buffer
+    params_buf = kronos_create_buffer(ctx, int(sizeof(params), c_size_t))
+    
+    if (.not. c_associated(params_buf%handle)) then
+      call sporkle_error("Failed to create parameters buffer")
+      return
+    end if
+    
+    ! Map and write parameters to buffer
+    status = kronos_map_buffer(ctx, params_buf, params_ptr)
+    if (status == KRONOS_SUCCESS) then
+      call c_f_pointer(params_ptr, params_data)
+      params_data%N = N
+      params_data%H = H
+      params_data%W = W
+      params_data%C = C
+      params_data%K = K
+      params_data%kernel_size = kernel_size
+      params_data%stride = stride
+      params_data%pad = pad
+      params_data%H_out = H_out
+      params_data%W_out = W_out
+      call kronos_unmap_buffer(ctx, params_buf)
+    else
+      call sporkle_error("Failed to map parameters buffer")
+      call kronos_destroy_buffer(ctx, params_buf)
+      return
+    end if
+    
     ! Set up buffers
     buffers(1) = input_buf
     buffers(2) = weight_buf
     buffers(3) = output_buf
+    buffers(4) = params_buf
     
     ! Calculate dispatch size
     ! X: Total output pixels (will be divided among threads)
@@ -107,6 +142,9 @@ contains
     ! Wait for completion
     status = kronos_wait_fence(ctx, fence, 5000)  ! 5 second timeout
     
+    ! Fence is automatically destroyed when it goes out of scope
+    ! This ensures GPU operations are complete before buffer cleanup
+    
     if (status == KRONOS_SUCCESS) then
       status = SPORKLE_SUCCESS
     else
@@ -114,7 +152,8 @@ contains
       status = SPORKLE_FAILURE
     end if
     
-    ! Fence is automatically destroyed when it goes out of scope
+    ! Clean up parameters buffer after fence is destroyed
+    call kronos_destroy_buffer(ctx, params_buf)
     
   end function kronos_conv2d_execute
   

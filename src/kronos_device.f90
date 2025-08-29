@@ -7,7 +7,8 @@ module kronos_device
   use iso_c_binding
   use sporkle_types, only: sporkle_buffer, compute_device, DEVICE_GPU_AMD, &
                            device_capabilities
-  use sporkle_error_handling, only: sporkle_error => sporkle_warning, &
+  use sporkle_error_handling, only: sporkle_error, &
+                                     sporkle_warning, &
                                      sporkle_info => sporkle_warning, &
                                      ERR_SUCCESS => SPORKLE_SUCCESS, &
                                      ERR_FAILURE => SPORKLE_ERR_INVALID

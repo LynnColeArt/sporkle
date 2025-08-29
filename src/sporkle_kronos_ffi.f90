@@ -10,7 +10,7 @@ module sporkle_kronos_ffi
   
   ! Public API
   public :: kronos_context, kronos_buffer, kronos_pipeline, kronos_fence
-  public :: kronos_init, kronos_cleanup, kronos_create_buffer
+  public :: kronos_init, kronos_cleanup, kronos_create_buffer, kronos_destroy_buffer
   public :: kronos_create_pipeline, kronos_dispatch, kronos_wait_fence
   public :: kronos_map_buffer, kronos_unmap_buffer
   
@@ -109,7 +109,7 @@ module sporkle_kronos_ffi
       integer(c_int) :: status
     end function kronos_wait_fence_c
     
-    subroutine kronos_destroy_fence_c(ctx, fence) bind(C, name="kronos_destroy_fence")
+    subroutine kronos_destroy_fence_c(ctx, fence) bind(C, name="kronos_compute_destroy_fence")
       import :: c_ptr
       type(c_ptr), value :: ctx, fence
     end subroutine kronos_destroy_fence_c
@@ -143,6 +143,18 @@ contains
     buffer%size = size_bytes
     
   end function kronos_create_buffer
+  
+  subroutine kronos_destroy_buffer(ctx, buffer)
+    type(kronos_context), intent(in) :: ctx
+    type(kronos_buffer), intent(inout) :: buffer
+    
+    if (c_associated(buffer%handle)) then
+      call kronos_destroy_buffer_c(ctx%handle, buffer%handle)
+      buffer%handle = c_null_ptr
+      buffer%size = 0_c_size_t
+    end if
+    
+  end subroutine kronos_destroy_buffer
   
   function kronos_map_buffer(ctx, buffer, data_ptr) result(status)
     type(kronos_context), intent(in) :: ctx

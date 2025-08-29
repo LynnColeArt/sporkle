@@ -138,7 +138,9 @@ ifeq ($(PLATFORM),LINUX)
         # C sources for CPU implementation
         PLATFORM_C_SOURCES += $(SRC_DIR)/production/aligned_alloc.c \
                               $(SRC_DIR)/production/prefetch_wrapper.c \
-                              $(SRC_DIR)/production/streaming_wrapper.c
+                              $(SRC_DIR)/production/streaming_wrapper.c \
+                              $(SRC_DIR)/conv2d_spirv_data.c \
+                              $(SRC_DIR)/sporkle_warning_stub.c
         
         # Vulkan backend archived - see /attic/vulkan_stubs
         ifeq ($(HAS_VULKAN),yes)
@@ -163,7 +165,9 @@ ifeq ($(PLATFORM),LINUX)
         # C sources for CPU implementation
         PLATFORM_C_SOURCES += $(SRC_DIR)/production/aligned_alloc.c \
                               $(SRC_DIR)/production/prefetch_wrapper.c \
-                              $(SRC_DIR)/production/streaming_wrapper.c
+                              $(SRC_DIR)/production/streaming_wrapper.c \
+                              $(SRC_DIR)/conv2d_spirv_data.c \
+                              $(SRC_DIR)/sporkle_warning_stub.c
     endif
     
     ifeq ($(GPU_TYPE),CPU)
@@ -185,7 +189,9 @@ ifeq ($(PLATFORM),LINUX)
         # C sources for CPU implementation
         PLATFORM_C_SOURCES += $(SRC_DIR)/production/aligned_alloc.c \
                               $(SRC_DIR)/production/prefetch_wrapper.c \
-                              $(SRC_DIR)/production/streaming_wrapper.c
+                              $(SRC_DIR)/production/streaming_wrapper.c \
+                              $(SRC_DIR)/conv2d_spirv_data.c \
+                              $(SRC_DIR)/sporkle_warning_stub.c
         
         # No GPU libraries needed for CPU-only build
         LDFLAGS += -fopenmp
@@ -210,7 +216,9 @@ ifeq ($(PLATFORM),MACOS)
     PLATFORM_C_SOURCES = \
         $(SRC_DIR)/production/aligned_alloc.c \
         $(SRC_DIR)/production/prefetch_wrapper.c \
-        $(SRC_DIR)/production/streaming_wrapper.c
+        $(SRC_DIR)/production/streaming_wrapper.c \
+        $(SRC_DIR)/conv2d_spirv_data.c \
+        $(SRC_DIR)/sporkle_warning_stub.c
         
     # Archived Metal modules - see reference/sparkle for original:
     # $(SRC_DIR)/sporkle_gpu_metal.f90
@@ -554,8 +562,8 @@ $(BUILD_DIR)/test_kronos_conv2d: $(KRONOS_MODULES) tests/test_kronos_conv2d.f90
 	$(FC) $(BASE_FFLAGS) -I$(BUILD_DIR) \
 		$(KRONOS_MODULES) \
 		tests/test_kronos_conv2d.f90 -o $@ \
-		-L./target/release -lsporkle_kronos \
-		-Wl,-rpath,./target/release $(LDFLAGS)
+		-L./target/debug -lsporkle_kronos \
+		-Wl,-rpath,./target/debug $(LDFLAGS)
 
 # Kronos modules list
 KRONOS_MODULES = \
@@ -566,6 +574,7 @@ KRONOS_MODULES = \
 	$(BUILD_DIR)/kronos_device.o \
 	$(BUILD_DIR)/spirv_shaders.o \
 	$(BUILD_DIR)/production/sporkle_kronos_conv2d.o \
+	$(BUILD_DIR)/conv2d_spirv_data.o \
 	$(BUILD_DIR)/sporkle_warning_stub.o
 
 $(BUILD_DIR)/kronos_device.o: src/kronos_device.f90 $(BUILD_DIR)/sporkle_kronos_ffi.o $(BUILD_DIR)/sporkle_types.o

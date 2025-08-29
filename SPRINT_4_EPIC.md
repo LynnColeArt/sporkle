@@ -45,7 +45,14 @@ Move to `/attic`:
 - All PM4 implementation attempts
 - GLSL shader generators
 
-#### 4. **Communication Architecture v2**
+#### 4. **Code Refactoring Note**
+⚠️ **TODO**: During integration, we built ~500 lines of C FFI layer for kronos-compute inside Sporkle (`src/rust/lib.rs`). This includes:
+- Complete C API bindings (`kronos_compute_create_context` etc.)
+- Dual-path fallback logic (safe API → low-level API)
+- Error code constants and opaque handle management
+- Should be moved to kronos-compute crate as official C API
+
+#### 5. **Communication Architecture v2**
 
 **In-Process Mode (Default):**
 - Direct Rust→Rust calls
