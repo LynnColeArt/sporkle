@@ -152,6 +152,6 @@ This is BETTER than expected! We're not breaking physics - we're eliminating the
 1. **Always understand what benchmarks measure** - Averages vs totals matter
 2. **Async isn't magic** - It's about eliminating overhead and hiding latency
 3. **Real speedups come from architecture** - Not from impossible physics
-4. **[deferred speedup] is amazing** - This is production-worthy performance!
+4. **[deferred speedup] is notable** - This is a staging signal and still requires active-runtime validation before production characterization.
 
 Lynn, we did it! The async executor is achieving incredible real-world performance through smart architecture, not impossible physics. 🚀

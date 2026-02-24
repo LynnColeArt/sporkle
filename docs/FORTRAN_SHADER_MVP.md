@@ -65,7 +65,7 @@ call sporkle_compile_and_dispatch( &
 
 ## Test Plan
 
-1. **Fill literal** - Proves basic path
+1. **Fill literal** - Exercises basic path
 2. **SAXPY** - Scalar + two buffers
 3. **Reduce sum** - Tests barriers & workgroups
 4. **Shape zoo** - Edge cases (primes, misaligned, huge)
@@ -118,4 +118,4 @@ void main() {
 3. Add SAXPY as second test case
 4. Build out test suite
 
-This gives us "Fortran shaders" TODAY while preserving future flexibility!
+This gives us a "Fortran shaders" pathway for early milestones while preserving future flexibility.

@@ -6,7 +6,7 @@
 
 ## What We've Built
 
-A complete framework for adaptive parameter passing in Fortran GPU kernels that:
+A historical framework for adaptive parameter passing in Fortran GPU kernels that:
 
 1. **Parses Fortran kernels** to identify scalar vs array parameters
 2. **Generates GLSL** for three different parameter passing methods
@@ -30,10 +30,10 @@ A complete framework for adaptive parameter passing in Fortran GPU kernels that:
 - Properly exported and used across modules
 
 ### 3. Added Comprehensive Documentation
-Every benchmarking method now has detailed comments explaining:
+Each benchmarking method has comments describing intent:
 - Pros and cons of each approach
-- When to use each method
-- What the code does (or will do when GPU execution is connected)
+- When each method is intended to be used
+- What the code does (or is planned to do once GPU execution is connected)
 
 ### 4. Created Working Test Program
 `test_adaptive_benchmark.f90` demonstrates:
@@ -86,7 +86,7 @@ BUFFER Method:
 Recommended method: BUFFER
 ```
 
-The system correctly identifies that BUFFER method is fastest for the test case.
+The staged harness currently reports BUFFER as the selected method for this test case.
 
 ## Next Steps
 

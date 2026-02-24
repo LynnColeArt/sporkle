@@ -6,16 +6,16 @@
 
 ## Overview
 
-Sparkle's GPU support is built on OpenGL Compute Shaders (OpenGL 4.3+), providing vendor-neutral GPU execution that works on:
+Sparkle's GPU support is built on OpenGL Compute Shaders (OpenGL 4.3+), with a staged target for vendor-neutral execution on compatible drivers:
 - ✅ AMD GPUs (via Mesa/AMDGPU)
-- ✅ NVIDIA GPUs (via proprietary or Nouveau drivers)  
+- ✅ NVIDIA GPUs (where proprietary or Nouveau paths are available)
 - ✅ Intel GPUs (via Mesa)
-- ✅ Any GPU with OpenGL 4.3+ support
+- ✅ Additional OpenGL 4.3+ compatible GPUs in staged validation
 
 ## Why OpenGL Compute?
 
 1. **No SDK Required**: Uses drivers already on the system
-2. **Cross-vendor**: Same code runs on AMD, NVIDIA, Intel
+2. **Cross-vendor direction**: Shared paths are intended for AMD, NVIDIA, Intel, and other OpenGL stacks once runtime validation is complete
 3. **Mature**: OpenGL has been around for decades
 4. **Headless**: EGL allows compute without a display
 

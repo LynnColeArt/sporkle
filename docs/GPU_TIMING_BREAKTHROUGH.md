@@ -68,7 +68,7 @@ Based on our 7900 XT specs:
 - **Actual GPU**: Likely 4,000-[deferred throughput metric]
 - **Theoretical**: [deferred throughput metric]
 
-We're probably already at 20-30% efficiency, not 1.6%!
+Current staged capture suggests materially better utilization than [deferred throughput metric] historical assumptions, with details pending replay-validated timing.
 
 ## Implementation Plan
 
@@ -76,4 +76,4 @@ We're probably already at 20-30% efficiency, not 1.6%!
 2. **Proper Fix**: OpenGL timer queries  
 3. **Ultimate**: Direct GPU performance counters via ioctl
 
-This explains why our "slow" performance still feels fast - the GPU is actually flying, we just can't measure it properly!
+This explains why our prior timing mismatch remains unresolved - the capture path is now the active target for replay validation.

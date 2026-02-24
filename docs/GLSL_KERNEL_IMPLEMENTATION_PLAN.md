@@ -6,7 +6,7 @@
 
 ## Objective
 
-Implement our proven convolution-as-GEMM kernel as a GLSL compute shader, maintaining the same mathematical properties while leveraging GPU parallelism.
+Implement our baseline convolution-as-GEMM kernel as a GLSL compute shader, maintaining the same mathematical properties while leveraging GPU parallelism.
 
 ## Kernel Mathematics Recap
 
@@ -106,7 +106,7 @@ void main() {
 For AMDGPU:
 - Wave size: 64 threads
 - Optimal workgroup: Multiple of wave size
-- Target occupancy: >50%
+- Target occupancy: [deferred occupancy]
 
 ## Integration with Sparkle
 
@@ -228,8 +228,8 @@ Consider using texture objects for spatially-coherent access patterns
 
 For AMD RX 5600M:
 - Theoretical: [deferred throughput metric]
-- Expected: 2-[deferred throughput metric] (40-60% efficiency)
-- Target: Beat cuDNN equivalent
+- Expected: [deferred throughput metric] staged target (40-60% efficiency envelope)
+- Target: Close existing library-level throughput on selected kernels
 
 ## Implementation Timeline
 
@@ -241,7 +241,7 @@ For AMD RX 5600M:
 ## Success Criteria
 
 - [ ] Numerically identical to CPU implementation
-- [ ] Faster than CPU for medium/large sizes
+- [ ] Faster than CPU for medium/large sizes where staged benchmarks confirm it
 - [ ] Clean integration with Sparkle kernel system
 - [ ] No assembly code required
 - [ ] Portable across AMD/NVIDIA/Intel GPUs
@@ -254,4 +254,4 @@ For AMD RX 5600M:
 4. Benchmark against CPU implementation
 5. Document performance characteristics
 
-This GLSL approach gives us a high-level, maintainable solution that avoids assembly while still achieving near-peak performance through careful optimization.
+This GLSL approach gives us a high-level, maintainable solution that avoids assembly and is intended to recover throughput through staged optimization.

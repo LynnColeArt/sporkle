@@ -25,7 +25,7 @@ We've successfully implemented:
 - Adaptive parameter passing optimization 
 - Working GPU compute on AMD via OpenGL
 
-We previously achieved [deferred throughput metric] (90% theoretical) on Apple Silicon through manual optimization. This feature would bring those optimizations into our unified framework.
+We have historical reference data suggesting [deferred throughput metric] (historical) on Apple Silicon through manual optimization. This feature would bring those ideas into our unified framework for staged revalidation.
 
 ### Proposed Solution
 1. Extend the shader parser to support multiple backend targets
@@ -57,7 +57,7 @@ See [PROPOSAL_UNIFIED_FORTRAN_DSL.md](docs/PROPOSAL_UNIFIED_FORTRAN_DSL.md) for 
 - [ ] Add Metal-specific optimizations
 - [ ] Create Neural Engine pattern templates
 - [ ] Integrate with existing Metal backend
-- [ ] Benchmark against hand-optimized kernels
+- [ ] Benchmark against hand-optimized kernels in Kronos-first verification context
 - [ ] Document platform-specific features
 
 ### Related Issues

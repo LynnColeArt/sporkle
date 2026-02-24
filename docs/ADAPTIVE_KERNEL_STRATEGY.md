@@ -29,7 +29,7 @@ By implementing multiple paths and measuring actual performance, we:
 **Pros**: 
 - High-level, maintainable code
 - Leverages existing OpenGL infrastructure
-- Cross-vendor (works on NVIDIA too)
+- Cross-vendor intent (AMD/NVIDIA/Intel validation is staged in active backends)
 - Well-documented, stable API
 
 **Cons**:

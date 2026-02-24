@@ -2,11 +2,11 @@
 > Quantified performance and benchmark claims in this repository history are in recovery and should not be treated as current production facts until revalidated under the Kronos-first flow.
 
 
-# GPU Async Breakthrough: From 84% to 99% Utilization
+# GPU Async Breakthrough: Historic Utilization Exploration
 
 ## The Discovery
 
-Historical evidence shows simple double buffering can improve GPU performance by 7-8%, and it supports the broader approach to solving the GPU idle-time problem.
+Historical evidence shows simple double buffering can indicate staged [deferred speedup range], and it supports the broader approach to solving the GPU idle-time problem under active runtime validation.
 
 ## Proof of Concept Results
 
@@ -17,25 +17,25 @@ GPU compute time: [deferred latency]
 CPU prep time: [deferred latency]
 CPU post time: [deferred latency]
 GPU idle time: [deferred latency]
-GPU utilization: 84.0%
-Peak GFLOPS (GPU only): 29.9
-Effective GFLOPS: 25.1 (including idle time)
+GPU utilization: [deferred utilization]
+Peak GFLOPS (GPU only): [deferred throughput metric]
+Effective GFLOPS: [deferred throughput metric] (including idle time)
 ```
 
 ### Simple Async (Double Buffering)
 ```
-Total wall time: [deferred latency] (7% faster!)
+Total wall time: [deferred latency] ([deferred speedup range] faster!)
 GPU compute time: [deferred latency]
 CPU work (overlapped): ~[deferred latency]
 GPU idle time: [deferred latency]  
-GPU utilization: 82.8%
-Peak GFLOPS (GPU only): 32.8
-Effective GFLOPS: 27.1 (8% improvement)
+GPU utilization: [deferred utilization]
+Peak GFLOPS (GPU only): [deferred throughput metric]
+Effective GFLOPS: [deferred throughput metric] ([deferred speedup range] improvement)
 ```
 
 ## Key Insights
 
-1. **Immediate Signal**: Even simple double buffering indicates a 7-8% speedup path
+1. **Immediate Signal**: Even simple double buffering indicates a [deferred speedup range] path
 2. **Validation**: We can accurately measure and reduce GPU idle time
 3. **Scaling**: Smaller kernels will show even more dramatic improvements
 
@@ -135,10 +135,10 @@ end function
 ## Production-Oriented Integration Results: [deferred speedup] Revalidation Targets 🚀
 
 ### Historical Implementation Status
-1. ✅ **Simple double buffering**: 7-8% improvement (POC)
+1. ✅ **Simple double buffering**: [deferred speedup] staged signal (POC)
 2. ✅ **OpenGL sync objects**: Full fence-based async execution implemented
 3. ✅ **Triple buffering**: 3 buffer sets with automatic rotation
-4. ✅ **Real GPU integration**: Connected to production convolution kernels
+4. ✅ **GPU integration**: Connected to staged/replay-oriented convolution paths
 5. ✅ **Reference async executor**: `gpu_async_executor.f90` complete (historical reference path)
 
 ### Final Performance Results

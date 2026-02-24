@@ -6,26 +6,26 @@
 
 ## Summary
 
-Phase 1 of the persistent kernel framework is implemented as a reusable prototype for future active integration.
+Phase 1 of the persistent kernel framework is a reusable prototype and is not yet active production integration.
 
 ## What We Built
 
 ### 1. **GPU Program Cache Module** (`gpu_program_cache.f90`)
-- In-memory caching of compiled GPU programs
-- Reference counting for safe lifecycle management
-- LRU eviction when cache is full
-- Comprehensive statistics tracking
-- Clean API for integration
+- In-memory caching of compiled GPU programs (prototype)
+- Reference counting for lifecycle ownership tracking
+- LRU eviction policy when cache capacity is exceeded
+- Statistics tracking for staged runtime validation
+- Clean API intended for future integration
 
 ### 2. **Cached GPU Interface** (`gpu_opengl_cached.f90`)
 - Wraps the reference GPU implementation
-- Provides transparent caching layer
-- Maintains compatibility with existing code
-- Ready for Phase 2 binary persistence
+- Adds a staged caching layer
+- Keeps compatibility with the existing GPU interface shape
+- Prepared for Phase 2 binary persistence
 
 ### 3. **Comprehensive Test Suite**
 - `test_program_cache.f90`: Unit tests for cache operations
-- `test_persistent_kernels.f90`: Integration test scaffold with historical placeholders
+- `test_persistent_kernels.f90`: Integration test scaffold with placeholders
 
 ## Performance Output (Deferred)
 
@@ -35,8 +35,8 @@ Average performance: [deferred throughput metric]
 ```
 
 The framework is structured to support:
-- Zero recompilation between runs
-- Faster application startup
+- Reduced recompilation between runs
+- Faster application startup once cache validity is stable
 - Reduced memory pressure
 - Better performance predictability targets
 
@@ -135,17 +135,17 @@ The implementation follows Sparkle's principles:
 
 ## Testing
 
-Comprehensive test coverage ensures reliability:
+Coverage is present for staged validation:
 - 7 unit tests for cache operations
-- Integration test with real GPU workloads
-- Performance benchmarking
-- Statistics validation
+- Integration test with real GPU workloads (scope-limited)
+- Performance benchmarking placeholders
+- Statistics validation scaffolding
 
 ## Conclusion
 
 Phase 1 establishes a historical foundation for persistent kernels in Sparkle. The framework is:
-- ✅ Functionally complete
-- ✅ Well-tested
+- ✅ Functional prototype complete
+- ⚠️ Unit coverage exists
 - ⚠️ Performance revalidation pending
 - ⚠️ Production-ready only after re-benchmarking under Kronos-first runtime
 

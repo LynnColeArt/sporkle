@@ -8,7 +8,7 @@
 Extend the Fortran GPU DSL to support Metal Shading Language (MSL) and Neural Engine, creating a truly unified interface for heterogeneous compute across AMD, Apple, and future backends.
 
 ## Motivation
-We've successfully built a Fortran DSL that translates to GLSL for AMD GPUs with adaptive parameter optimization. The same approach could benefit Apple Silicon, where we previously achieved [deferred throughput metric] (90% of theoretical) through manual optimization. A unified DSL would:
+We have implemented a Fortran DSL that translates to GLSL for AMD GPUs with adaptive parameter optimization. The same approach could benefit Apple Silicon, where we historically observed [deferred throughput metric] (historical, not currently verified). A unified DSL would:
 
 1. Enable write-once, run-anywhere GPU kernels
 2. Apply adaptive optimization insights across all platforms
@@ -82,9 +82,9 @@ end subroutine
 - **Mitigation**: Generate native code, no runtime translation
 
 ## Success Metrics
-- Achieve 90%+ of hand-optimized Metal performance
+- Reach [deferred performance target] against hand-optimized Metal performance
 - Successfully run same kernel on AMD and Apple GPUs
-- Reduce kernel development time by 50%
+- Reduce kernel development time toward a [deferred efficiency target]
 
 ## Resources Needed
 - Access to Mac for testing (already have)
@@ -92,4 +92,4 @@ end subroutine
 - 4-6 weeks of development time
 
 ## Conclusion
-This extension would make Sparkle/Sporkle the first truly unified heterogeneous compute framework, bringing us closer to the vision of democratized AI compute where code runs optimally on any available hardware.
+This extension is intended to move Sporkle toward a unified heterogeneous compute framework, with one kernel source compiling across supported hardware paths.

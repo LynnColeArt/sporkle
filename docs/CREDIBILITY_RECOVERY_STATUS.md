@@ -38,6 +38,27 @@ During recovery:
 - `docs/PERFORMANCE_TESTING.md`
   - Removed hard claims on validated speedups and benchmark thresholds.
   - Emphasized placeholders and deferred enforcement.
+- `docs/DISCUSSION_MEMORY_CEILING_BREAKTHROUGH.md`
+- `docs/PROPOSAL_UNIFIED_FORTRAN_DSL.md`
+- `docs/GITHUB_ISSUE_UNIFIED_DSL.md`
+- `docs/FORTRAN_SHADER_MVP.md`
+- `docs/persistent_mapped_buffers_research.md`
+- `docs/GLSL_KERNEL_IMPLEMENTATION_PLAN.md`
+- `docs/GLSL_IMPLEMENTATION_STATUS.md`
+- `docs/GPU_CACHE_COMPRESSION.md`
+  - Staged language applied to historical performance statements and migration claims.
+- `docs/GPU_ARCHITECTURE.md`
+  - Relaxed cross-vendor language to staged capability intent.
+- `docs/ADAPTIVE_KERNEL_STRATEGY.md`
+  - Reframed cross-vendor statements as staged validation targets.
+- `docs/GPU_ASYNC_REALITY_CHECK.md`
+  - Softened concluding production statements and marked as staged validation only.
+- `docs/GPU_ASYNC_BREAKTHROUGH.md`
+  - Converted concrete utilization/speedup percentages to deferred placeholders.
+- `docs/PERSISTENT_KERNEL_DESIGN.md`
+  - Reworded staged performance/error-handling claims away from production-ready assertions.
+- `docs/GPU_CACHE_COMPRESSION.md`
+  - Removed raw "faster" net-effect assertions in favor of staged comparison language.
 
 ## Outstanding risks to monitor
 

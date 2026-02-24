@@ -6,7 +6,7 @@
 
 ## Executive Summary
 
-The current goal is production-safe scheduling: keep runtime honest, route workloads consistently, and only claim gains that are measured after Kronos-native dispatch paths are stable. The next optimization frontier is **intelligent device selection** built from live topology and capability telemetry.
+The current goal is production-safe scheduling: keep runtime behavior explicit, route workloads consistently, and only claim gains that are measured after Kronos-native dispatch paths are stable. The next optimization frontier is **intelligent device selection** built from topology and capability telemetry.
 
 ## Current State
 
@@ -17,9 +17,9 @@ The current goal is production-safe scheduling: keep runtime honest, route workl
    - Vulkan: Modern GPU compute with SPIR-V shaders
      - Cross-platform GPU abstraction
      - Async compute queues for pipeline optimization
-   - Metal/Neural Engine: Explicit capability-aware path when available
+  - Metal/Neural Engine: Explicit capability-aware path when available
      - Runtime probing for vendor/accelerator availability
-     - No synthetic timing or hidden fallback in production selection
+     - Target behavior: no synthetic timing or hidden fallback in production selection
 
 2. **Abstract Device Interface**
    ```fortran
@@ -154,12 +154,12 @@ The current goal is production-safe scheduling: keep runtime honest, route workl
 3. Adaptive threshold tuning
 4. Configuration optimization
 
-## Expected Performance Impact
+## Expected Performance Impact (staged)
 
 ### Single Device Improvements
-- **10-20% Better Device Utilization**: Route each workload to its optimal device
-- **Reduced Latency**: Small workloads to CPU avoid GPU overhead
-- **Better Throughput**: Large workloads to GPU with async pipeline
+- **Targeted Device Utilization Gains**: Route each workload to its optimal device
+- **Reduced Latency**: Small workloads may route to CPU to avoid GPU overhead
+- **Higher Throughput**: Large workloads may route to GPU with async pipeline
 
 ### Multi-Device Speedup
 - **iGPU + dGPU**: Use both AMD GPUs simultaneously ([deferred speedup range])
@@ -167,8 +167,8 @@ The current goal is production-safe scheduling: keep runtime honest, route workl
 - **Heterogeneous Execution**: Different layers to different devices
 
 ### Platform-Specific Gains
-- **Linux**: CPU + iGPU + dGPU triple execution
-- **macOS**: CPU + GPU + Neural Engine + AMX quad execution
+- **Linux**: CPU + iGPU + dGPU triple execution is targeted behavior
+- **macOS**: CPU + GPU + Neural Engine + AMX routing is a target objective
 - **Future**: Distributed execution across network
 
 ## Real-World Example
@@ -199,15 +199,15 @@ call sporkle_execute(conv2d_op, input, weights, output)
 
 ## Success Metrics
 
-1. **Automatic Performance**: Match or exceed manual device selection
+1. **Automatic Performance**: Match or exceed manual device selection as a staged goal
 2. **Multi-Device Scaling**: >[deferred speedup] speedup using multiple devices
 3. **Learning Effectiveness**: Performance improves over time
-4. **Zero Configuration**: Works out-of-the-box on any platform
+4. **Zero Configuration**: Out-of-the-box behavior is a goal on supported platforms
 
 ## Conclusion
 
-Universal device selection represents the next major performance frontier for Sparkle. By intelligently utilizing all available compute resources and learning optimal configurations, we can achieve another [deferred speedup range] performance improvement beyond our already impressive gains.
+Universal device selection represents the next major performance frontier for Sparkle. By intelligently utilizing all available compute resources and learning optimal configurations, we can target another [deferred speedup range] improvement beyond staged baseline gains.
 
-This isn't just about raw performance - it's about making high-performance computing accessible. Users shouldn't need to know about GPU thread blocks or Neural Engine tiles. They should just call `sporkle_execute()` and get optimal performance automatically.
+This isn't just about raw performance - it's about making high-performance computing accessible. Users shouldn't need to know about GPU thread blocks or Neural Engine tiles. They should call `sporkle_execute()` and get staged routing decisions.
 
 The foundation is already in place. Now we build the intelligence layer that makes Sparkle truly universal.

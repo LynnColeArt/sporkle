@@ -5,7 +5,7 @@
 # Persistent Mapped Buffers Research
 
 ## Executive Summary
-Persistent mapped buffers allow CPU and GPU to share the same memory region without copying data. This eliminates memory transfer overhead and reduces memory usage by 50%.
+Persistent mapped buffers are a staged mechanism for reducing CPU/GPU transfer overhead by allowing CPU and GPU to share a managed memory region.
 
 ## Background
 
@@ -19,10 +19,10 @@ Persistent mapped buffers allow CPU and GPU to share the same memory region with
 ```
 
 **Problems:**
-- 2 copies per operation (upload + download)
-- Double memory usage (CPU + GPU copies)
+- 2 copies per operation in the non-mapped path (upload + download)
+- Potentially elevated memory overhead (CPU + GPU copies)
 - Synchronization stalls during transfers
-- ~30% of runtime spent copying data
+- Transfer work can dominate runtime in some configurations
 
 ### Persistent Mapped Buffers (Target)
 ```
@@ -32,9 +32,9 @@ Persistent mapped buffers allow CPU and GPU to share the same memory region with
 4. Results immediately visible to CPU
 ```
 
-**Benefits:**
-- Zero copies
-- 50% memory reduction
+**Potential benefits:**
+- Reduced copy paths (or copy elimination in staged scenarios)
+- Lower transfer-side memory pressure
 - Asynchronous CPU/GPU access
 - True streaming operations
 
@@ -110,15 +110,15 @@ Use: Upload-only buffers (input data, uniforms)
 ## Platform Considerations
 
 ### AMD (Our Target)
-- Excellent persistent mapping support
-- Resizable BAR exposes full VRAM to CPU
-- Best performance with write-combined mappings
-- Coherent mappings work well on RDNA3
+- Strong persistent mapping support observed in staged testing
+- Resizable BAR can expose VRAM to CPU in supported configurations
+- Write-combined mappings are a key optimization path
+- Coherent mappings are typically practical on RDNA3
 
 ### NVIDIA
-- Good support but different optimization points
-- Prefer non-coherent with explicit flushes
-- Write-combined critical for performance
+- Good support with different optimization points
+- Staged plans favor non-coherent with explicit flushes
+- Write-combined can help in upload-heavy paths
 
 ### Intel
 - Unified memory architecture
@@ -170,19 +170,19 @@ Use: Upload-only buffers (input data, uniforms)
 ## Expected Performance Gains
 
 ### Memory Bandwidth Savings
-- Upload: [deferred bandwidth] eliminated (1920×1080×4×60fps)
-- Download: [deferred bandwidth] eliminated
-- Total: [deferred bandwidth] bandwidth recovered
+- Upload: [deferred bandwidth] reduction target (1920×1080×4×60fps slice)
+- Download: [deferred bandwidth] reduction target
+- Total: [deferred bandwidth] target bandwidth recovery
 
 ### Latency Reduction
-- glBufferData: ~0.5-[deferred latency] eliminated
-- glGetBufferSubData: ~0.5-[deferred latency] eliminated
-- Total: 1-[deferred latency] per frame saved
+- glBufferData: ~0.5-[deferred latency] target reduction
+- glGetBufferSubData: ~0.5-[deferred latency] target reduction
+- Total: 1-[deferred latency] per frame target
 
 ### Real-World Impact
-- 30% reduction in frame time
-- 50% reduction in memory usage
-- Enables true GPU streaming
+- Potential frame-time reduction after validation
+- Potential memory usage reduction in transfer-heavy workloads
+- Enables staged true GPU streaming
 - Foundation for PM4 direct submission
 
 ## Code Architecture

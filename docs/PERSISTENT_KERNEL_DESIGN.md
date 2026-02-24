@@ -214,8 +214,8 @@ shader_cache/
 - ✅ Zero shader recompilation across runs
 - ✅ Sub-[deferred latency] startup time
 - ✅ Seamless integration with existing code
-- ✅ Measurable performance improvement (5-10%)
-- ✅ Production-ready error handling
+- ✅ Staged performance impact target ([deferred speedup range]) under active kernel replay
+- ✅ Error handling staged for active Kronos runtime verification
 
 ## Future Extensions
 

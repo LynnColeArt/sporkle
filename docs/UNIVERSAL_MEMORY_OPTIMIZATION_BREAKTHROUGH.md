@@ -4,7 +4,7 @@
 
 # Universal Memory Optimization Notes
 
-## The Revolutionary Achievement
+## The Historical Achievement
 
 **Date**: August 16, 2025  
 **Achievement**: Recovery-oriented implementation of cross-architecture memory optimization patterns under deferred validation  
@@ -12,7 +12,7 @@
 
 ## Executive Summary
 
-Sparkle has implemented a recovery-era thesis in heterogeneous computing: **universal memory optimization patterns can be applied across radically different compute architectures**. By applying the same optimization principles to both CPU and GPU, the framework tracks:
+Sparkle has implemented a recovery-era thesis in heterogeneous computing: **universal memory optimization patterns are intended to be applicable across different compute architectures**. By applying the same optimization principles to both CPU and GPU, the framework tracks:
 
 - Tracks **[deferred throughput metric] targets on AMD RX 7900 XTX GPU** using OpenGL compute shaders
 - Tracks **[deferred throughput metric] targets on AMD Ryzen 7900X CPU** using the same optimization patterns  
@@ -26,7 +26,7 @@ This work documents a shift toward **universal optimization principles** intende
 ### Pattern 1: Memory Bandwidth Optimization
 **Principle**: Maximize memory throughput through cache-aware algorithms
 
-**GPU Implementation ([deferred throughput metric] achieved)**:
+**GPU Implementation (staged target)**:
 ```glsl
 // Cache-optimal memory access with vectorized loads
 layout(local_size_x = 64) in;
@@ -35,7 +35,7 @@ int in_idx = ((n * C + c) * H + h_in) * W + w_in;
 sum += input_buf.data[in_idx] * weight_buf.data[weight_idx];
 ```
 
-**CPU Implementation ([deferred throughput metric] achieved)**:
+**CPU Implementation (staged target)**:
 ```fortran
 ! Cache-oblivious blocked GEMM with optimal tiling
 !$OMP PARALLEL DO PRIVATE(ii,jj,kk_tile,i,j,kk,temp_sum) SCHEDULE(DYNAMIC,1)
@@ -76,10 +76,10 @@ call gemm_universal_memory(weights, input_matrix, output, &
                           1.0, 0.0)
 ```
 
-**Performance Impact**:
-- **GPU**: Achieved [deferred throughput metric] (60% of theoretical [deferred throughput metric])
-- **CPU**: Achieved [deferred throughput metric] (improved from [deferred throughput metric] naive)
-- **Arithmetic Intensity**: 21.0 FLOPS/byte (optimal for convolution)
+**Performance Impact (staged)**:
+- **GPU**: [deferred throughput metric] target
+- **CPU**: [deferred throughput metric] target
+- **Arithmetic Intensity**: [deferred arithmetic] target for convolution
 
 ### Pattern 3: Compute/Memory Overlap
 **Principle**: Hide memory latency with parallelism and prefetching
@@ -87,7 +87,7 @@ call gemm_universal_memory(weights, input_matrix, output, &
 **GPU**: Massive parallel execution across thousands of cores
 **CPU**: OpenMP parallelization with careful memory access patterns
 
-Both achieve optimal utilization of available compute resources while maximizing memory bandwidth.
+Both are designed to improve utilization while targeting memory-bandwidth efficiency.
 
 ## Intelligent Device Juggling: Smart Frameworks for Smart Systems
 
@@ -124,7 +124,7 @@ end if
 - **Workload-aware**: Different strategies for different problem sizes
 - **Performance prediction**: Models execution time before running
 - **Adaptive learning**: Improves decisions based on actual results
-- **Bottleneck avoidance**: Won't use slow devices when fast ones are available
+- **Bottleneck avoidance**: Routes away from slower paths when better options are observed
 
 ## Performance Results
 
@@ -148,7 +148,7 @@ end if
   📈 Actual: [deferred latency] ([deferred throughput metric])
 ```
 
-The system correctly chooses optimal devices and learns from actual performance.
+The system is designed to choose devices using configured strategy and observed performance.
 
 ## Technical Implementation
 
@@ -191,9 +191,9 @@ case("reference")
 ### After: Universal Memory Optimization
 - **GPU**: Apply universal memory patterns via historical OpenGL compute shader path ([deferred throughput metric])
 - **CPU**: Apply same universal memory patterns via OpenMP SIMD ([deferred throughput metric])
-- **Result**: Same optimization principles are being revalidated across codepaths during recovery
+- **Result**: Same optimization principles are being staged for revalidation across codepaths during recovery
 
-**The Breakthrough**: We maintain that **memory optimization patterns are universal** in principle. The same techniques that make GPUs fast (cache-optimal tiling, vectorized access, arithmetic intensity amplification) also apply to CPUs when applied correctly.
+**The Thesis**: We are validating that **memory optimization patterns may generalize** across architectures. The same techniques that make GPUs fast (cache-optimal tiling, vectorized access, arithmetic intensity amplification) are expected to transfer to CPUs when applied consistently.
 
 ## Validation and Testing
 

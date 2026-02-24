@@ -15,13 +15,13 @@ Pod Claude's previous investigation identified a consistent [deferred throughput
 ## Key Discovery: OpenGL Driver Memory Trap
 
 ### The Investigation
-Today's testing definitively proved the ceiling is **API-specific, not hardware-limited**:
+Today's staged testing indicates the ceiling is **API-specific, not hardware-limited**:
 
 **OpenGL Behavior:**
 - Consistently ignores all device-local allocation hints
 - Keeps compute buffers in system RAM (~[deferred bandwidth] bandwidth)
 - Forces PCIe transfers for every shader execution
-- Hard ceiling at 2,600-[deferred throughput metric] regardless of optimization
+- Hard ceiling around **[deferred throughput metric]** during this run, pending broader vendor cross-check
 
 **Vulkan Test Results:**
 - Successfully allocates true device-local memory (VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT)
@@ -40,14 +40,14 @@ The OpenGL driver on our system actively fights performance optimization by:
 
 ### Current State (OpenGL)
 - **Performance**: [deferred throughput metric]  
-- **Efficiency**: 6.5% of GPU theoretical peak ([deferred throughput metric])
+- **Efficiency**: [deferred efficiency] of GPU theoretical peak (historical slice)
 - **Memory bandwidth**: ~[deferred bandwidth] effective (system RAM limited)
-- **Scaling**: Poor on larger workloads (0.31× vs 4× ideal)
+- **Scaling**: Potentially sub-linear at current backend configuration
 
 ### Theoretical State (True VRAM)
-- **Performance**: 10,000-[deferred throughput metric] (4-6× improvement)
-- **Efficiency**: 25-35% of GPU theoretical peak
-- **Memory bandwidth**: 400-[deferred bandwidth] (approaching VRAM peak)
+- **Performance**: [deferred throughput metric] target window
+- **Efficiency**: [deferred efficiency] of GPU theoretical peak
+- **Memory bandwidth**: [deferred bandwidth] (targeting VRAM-like behavior)
 - **Scaling**: Linear with workload size
 
 ## Strategic Dilemma
@@ -55,14 +55,14 @@ The OpenGL driver on our system actively fights performance optimization by:
 ### The Good News
 1. **Our algorithms are excellent** - Summit V2 shader with 32×32 tiling + Ko=64 blocking is solid
 2. **Performance bottleneck identified** - it's memory residency, not compute efficiency
-3. **Clear path to 4-6× improvement** exists with proper API choice
-4. **Universal Memory Optimization thesis validated** - same principles work, different memory systems
+3. **Potential path to materially higher throughput** exists with a different API choice
+4. **Universal Memory Optimization thesis remains plausible** - same principles may transfer across memory systems
 
 ### The Challenge
 **Every solution requires significant architectural changes:**
 
 #### Option 1: Vulkan Rewrite
-- **Pros**: Explicit memory control, guaranteed VRAM allocation, modern API
+- **Pros**: Explicit memory control, device-local allocation intent, modern API
 - **Cons**: Complete shader port to SPIR-V, new synchronization model, steep learning curve
 - **Scope**: 2-4 weeks of focused development
 
@@ -72,17 +72,17 @@ The OpenGL driver on our system actively fights performance optimization by:
 - **Scope**: Months of work, separate team needed
 
 #### Option 3: PM4 Direct Submission
-- **Pros**: We already have the foundation, bypasses driver entirely, ultimate performance
+- **Pros**: We already have the foundation, bypasses driver stack entirely, stronger control path potential
 - **Cons**: GPU safety concerns, AMD-specific, complex command generation
 - **Scope**: High risk, requires extensive validation
 
 #### Option 4: Accept Current Performance
 - **Pros**: [deferred throughput metric] is genuinely good, focus on other optimizations, stable codebase
-- **Cons**: Leaves 4-6× performance on the table, API dependency remains
+- **Cons**: Could leave meaningful upside, API dependency remains
 
 ## Mini's Driver Stack Insight
 
-Mini suggested extracting drivers from Onyx to create our own controllable driver stack. This is **genuinely brilliant** because it offers:
+Mini suggested extracting drivers from Onyx to create our own controllable driver stack. This idea offers:
 
 - **Surgical control** over memory allocation without full API rewrite
 - **Keep existing shader code** while fixing the underlying driver behavior
@@ -94,14 +94,14 @@ However, this becomes a **separate major project** requiring dedicated resources
 
 ### Current Achievements Worth Celebrating
 1. **[deferred throughput metric] aggregate throughput** with async executor
-2. **6.5× speedup** over single-dispatch baseline
-3. **Async pipeline architecture** that eliminates CPU/GPU sync overhead
-4. **Production-ready implementation** with safety guards and error handling
-5. **Universal memory optimization principles** proven across CPU and GPU
+2. **Measured speedup** over single-dispatch baseline in this slice
+3. **Async pipeline architecture** that reduces CPU/GPU sync overhead
+4. **Production-oriented implementation** with safety guards and error handling
+5. **Universal memory optimization principles** continue to apply across CPU and GPU contexts
 
 ### Real-World Impact
-- **5× faster than CPU** implementation
-- **Competitive with commercial GPU libraries** 
+- **Potentially faster than CPU-only implementation** for specific kernels
+- **Potentially competitive with commercial GPU libraries** on selected workloads
 - **Solid foundation** for future optimization work
 - **Clear understanding** of performance bottlenecks and potential
 
@@ -112,7 +112,7 @@ There's a genuine **frustration** in discovering that massive performance gains 
 - Starting separate major projects  
 - Accepting current limitations
 
-This is the classic **"perfect is the enemy of good"** scenario. We've built something genuinely excellent, but now we know how much better it could be.
+This is the classic **"perfect is the enemy of good"** scenario. We've built something useful and stable, but still expect meaningful tuning and architecture trade-offs.
 
 ## Decision Framework
 
@@ -147,7 +147,7 @@ This is the classic **"perfect is the enemy of good"** scenario. We've built som
 
 ## Reflection
 
-Today's discovery is both **exciting and daunting**. We proved our optimization instincts were correct - there IS massive performance left on the table. But we also discovered that accessing it requires navigating complex architectural trade-offs.
+Today's discovery is both **exciting and daunting**. The staging evidence supports our optimization instincts and suggests meaningful throughput headroom. But we also discovered that realizing it requires navigating complex architectural trade-offs.
 
 The **Universal Memory Optimization** thesis remains valid: the same principles that make CPUs fast (cache locality, data layout, arithmetic intensity) also make GPUs fast. The difference is often **where the data lives**, not how it's processed.
 

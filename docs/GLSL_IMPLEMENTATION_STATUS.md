@@ -45,10 +45,10 @@
 
 ### Adaptive Framework Test
 ```
-✅ Successfully manages 3 kernel variants
+✅ Manages 3 kernel variants in test harness
 ✅ Probes performance on first run
 ✅ Re-probes on significant workload changes
-✅ Selects optimal variant automatically
+✅ Selects variant candidates automatically
 ✅ Supports forced variant selection
 ✅ Tracks statistics per variant
 ```
@@ -58,7 +58,7 @@
 1. **Future-Proof**: New kernel implementations can be added without changing user code
 2. **Empirical**: Performance decisions based on actual measurements, not assumptions
 3. **Adaptive**: Automatically adjusts to different workload sizes and system states
-4. **Transparent**: Users get optimal performance without manual tuning
+4. **Transparent**: Users get data-driven selection without manual tuning
 
 ## Integration Status
 
@@ -118,10 +118,10 @@ call execute_kernel(conv_kernel, input, weights, output)
 
 For AMD RX 5600M:
 - Theoretical peak: [deferred throughput metric]
-- Expected GLSL performance: 2-[deferred throughput metric] (40-60% efficiency)
+- Expected GLSL performance: [deferred throughput metric] (40-60% staged efficiency target)
 - Overhead: ~[deferred latency] for initial shader compilation
 - Dispatch overhead: <[deferred latency] per kernel launch
 
 ## Conclusion
 
-The adaptive kernel framework is operational and ready for real kernel implementations. The GLSL variant infrastructure is complete, providing a clean path to high-performance GPU compute without vendor SDK dependencies. This approach aligns perfectly with Sparkle's philosophy of pragmatic, performance-driven solutions that work across diverse hardware.
+The adaptive kernel framework is operational at the staging level and ready for real kernel implementation work. The GLSL variant infrastructure is complete for experiments, while production readiness and high-performance claims remain under revalidation. This approach aligns with Sparkle's pragmatic, performance-driven direction across diverse hardware.
