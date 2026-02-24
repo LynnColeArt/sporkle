@@ -1,3 +1,7 @@
+> [!CAUTION] Documentation credibility note
+> Quantified performance and benchmark claims in this repository history are in recovery and should not be treated as current production facts until revalidated under the Kronos-first flow.
+
+
 # Sporkle Mesh Manager — Junk Network Blueprint (v0.1)
 
 > Goal: Give Sparkle an auto-discovering, topology-aware, self-healing mesh that runs on whatever junk you plug in (CPU, NVIDIA/AMD GPUs, iGPUs, Jetsons, oddballs) and schedules work opportunistically with Pythonic-Fortran ergonomics.

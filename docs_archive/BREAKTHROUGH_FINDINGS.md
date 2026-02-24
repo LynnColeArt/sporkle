@@ -1,3 +1,7 @@
+> [!CAUTION] Documentation credibility note
+> Quantified performance and benchmark claims in this repository history are in recovery and should not be treated as current production facts until revalidated under the Kronos-first flow.
+
+
 # BREAKTHROUGH: OpenCL/Vulkan Performance Ceiling Investigation
 
 ## 🎉 CRITICAL DISCOVERY: OpenGL Driver Memory Trap Confirmed!

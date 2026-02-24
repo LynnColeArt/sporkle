@@ -1,3 +1,7 @@
+> [!CAUTION] Documentation credibility note
+> Quantified performance and benchmark claims in this repository history are in recovery and should not be treated as current production facts until revalidated under the Kronos-first flow.
+
+
 # Contributing to Sparkle
 
 Thank you for your interest in contributing to Sparkle! We believe in the power of community to democratize AI compute.

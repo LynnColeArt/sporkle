@@ -1,3 +1,7 @@
+> [!CAUTION] Documentation credibility note
+> Quantified performance and benchmark claims in this repository history are in recovery and should not be treated as current production facts until revalidated under the Kronos-first flow.
+
+
 # Sporkle Authors
 
 This file recognizes all contributors to Sparkle - both human and AI agents. We believe in acknowledging everyone who helps build the people's AI infrastructure.

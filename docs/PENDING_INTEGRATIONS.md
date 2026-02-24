@@ -1,3 +1,7 @@
+> [!CAUTION] Documentation credibility note
+> Quantified performance and benchmark claims in this repository history are in recovery and should not be treated as current production facts until revalidated under the Kronos-first flow.
+
+
 # Pending Integrations Tracker
 
 This document tracks components that have been built but not yet fully integrated into the production pipeline. Each entry includes what was built, why it's not integrated, and what's needed for integration.

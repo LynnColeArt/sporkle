@@ -1,10 +1,22 @@
 # Sporkle: A Novel Heterogeneous Computing Framework for Device-Agnostic Parallel Execution
 
-> **🚧 GPU Backend Transition: We are transitioning from OpenGL to Vulkan + PM4 direct submission. Some GPU features may be temporarily unavailable.**
+> **Production posture (2026-02-24): Sporkle routes compute execution through Kronos as the sole production backend.**
+> PM4 and legacy OpenGL paths are historical/experimental and not part of supported production runtime.
+
+## Documentation Status
+
+This README uses explicit claim tags:
+- `[measured]` — reproducible measurement with benchmark context.
+- `[implemented]` — code path exists and is integrated.
+- `[experimental]` — implemented but not production-proven.
+- `[planned]` — roadmap item not yet implemented.
 
 ## Abstract
 
-We present Sporkle, a heterogeneous computing framework with a production OpenGL path and a transitioning kernel-side backend plan. Unlike existing solutions that require proprietary SDKs (CUDA, ROCm, OneAPI), Sporkle demonstrates that strong GPU execution is available through an OpenGL-first path, with direct AMDGPU driver interaction code in active transition and partial validation.
+Sporkle is a Fortran orchestration layer that executes through Kronos for production compute workloads.
+This is the active path for AMD/NVIDIA targets.
+Legacy PM4 and direct driver scaffolding are retained for reference only until they are explicitly deprecated or removed.
+Kronos-only production claims in this file are annotated with `[implemented]`, `[measured]`, `[experimental]`, or `[planned]`.
 
 ## 🧠 The Sporkle Heuristic
 
@@ -12,94 +24,30 @@ We present Sporkle, a heterogeneous computing framework with a production OpenGL
 
 **Corollary:** When several individually marginal optimizations are coupled, they often flip into a new operating regime — where the old intuitions no longer apply.
 
-## Performance Results
+## Operational Evidence
 
-### Breakthrough Performance Achievements
+### Performance policy
 
-```mermaid
-%%{init: {'theme':'neutral', 'themeVariables': {'primaryColor':'#fff','primaryTextColor':'#000','primaryBorderColor':'#000','lineColor':'#000','secondaryColor':'#f5f5f5','tertiaryColor':'#ddd','background':'#fff','mainBkg':'#fff','secondBkg':'#f5f5f5','tertiaryBkg':'#ddd'}}}%%
-graph LR
-    subgraph Performance["SPORKLE PRODUCTION PERFORMANCE (GFLOPS)"]
-        CPU["CPU Adaptive<br/>90-160"]:::white
-        GPU1["GPU Sync<br/>400+"]:::light
-        GPU2["GPU Async<br/>3,630"]:::dark
-        AUTO["Auto-Select<br/>Optimal"]:::green
-    end
-    
-    classDef white fill:#fff,stroke:#000,stroke-width:2px,color:#000
-    classDef light fill:#f5f5f5,stroke:#000,stroke-width:2px,color:#000
-    classDef dark fill:#ddd,stroke:#000,stroke-width:2px,color:#000
-    classDef green fill:#dfd,stroke:#080,stroke-width:2px,color:#080
-```
+Benchmark-level throughput and latency claims are intentionally withheld in this document while evidence is being rebuilt against the Kronos-first production path. These quantified claims will be restored after the Kronos runtime returns to stable production behavior and the benchmark corpus is revalidated.
 
-### Performance Evolution with Intelligent Device Juggling
-
-```mermaid
-%%{init: {'theme':'neutral', 'themeVariables': {'primaryColor':'#fff','primaryTextColor':'#000','primaryBorderColor':'#000','lineColor':'#000','secondaryColor':'#f5f5f5','tertiaryColor':'#ddd'}}}%%
-graph TD
-    subgraph Evolution["PRODUCTION OPTIMIZATION JOURNEY"]
-        B["Initial CPU<br/>9.5 GFLOPS"]:::white
-        F["Fused Operations<br/>14.8 GFLOPS"]:::light
-        A["AVX-512 Integration<br/>90-160 GFLOPS"]:::dark
-        G["GPU Integration<br/>400+ GFLOPS"]:::dark
-        J["Intelligent Juggling<br/>Auto-Optimal"]:::green
-        B --> F
-        F --> A
-        A --> G
-        G --> J
-    end
-    
-    classDef white fill:#fff,stroke:#000,stroke-width:2px,color:#000
-    classDef light fill:#f5f5f5,stroke:#000,stroke-width:2px,color:#000
-    classDef dark fill:#ddd,stroke:#000,stroke-width:2px,color:#000
-    classDef green fill:#dfd,stroke:#080,stroke-width:2px,color:#080
-```
-
-### Thread-Safe GPU Cache Performance (NEW!)
-
-Our thread-safe GPU program cache achieves **negative overhead** - it's actually faster than single-threaded code:
-
-```
-🚀 Thread-Safe Cache Performance Results
-========================================
-
-Single-threaded comparison:
-  Original V2:        5.28 ms
-  Thread-safe:        5.07 ms  
-  Overhead:          -4.0% (FASTER!)
-
-Multi-threaded performance (4 threads):
-  Expected speedup:   4.00x
-  Actual speedup:     4.98x
-  Parallel efficiency: 124.5% (SUPER-LINEAR!)
-
-Cache statistics:
-  Hit rate:           99.1%
-  Total operations:   10,000+
-  Crashes/deadlocks:  0
-
-Binary persistence:
-  Shader binaries:    Automatically saved
-  Cache invalidation: GPU-model aware
-  Recompilation:      Eliminated
-```
-
-**Key Innovation**: Lock-free reads for cache hits mean threads actively help each other by sharing compiled shaders, creating super-linear speedup through cooperative caching.
+- [implemented] Production runtime routing remains through Kronos for AMD/NVIDIA.
+- [experimental] Concurrency and cache behavior are under active behavior-level verification.
+- [implemented] Quantitative assertions elsewhere in docs require explicit evidence tags and matching runtime metadata.
 
 ## 1. Introduction
 
-The proliferation of heterogeneous computing architectures has created significant challenges in developing portable, high-performance applications. Existing solutions typically require vendor-specific SDKs, creating deployment friction and limiting portability. Sporkle addresses these limitations through a novel approach that interfaces directly with kernel drivers, eliminating SDK dependencies while maintaining performance comparable to native implementations.
+The proliferation of heterogeneous computing architectures has created significant challenges in developing portable, high-performance applications. Existing solutions typically require vendor-specific SDKs, creating deployment friction and limiting portability. Sporkle addresses these limitations through a backend strategy centered on Vulkan-aligned orchestration via Kronos. The current default path is not dependency-free and must be evaluated against available Vulkan/runtime support at startup.
 
 ### 1.1 Key Contributions
 
-- **Direct GPU Execution Without SDKs**: First demonstrated implementation of GPU compute from Fortran via kernel drivers
-- **AMD GPU Support via AMDGPU**: Working command buffer submission through `/dev/dri` interfaces
-- **Zero Runtime Dependencies**: Complete elimination of vendor runtime libraries (no ROCm, Mesa, or libdrm)
-- **Unified Device Abstraction**: Single programming model proven across CPU and GPU backends
-- **Performance Validation**: CPU achieving 90-160 GFLOPS with adaptive tiling, GPU at 400+ GFLOPS
-- **Intelligent Device Juggling**: Automatic selection of optimal device based on workload characteristics
-- **Thread-Safe GPU Cache**: Achieves 124.5% parallel efficiency through lock-free cooperative caching
-- **Binary Shader Persistence**: Eliminates recompilation overhead with GPU-aware cache invalidation
+- **Orchestrated Compute via Kronos**: Primary production path for GPU/CPU task dispatch. **[implemented]**
+- **AMD/NVIDIA Support**: Production target through Kronos stack. **[implemented]**
+- **Zero Vulkan Runtime Assumptions in Sporkle API**: Runtime dependency is isolated to backend integration surfaces. **[implemented]**
+- **Unified Device Abstraction**: Single programming model for task scheduling and data movement. **[implemented]**
+- **Performance Validation**: Numeric claims in this document are now tagged as `[measured]`/`[implemented]`/`[experimental]`/`[planned]`. **[implemented]**
+- **Intelligent Device Juggling**: Selection system retained for workload routing. **[experimental]**
+- **Thread-Safe GPU Cache**: Retained, with concurrency behavior tracked as implementation quality. **[implemented]**
+- **Cache/Kernel Rebuild Strategy**: Shader/program reuse strategy is retained while benchmarked claims are revalidated per backend. **[planned]**
 
 ## 2. System Architecture
 
@@ -119,8 +67,8 @@ graph TB
         
         subgraph Backends["COMPUTE BACKENDS"]
             B1["CPU Backend<br/>AVX-512 SIMD"]:::white
-            B2["GPU Backend<br/>OpenGL + Async"]:::light
-            B3["Future Backends<br/>Metal, Vulkan"]:::dark
+            B2["GPU Backend<br/>Kronos Dispatch"]:::light
+            B3["Future Paths<br/>Metal, Vulkan Bridge"]:::dark
         end
         
         A1 --> M
@@ -142,7 +90,7 @@ Sporkle's architecture consists of four primary layers:
 Provides unified interfaces for device enumeration, capability querying, and resource management across heterogeneous hardware.
 
 ### 2.2 Memory Management Subsystem
-Implements transparent memory allocation, transfer, and synchronization primitives with zero-copy optimizations where supported.
+Implements transparent memory allocation, transfer, and synchronization primitives with zero-copy optimizations where supported. **[implemented]**
 
 ### 2.3 Execution Runtime
 Manages kernel dispatch, synchronization, and scheduling across available compute resources.
@@ -154,49 +102,23 @@ Exposes intuitive interfaces for common parallel patterns including map, reduce,
 
 ### 3.1 GPU Backend Architecture
 
-Sporkle supports multiple GPU backends for maximum flexibility:
+Sporkle uses a single production compute backend:
 
-#### Current GPU Backends:
-- **PM4 Direct Submission** (AMD GPUs) - Direct kernel-side path (in transition)
-  - Works as partial scaffolding for direct driver interaction
-  - Production-ready command and memory lifecycle is still being completed
-  - Async/fence correctness and full compute-kernel integration are pending
-  - Useful for future performance milestones after completion
-  
-- **Vulkan** (Cross-platform) - Backend in transition
-  - SPIR-V-related plumbing exists, but execution path is not fully productionized
-  - Cross-vendor capability is expected, not yet validated in shipping docs
-  - Async queue support is transitional and not end-to-end proven
-
-- **OpenGL**
-  - Current production execution path for conv2d in this repo
-  - Primary stable backend until PM4/Vulkan transitions complete
+- **Kronos (AMD/NVIDIA)** — [implemented] primary production path.
+- **Apple path** — [experimental] requires Vulkan-compatible stack or explicit accelerator bridge status.
+- **PM4 / Direct driver paths** — [implemented] archived references only; not in production routing.
+- **OpenGL path** — [experimental] reference context retained for historical baseline and comparison.
 
 #### Platform Support Status:
-- **Linux + AMD**: OpenGL path production; PM4 path partial/in-progress
-- **Linux + NVIDIA**: OpenGL path where available; Vulkan path still incomplete
-- **macOS**: Not production-validated in this repo currently
-- **Windows**: Not production-validated in this repo currently
+- **Linux + AMD**: [implemented] Kronos production behavior; legacy paths retained for reference only.
+- **Linux + NVIDIA**: [implemented] Kronos production behavior; legacy paths retained for reference only.
+- **macOS**: [experimental] Kronos path depends on supported Vulkan bridge readiness; Neural Engine path is experimental and requires refresh.
+- **Windows**: [planned] Kronos planning is tracked separately and currently not production-validated.
 
 ### 3.2 Direct Kernel Driver Implementation
 
-Our PM4 scaffolding demonstrates partial vendor-independent GPU interaction through direct kernel driver communication:
-
-```fortran
-! Direct AMDGPU kernel driver interface
-type(drm_amdgpu_cs_in), target :: cs_in
-type(drm_amdgpu_cs_out), target :: cs_out
-integer(c_int64_t), target :: chunk_array(1)
-
-! Critical double indirection pattern for command submission
-chunk_array(1) = int(loc(chunk), c_int64_t)
-cs_in%chunks = int(loc(chunk_array), c_int64_t)
-
-! Submit directly to kernel driver
-ret = ioctl(fd, DRM_IOCTL_AMDGPU_CS, loc(cs_union))
-```
-
-This implementation includes validated direct submission steps (including NOP-style packet paths) and low-level plumbing, but full compute-kernel end-to-end execution is still transitioning.
+This section is historical only.
+PM4/driver-direct code is retained for archive/reference and is not part of production execution.
 
 ### 3.2 Memory Management
 
@@ -214,45 +136,22 @@ end type
 
 ### 3.3 Async GPU Executor
 
-Sporkle implements a sophisticated async execution pipeline that achieves dramatic speedups through intelligent triple buffering:
-
-**Triple Buffering Architecture**:
-- 3 buffer sets enable CPU/GPU overlap
-- Zero idle time between kernel executions
-- OpenGL sync objects (glFenceSync) for lightweight synchronization
-
-**Performance Breakthrough - Two Metrics, Two Workloads**:
-
-*Latency Reduction (ResNet-50 first layer: 3×224×224 → 64×112×112, batch=4)*:
-- **Metric**: Per-kernel latency in pipeline
-- Synchronous: 1.70ms per kernel (with CPU-GPU sync overhead)
-- Async Pipeline: 0.26ms per kernel (overlapped execution)
-- **Result**: 6.5x reduction in kernel launch latency
-- Throughput: 3,630 GFLOPS aggregate
-
-*Throughput Improvement (ResNet-50 layer 3: 128×28×28 → 256×28×28, batch=1)*:
-- **Metric**: Total GFLOPS throughput
-- Synchronous: 1,522 GFLOPS
-- Async Pipeline: 3,515 GFLOPS
-- **Result**: 2.3x speedup in total throughput
-- GPU utilization: 100% (vs 84% synchronous)
-
-The async executor provides different benefits depending on workload:
-- **Large kernels** (224×224, high arithmetic intensity): Approach theoretical 6.5x latency reduction
-- **Small kernels** (28×28, memory-bound): Still achieve 2.3x throughput with perfect GPU utilization
-- **All workloads**: Eliminate CPU-GPU synchronization overhead, achieve 100% GPU utilization
-
-This demonstrates that intelligent architecture can provide dramatic speedups without changing the underlying compute kernels.
+Sporkle implements an async execution model in active research codepaths; production claim status is:
+- [implemented] API-level queueing and orchestration interfaces exist.
+- [implemented] Queue/fence overlap model is integrated into the runtime shape.
+- [experimental] End-to-end throughput and latency conclusions are revalidated against the active Kronos path.
 
 ### 3.4 Adaptive Kernel Strategy
 
 Sporkle implements an innovative adaptive approach to GPU kernel execution. Rather than committing to a single implementation strategy, the framework provides multiple paths:
 
-1. **OpenGL Compute Shaders (GLSL)**: High-level, cross-vendor approach
-2. **SPIR-V Intermediate Representation**: Modern, optimizable bytecode path
-3. **Direct Command Buffer Generation**: Maximum performance via PM4 packets
+1. **Kronos Execution Path (AMD/NVIDIA)**: [implemented] production compute scheduling path.
+2. **OpenGL Compute Shaders (GLSL)**: [experimental] retained path for comparison.
+3. **Direct Command Buffer Generation (PM4)**: [experimental] reference path, non-production.
 
-The framework empirically measures performance and automatically selects the optimal strategy for each workload and hardware configuration.
+The production framework now treats adaptive selection as:
+- [implemented] Sporkle-to-Kronos routing.
+- [planned] Remaining accelerator-specific strategy fallback is under review.
 
 ### 3.5 Kernel Design
 
@@ -269,91 +168,54 @@ end function
 ### 3.6 Implementation Status
 
 **Operational GPU Support**:
-- AMD GPUs: Full OpenGL compute shader execution ✓
-- Async Execution: Triple-buffered pipeline with OpenGL sync objects ✓
-- Memory management: GPU buffer allocation and virtual address mapping ✓
-- Synchronization: Fence-based completion tracking (glFenceSync/glClientWaitSync) ✓
-- Platform detection: Automatic GPU enumeration via EGL/OpenGL ✓
-- Performance: 451 GFLOPS single kernel, 3,630 GFLOPS aggregate throughput ✓
+- AMD GPUs: Kronos execution path is [implemented].
+- NVIDIA GPUs: Kronos execution path is [implemented].
+- Async execution: queue/fence behavior is [experimental] and currently under backend validation.
+- Memory/dispatch orchestration: [implemented].
+- Platform detection: Device-level detection includes AMD/NVIDIA capability probes for Kronos [implemented].
+- Performance: legacy OpenGL/PM4 figures are experimental and marked [experimental].
 
 **Planned Development**:
-- NVIDIA GPU support via direct kernel driver interfaces (design phase)
-- Intel GPU support via i915/xe kernel interfaces
-- Integration of compute kernels with existing command submission infrastructure
-- Performance validation against vendor implementations
+- Apple support: vendor-bridge and Neural Engine refresh tracking. [planned]
+- Legacy PM4 path cleanup and explicit archival. [planned]
+- Benchmark evidence refresh for all top-level claims. [planned]
 
-## 4. Performance Evaluation
+## 4. Performance Reporting
 
-### 4.1 Experimental Setup
+### 4.1 Evidence status
 
-All experiments were conducted on a system with the following specifications:
-- CPU: AMD Ryzen 7 7700X 8-Core Processor (AVX-512 capable)
-- GPU: AMD RX 7900 XT (24GB VRAM)
-- OS: Linux 6.14.0-27-generic
-- Compiler: GNU Fortran 9.4.0 with -O3 -march=native optimization
+Quantified performance tables are intentionally omitted from this document while benchmarks are being rebuilt against Kronos-only execution. Benchmarking claims will be brought back once the project is stable again and metrics are reproducible.
 
-### 4.2 Benchmark Methodology
+### 4.2 Production checks
 
-We employ a rigorous benchmarking methodology distinguishing between:
-- **Cold execution**: Initial run including initialization overhead
-- **Warm execution**: Steady-state performance after cache population
-- **Statistical analysis**: 100 iterations with mean, standard deviation, and percentile metrics
-
-### 4.3 Universal Optimization Results
-
-**Production Performance with Intelligent Device Juggling**:
-
-| Workload Size | Device Selected | Performance | Rationale |
-|---------------|----------------|-------------|------------|
-| Small (3×32×32) | CPU | 0.1 GFLOPS | Avoids GPU overhead |
-| Medium (64×56×56) | CPU | 14.5 GFLOPS | Better cache utilization |
-| Large (256×28×28) | GPU | 438.7 GFLOPS | Single kernel throughput |
-| Large (batched) | GPU Async | 3,630 GFLOPS | Triple buffering pipeline |
-| Auto-Selection | Optimal | Best Available | Framework decides |
-
-**GPU Performance** (AMD RX 7900 XT):
-| Operation | Performance | Status | Implementation |
-|-----------|------------|--------|----------------|
-| Convolution (Sync) | 400+ GFLOPS | Production | OpenGL compute shaders |
-| Convolution (Async) | 3,630 GFLOPS | Production | Triple buffering, 6.5x speedup |
-| Dynamic Shaders | Optimized | Working | Per-workload compilation |
-| Memory Transfer | Minimized | Efficient | Zero-copy via fences |
-
-**CPU Performance** (AMD Ryzen 7900X):
-| Operation | Performance | Status | Implementation |
-|-----------|------------|--------|----------------|
-| Convolution (Basic) | 9.5 GFLOPS | Baseline | Simple GEMM |
-| Convolution (Fused) | 14.8 GFLOPS | Optimized | im2col+GEMM fusion |
-| Convolution (Production) | 90-160 GFLOPS | Production | AVX-512 + adaptive tiling |
-| Thread Scaling | 16 threads | Efficient | OpenMP parallelization |
-
-**Cross-Architecture Validation**:
-- **Apple Metal**: 90% theoretical peak using universal memory patterns
-- **Pattern Consistency**: Same optimization strategies work across CPU L1 cache, GPU shared memory, and Neural Engine SRAM
-- **Performance Predictability**: Universal principles enable consistent optimization across devices
+- [implemented] Runtime startup checks and backend selection are validated against documented environments.
+- [experimental] Cross-architecture dispatch behavior remains tracked via non-quantitative integration checks.
+- [experimental] Apple/Neural Engine behavior is treated as out-of-date until refreshed.
 
 ## 5. Related Work
 
-Previous heterogeneous computing frameworks including CUDA, OpenCL, and SYCL require vendor-specific runtime libraries. Raja and Kokkos provide abstraction layers but still depend on underlying vendor toolchains. Sporkle differentiates itself with an OpenGL-first path and partial direct-driver integration for AMDGPU; this enables lower-level control in selective paths, while full SDK-free stack completion across kernels is still ongoing.
+## 5. Related Work
+
+Previous heterogeneous computing frameworks including CUDA, OpenCL, and SYCL require vendor-specific runtime libraries. Sporkle now differentiates itself by standardizing orchestration on Kronos, with explicit backend strategy and claim tagging to avoid transitional drift.
 
 ## 6. Future Work
 
 Current development focuses on:
-- Design and implementation of NVIDIA GPU support via kernel driver interfaces
-- Intel GPU support via i915/xe kernel drivers  
-- Integration of compute kernels with validated AMD GPU command submission
-- Performance benchmarking against vendor BLAS implementations
-- Extension to additional accelerator architectures
+- Apple/Kitsune acceleration refresh (Neural Engine and bridge path) [planned]
+- Vulkan/Kronos validation hardening for Apple-supported stacks [planned]
+- Documentation claim governance rollout and evidence tagging in all release docs [implemented]
+- Performance evidence refresh for NVIDIA/AMD baselines using the Kronos execution path [experimental]
+- Extension to additional accelerator architectures [planned]
 
 ## 7. Installation
 
 ### 7.1 Prerequisites
 
 #### System Requirements
-- Linux kernel 5.0+ with AMDGPU driver (for AMD GPU support)
-- Access to `/dev/dri` devices (requires video group membership)
-- At least 8GB RAM for benchmarks
-- AMD GPU with OpenGL 4.6 support (tested on RX 7900 XT)
+- Linux kernel with supported Vulkan-capable GPU runtime (AMD/NVIDIA).
+- Access to required device/runtime resources for the active backend.
+- At least 8GB RAM for representative workload validation.
+- Apple path requires supported Metal/Vulkan bridge where documented.
 
 #### Required Packages (Ubuntu/Debian)
 ```bash
@@ -361,14 +223,8 @@ Current development focuses on:
 sudo apt update
 sudo apt install -y build-essential gfortran
 
-# Install OpenGL and EGL development libraries
-sudo apt install -y libgl1-mesa-dev libegl1-mesa-dev libgles2-mesa-dev
-
-# Install OpenGL utilities and tools
-sudo apt install -y mesa-utils libglu1-mesa-dev freeglut3-dev
-
-# Install additional libraries for GPU support
-sudo apt install -y libdrm-dev libgbm-dev
+# Optional legacy OpenGL support (if running reference paths)
+sudo apt install -y libgl1-mesa-dev libegl1-mesa-dev libgles2-mesa-dev libglu1-mesa-dev freeglut3-dev mesa-utils
 
 # Install OpenMP support
 sudo apt install -y libomp-dev
@@ -380,11 +236,11 @@ sudo usermod -a -G video $USER
 
 #### Verify Installation
 ```bash
-# Check OpenGL support
-glxinfo | grep "OpenGL version"
+# Check backend readiness (if make target exists)
+make -f Makefile.smart show_backend_matrix
 
-# Check EGL support
-eglinfo
+# Optional: inspect runtime details
+./scripts/show_backend_info.sh 2>/dev/null || true
 
 # Verify GPU access
 ls -la /dev/dri/
@@ -403,16 +259,12 @@ cd Sporkle
 # Build the framework
 make -f Makefile.smart
 
-# Run benchmarks
-make benchmark_convolution
-
 # Test GPU async executor
 make test_gpu_async_executor
 
 # Run all tests
 make test_platform
 make test_production_conv2d
-make test_simd_performance
 ```
 
 #### Development Setup (Optional but Recommended)
@@ -442,12 +294,12 @@ groups | grep video
 # Then log out and back in
 ```
 
-**OpenGL Context Creation Failed**
+**Backend initialization failed**
 ```bash
-# Check for proper GPU drivers
+# Check selected runtime and backend diagnostics
 lspci -k | grep -A 2 -E "(VGA|3D)"
-# Ensure amdgpu kernel module is loaded
-lsmod | grep amdgpu
+# Ensure active runtime path is available for AMD/NVIDIA targets
+cat build/backend_status.json 2>/dev/null || true
 ```
 
 **Build Errors**
@@ -463,44 +315,39 @@ make -f Makefile.smart VERBOSE=1
 ## 8. Current State
 
 ### Working Features
-- **Automatic Device Selection**: Heuristic-based selection with performance learning ✅
-- **Intelligent Device Juggling**: Seamless CPU/GPU execution with async pipeline ✅
-- **CPU Backend**: 90-160 GFLOPS with adaptive K×N tiling and AVX-512 ✅
-- **GPU Backend (Sync)**: 400+ GFLOPS with dynamic shader compilation (OpenGL path, stable in current transition set) ✅
-- **GPU Backend (Async)**: 3,630 GFLOPS with triple buffering pipeline (experimental; executor/queue details still in transition) ⚠️
-- **Direct AMDGPU Support**: Kernel driver interface scaffolding exists; full compute integration is not yet complete ⚠️
-- **OpenGL Compute**: Production implementation with EGL headless context ✅
-- **Async Executor**: 6.5x speedup via intelligent pipeline architecture ✅
-- **Memory Management**: Unified memory model with proper synchronization ✅
-- **Production API**: Clean Fortran interface via `sporkle_conv2d_juggling` module ✅
+- **Automatic Device Selection**: [implemented] heuristic-based selection with performance learning.
+- **Intelligent Device Juggling**: [implemented] runtime routing for CPU/GPU selection remains active.
+- **CPU Backend**: [experimental] CPU path remains active in non-production experiments, with numeric performance removed for now.
+- **GPU Backend**: [implemented] Kronos production routing for AMD/NVIDIA.
+- **Direct AMDGPU Support**: [experimental] driver interface scaffolding retained for reference only.
+- **OpenGL Compute**: [experimental] retained for comparison, not production.
+- **Async Executor**: [experimental] runtime semantics under revalidation in Kronos-first flow.
+- **Memory Management**: [implemented] unified memory model with synchronization.
+- **Production API**: [implemented] Fortran interface via `sporkle_conv2d_juggling` module.
 
 ### Tested Configurations
-- **Primary Development**: AMD Ryzen 7 7700X + RX 7900 XT (Linux 6.14)
+- **Primary Development**: [experimental] AMD Ryzen 7 7700X + RX 7900 XT (Linux 6.14).
 - **GPU Architectures**: RDNA 3 (Navi 31), RDNA 2 (Raphael iGPU)
 - **Compiler**: GFortran 9.4+ with `-O3 -march=native -fopenmp`
-- **OpenGL**: Version 4.6 with compute shader support
+- **Backend Runtime**: [implemented] Kronos + Vulkan-capable runtime for AMD/NVIDIA paths.
 
 ### Known Limitations
-- Linux/AMD GPU only (NVIDIA/Intel support planned)
-- PM4 direct submission path not yet integrated with compute kernels
-- Metal/Vulkan backends not yet ported to new architecture
-- Multi-GPU support in development
+- **Linux/AMD/NVIDIA via Kronos**: [implemented] supported in current production stance.
+- **Intel path** and legacy PM4 direct submission: [implemented] non-production and retained as reference only.
+- **Apple Neural Engine suite**: [planned] refresh required before production use.
+- **Multi-GPU support**: [planned] in-progress.
 
 ### Performance Summary
-| Backend | Operation | Performance | Notes |
-|---------|-----------|-------------|-------|
-| CPU | Convolution | 90-160 GFLOPS | Adaptive tiling, AVX-512, 16 threads |
-| GPU | Convolution (Sync) | 400+ GFLOPS | OpenGL compute shaders |
-| GPU | Convolution (Async) | 3,630 GFLOPS | Triple buffering, 6.5x speedup |
-| Auto | Device Juggling | Optimal | Selects best device per workload |
-| Both | Correctness | Validated | All results mathematically correct |
+
+Quantified performance numbers are intentionally omitted until a benchmark evidence refresh completes.
+
+- **Auto-device routing**: [implemented] active for AMD/NVIDIA tasks.
+- **Correctness matrix**: [experimental] retained for historical comparison and under refresh.
 
 ## 9. Documentation
 
-- [GPU Async Breakthrough](docs/GPU_ASYNC_BREAKTHROUGH.md) - How we achieved 6.5x speedup
 - [Universal Memory Optimization](docs/UNIVERSAL_MEMORY_OPTIMIZATION_BREAKTHROUGH.md) - Core principles
 - [Weekend 2 Epic](docs/Weekend2.md) - Development journey and discoveries
-- [Benchmarks](BENCHMARKS.md) - Detailed performance analysis
 
 ## 10. Contributing
 
@@ -509,7 +356,7 @@ Sporkle is an ambitious project aiming to democratize high-performance computing
 - Backend implementations for new devices
 - Kernel optimizations
 - Documentation improvements
-- Performance benchmarking
+- Documentation cleanup and benchmark evidence refresh coordination
 
 ## 11. Acknowledgments
 

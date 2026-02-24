@@ -1,3 +1,7 @@
+> [!CAUTION] Documentation credibility note
+> Quantified performance and benchmark claims in this repository history are in recovery and should not be treated as current production facts until revalidated under the Kronos-first flow.
+
+
 # 🚀 Proof-of-Concept Milestone: Direct AMDGPU in Fortran
 
 **Thesis:** A single, architecture-agnostic kernel design—our convolution-as-GEMM math core—can achieve near-theoretical performance across CPU, Metal, and AMDGPU backends **without vendor SDKs**, by talking directly to kernel driver interfaces.

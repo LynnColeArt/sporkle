@@ -1,3 +1,7 @@
+> [!CAUTION] Documentation credibility note
+> Quantified performance and benchmark claims in this repository history are in recovery and should not be treated as current production facts until revalidated under the Kronos-first flow.
+
+
 # QA Report: Adaptive Parameter Passing System
 Date: 2025-08-16
 Status: EXPERIMENTAL - PARTIALLY IMPLEMENTED

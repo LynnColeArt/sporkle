@@ -1,3 +1,7 @@
+> [!CAUTION] Documentation credibility note
+> Quantified performance and benchmark claims in this repository history are in recovery and should not be treated as current production facts until revalidated under the Kronos-first flow.
+
+
 # Development Log: Adaptive Parameter Passing for Fortran GPU DSL
 **Date**: December 2024  
 **Contributors**: Lynn & Claude

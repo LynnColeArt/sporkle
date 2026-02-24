@@ -1,3 +1,7 @@
+> [!CAUTION] Documentation credibility note
+> Quantified performance and benchmark claims in this repository history are in recovery and should not be treated as current production facts until revalidated under the Kronos-first flow.
+
+
 # AMD 10x Performance Optimization Plan (REVISED with Mini's Feedback)
 
 ## Current Performance: 3,630 GFLOPS (13.4% of theoretical)

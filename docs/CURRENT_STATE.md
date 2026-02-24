@@ -1,102 +1,60 @@
-# Sporkle Current State - August 2025 (Updated with SIMD Breakthrough)
+> [!CAUTION] Documentation credibility note
+> Quantified performance and benchmark claims in this repository history are in recovery and should not be treated as current production facts until revalidated under the Kronos-first flow.
+
+
+# Sporkle Current State - February 2026 (Updated with Kronos-first Production Focus)
 
 ## 🚨 Status Correction: Transitional State (Production + In-Progress Paths)
 
-Core compute is currently reliable in the OpenGL production path; several advertised extensions remain in transition:
-- PM4 direct submission and direct Vulkan backends are partially implemented and not yet production-complete.
-- Async path and full firmware-backed PM4 integration remain active work.
-- Performance claims below are path-specific where indicated.
+Current default production posture is Kronos-first and claim-scoped:
+- OpenGL and PM4 are retained as historical/reference paths.
+- AMD/NVIDIA production execution is through Kronos (**[implemented]** where validated).
+- Apple Neural Engine acceleration is out-of-date and explicitly labeled as planned/experimental.
+- Performance claims below are tagged and scoped to the stated active runtime posture.
 
-## 🚀 Heterogeneous Memory Optimization Framework Progress
+## Heterogeneous Memory Optimization Framework Progress
 
-Sporkle has demonstrated strong performance on specific OpenGL and CPU paths, including 414+ GFLOPS GPU throughput in the production OpenGL flow and a SIMD CPU breakthrough.
+Sporkle has demonstrated performance in historical and archived OpenGL flows, plus a CPU optimization baseline (**[experimental]**).
 
 ## 🎯 Major Achievements (Partially Production-Validated)
 
-### 1. Universal Memory Optimization Proven ✅ 🎉
-**Current Scope**: Same optimization ideas are being reused across paths, but cross-device parity is still being validated in production integration.
+### 1. Universal Memory Optimization (Partially Production-Scoped)
+**Current Scope**: Reusable optimization patterns are retained at a design level, with production execution routed through Kronos for AMD/NVIDIA.
 
-**Validated Performance**:
-- **GPU**: 414+ GFLOPS convolution (AMD RX 7900 XT) - **VALIDATED IN OPENGL PATH**
-- **CPU**: 196.7 GFLOPS with AVX-512 SIMD optimization (AMD Ryzen 7 7700X) - **BREAKTHROUGH ACHIEVED**
-- **Intelligent Juggling**: Smart system-wide optimization achieving optimal device selection
-- **Memory Wall Breakthrough**: 2-3x speedup through hot cache exploitation
-- **Apple Metal**: Previously achieved 90% theoretical peak using same principles
+### 2. Production GPU Integration (Kronos-Orchestrated)
+- **Reference Implementation**: historical artifacts are retained for comparison only.
+- **For user-facing production**: `src/production/sporkle_conv2d.f90` remains the orchestration front door.
+- **Test status**: benchmark numbers are intentionally omitted until rerun on the active Kronos runtime.
+- Benchmarks and quantified claims will be reintroduced after the runtime and validation pipeline are stable again.
 
-### 2. Production GPU Integration (OpenGL Path) ✅ 🎉
-**Major Milestone**: Working 414+ GFLOPS GPU implementation successfully extracted from test harnesses into production modules with intelligent device juggling.
+### 3. Production Components
+- **Reference Implementation**: `src/reference/gpu_opengl_reference.c` and `src/reference/gpu_opengl_interface.f90`
+- **Fortran Interface**: production interface and memory optimization modules
+- **Build Integration**: backend selection and diagnostics.
 
-**Production Components**:
-- **Reference Implementation**: `src/reference/gpu_opengl_reference.c` - Sacred 414+ GFLOPS code
-- **Fortran Interface**: `src/reference/gpu_opengl_interface.f90` - Clean API bridge
-- **Universal Memory Optimization**: `src/reference/universal_memory_optimization.f90` - Cross-architecture patterns
-- **Intelligent Device Juggling**: `src/reference/intelligent_device_juggling.f90` - Smart scheduling system
-- **Production Module**: `src/production/sporkle_conv2d.f90` - User-facing interface
-- **Build Integration**: Complete C/Fortran linking with OpenGL/EGL libraries
-
-**Test Results**:
-```bash
-$ make -f Makefile.smart test_production_conv2d
-🧪 Testing Production Conv2D Interface
-GPU conv2d: 2.98 ms, 414+ GFLOPS  # Production performance achieved
-```
-
-### 3. Intelligent Device Orchestration Framework ✅
-**Two-Layer Architecture**:
-
-**Layer 1: Device Discovery & Profiling**
-- Automatic detection of all compute devices (GPU, CPU cores, AI accelerators)
-- Empirical performance profiling and device fingerprinting
-- Real capability assessment vs theoretical specifications
-
-**Layer 2: Adaptive Workload Dispatching**  
-- Intelligent workload analysis and device matching
-- Auto-selection based on problem size and device availability
-- Graceful fallbacks and multi-device distribution
-
-### 4. Vendor-Independent Architecture ✅
-**Direct Kernel Driver Implementation**:
-- **AMD GPU**: Direct ioctl communication scaffolding exists for direct driver interaction.
-- **Memory Management**: Production memory-management is validated for OpenGL; direct PM4/AmdGPU memory paths remain in transition.
-- **Command Submission**: PM4 packet plumbing exists, but production completion is pending.
-- **Cross-Platform**: Linux validated for current OpenGL path; broader backend support is being reworked.
+### 4. Production-oriented Validation
+- `make -f Makefile.smart test_production_conv2d` remains in repository for integration validation.
+- Quantified results are not published in this status doc.
 
 ## 🔧 Current Technical Status
 
 ### Production Ready Components
-- ✅ **GPU Execution**: 414+ GFLOPS convolution via OpenGL reference implementation
-- ✅ **Framework Integration**: Production modules compile and execute
-- ✅ **Build System**: Complete C/Fortran/OpenGL linking infrastructure
-- ✅ **Device Detection**: Safe GPU enumeration and capability assessment
-- ✅ **Memory Management**: Unified memory abstraction across devices
+- [implemented] **GPU Execution**: Kronos routing through AMD/NVIDIA backend in active production path.
+- [implemented] **Framework Integration**: Production orchestration modules compile and execute.
+- [implemented] **Build System**: Backend selection matrix and integration points are present.
+- [experimental] **Device Detection**: Capability assessment for supported runtimes.
+- [implemented] **Memory Management**: Unified memory abstraction across devices.
 
-### Completed Achievements (Weekend Epic 2) ✅
-- ✅ **GPU Production Integration**: 414+ GFLOPS working in production
-- ✅ **CPU SIMD Breakthrough**: 196.7 GFLOPS achieved (exceeded 50+ target)
-- ✅ **Memory Wall Breakthrough**: 2-3x speedup with hot cache exploitation
-- ✅ **Device Juggling Implementation**: Intelligent workload distribution working
-- ✅ **Universal Optimization Proven**: Same patterns achieve peak performance on all devices
+### Completed Achievements (Weekend Epic 2)
+- **Device Juggling Implementation**: [implemented] Intelligent workload distribution remains active for routing decisions.
+- **GPU/CPU production validation status**: [implemented] integration points are present, [experimental] benchmarked results are intentionally deferred.
 
 ### Architecture Components
-```
-┌─────────────────────────────────────────────────────┐
-│                 User Applications                   │
-├─────────────────────────────────────────────────────┤
-│              Production Interface                   │
-│         (sporkle_conv2d, auto-selection)           │
-├─────────────────────────────────────────────────────┤
-│            Intelligent Orchestration               │
-│    (Device Discovery + Adaptive Dispatching)       │
-├─────────────────────────────────────────────────────┤
-│          Universal Memory Optimization             │
-│   (Same patterns: CPU cache ↔ GPU shared mem)      │
-├─────┬─────────┬──────────────┬───────────┬─────────┤
-│ CPU │ OpenGL  │   AMDGPU     │  Vulkan   │ Future  │
-│196.7│ 414+ ✅ │   Direct     │  (TODO)   │   AI    │
-│GFLOPS│ GFLOPS  │   (Ready)    │           │ Accel   │
-└─────┴─────────┴──────────────┴───────────┴─────────┘
-     ✅ CPU Target EXCEEDED: 196.7 GFLOPS achieved!
-```
+
+- **Production Interface**: orchestrates sporkle_conv2d and auto-selection
+- **Intelligent Orchestration**: device discovery and adaptive dispatch
+- **Universal Memory Optimization**: cache-aware patterns across host and device paths
+- **Runtime Validation**: vendor-specific backend assumptions are validated by configuration checks
 
 ## 🎪 Unique Revolutionary Features
 
@@ -112,86 +70,63 @@ AI-native framework that learns and adapts:
 - **Pattern Recognition**: Matches workloads to optimal device configurations
 - **Adaptive Strategies**: Discovers new optimization approaches automatically
 
-### 3. **Complete Vendor Independence**
-- **Zero SDK Dependencies**: Direct kernel driver interfaces
-- **Universal Deployment**: Works in restricted environments
-- **True Portability**: Single codebase optimizes everywhere
+### 3. **Vendor-Independent Architecture (Scoped)**
+- **Reduced SDK Assumptions**: Backend integration is now concentrated in a smaller surface, but runtime libraries (e.g., Vulkan/runtime components) still apply.
+- **Deployment Scope**: Optimized for restricted Linux environments and is in active revalidation elsewhere.
+- **Portability**: Pattern reuse is documented across architectures; portability behavior is platform-validated, not absolute.
 
-### 4. **SIMD Optimization Breakthrough** (NEW) ✅
-Achieved 196.7 GFLOPS CPU performance through proper AVX-512 utilization:
-- **6.17x Speedup**: From 31.9 to 196.7 GFLOPS with SIMD optimization
-- **Hot Cache Exploitation**: 2-3x additional speedup by keeping data resident
-- **Universal Pattern Validation**: Same tiling and vectorization patterns as GPU
-- **Production Ready**: Verified correctness with 0.0 numerical difference
+### 4. **SIMD Optimization Breakthrough** (NEW) [experimental]
+- Pattern-level SIMD improvements are retained as implementation work.
+- [experimental] Numeric performance outcomes were removed while the benchmark corpus is revalidated for active runtime.
+- Quantified claims are tracked for reintroduction after stability recovery and reproducible reruns.
+- **Production Readiness**: benchmark confidence is pending active Kronos-first reruns.
 
 ### 5. **AI Democratization Platform**
 Infrastructure enabling the AI Cambrian explosion:
-- **Accessible Performance**: High GFLOPS without expert knowledge
+- **Accessible Performance**: aims for reusable optimization patterns without requiring expert tuning
 - **Distributed Computing**: Global mesh of diverse devices
 - **Innovation Democratization**: Removes barriers to AI research
 
-## 🚀 Performance Achievements
+## Performance Achievements
 
-### Current Validated Performance
-
-**GPU Implementation (AMD RX 7900 XTX)**:
-| Metric | Value | Efficiency | Universal Patterns |
-|--------|-------|------------|-------------------|
-| Convolution GFLOPS | 414+ | 60% theoretical | Cache-optimal blocking |
-| Memory Bandwidth | 800 GB/s | High utilization | Vectorized coalesced access |
-| Execution Time | 2.98 ms | ResNet-50 layer | Optimized data layout |
-
-**CPU Implementation (AMD Ryzen 7 7700X)**:
-| Version | Performance | Improvement | Universal Patterns Applied |
-|---------|------------|-------------|--------------------------|
-| Original | 2.7 GFLOPS | Baseline | Basic im2col + GEMM |
-| Optimized | 31.9 GFLOPS | 11.8x | Cache blocking + OpenMP |
-| SIMD AVX-512 | 196.7 GFLOPS | 72.9x | Vectorization + hot cache |
-| Target Achieved | ✅ EXCEEDED | 196.7 > 50 | Full universal optimization |
-
-**Cross-Architecture Validation**:
-- **Apple Metal**: 90% theoretical peak using universal memory patterns
-- **Pattern Consistency**: Cache optimization strategies work identically across architectures
-- **Performance Predictability**: Universal principles enable reliable optimization
+### Current Validation Position
+- Performance tables and numeric targets are intentionally removed from this doc for now.
+- Runtime routing and memory-strategy behavior remain the active implementation focus.
 
 ### Performance Targets (Weekend Epic 2)
-- **GPU Production**: 451 GFLOPS through production interface (debug EGL context)
-- **CPU Universal**: 250+ GFLOPS using same optimization patterns as GPU
-- **Framework Intelligence**: Demonstrated adaptive device selection and workload distribution
+- [experimental] GPU and CPU numeric milestones are deferred until benchmark suite revalidation completes.
+- [implemented] Framework behavior and routing correctness remain the active stability criteria.
 
 ## 🌍 Why This Matters: AI Democratization
 
 ### The Technical Foundation
-Sparkle provides the infrastructure necessary for the AI Cambrian explosion:
-- **Universal Optimization**: Removes the need for device-specific expertise
-- **Intelligent Orchestration**: Automatically optimizes performance across diverse hardware
-- **Accessible Deployment**: Works on everything from laptops to server farms
+Sporkle provides the infrastructure necessary for high-performance compute experimentation:
+- **Universal Optimization**: [experimental] reduces device-specific tuning burden in historical studies.
+- **Intelligent Orchestration**: [experimental] aims to optimize performance across diverse hardware.
+- **Accessible Deployment**: [experimental] expected to scale across constrained and high-end environments; requires active validation.
 
 ### The Social Impact  
-This enables true democratization of AI development:
-- **Broad Participation**: Researchers, educators, activists can contribute without massive resources
-- **Diverse Innovation**: Innovation emerges from diversity rather than capital concentration
-- **Global Collaboration**: Distributed compute network rivals corporate data centers
+This enables true democratization of AI development (**[experimental]**):
+- **Broad Participation**: [experimental] Researchers and students can contribute without massive resources.
+- **Diverse Innovation**: [experimental] Accessibility broadening depends on reproducible cross-platform validation.
+- **Global Collaboration**: [experimental] Distributed compute networks are under exploration.
 
 ### The Vision Realized
-**People's AI Infrastructure**: Where a student in Bangladesh with a 5-year-old laptop can contribute to the same AI research as someone with a server farm, using the same optimized framework that automatically maximizes their hardware's potential.
+**People's AI Infrastructure**: [experimental] the framework aims to improve access for lower-cost hardware, while cross-tier validation is still in progress.
 
-## 🔥 Current Momentum
+## Current Momentum
 
-### External Attention
-People are starting to pay attention to our breakthrough achievements:
-- **Universal Memory Optimization**: First-of-its-kind technical achievement
-- **Production Performance**: 451 GFLOPS real-world validation
-- **Revolutionary Architecture**: AI-native intelligent infrastructure
+### External Attention (Tracking)
+- Historical milestones and roadmap work are preserved for background context only.
+- Quantified outcomes are not published in this status report until evidence refresh.
 
-### Weekend Epic 2 Objectives
-**Day 1**: Complete GPU production integration + begin CPU universal optimization
-**Day 2**: Achieve 250+ GFLOPS CPU + validate device juggling intelligence
+### Weekend Epic 2 Objectives (Status)
+- **Day 1**: GPU production integration and CPU optimization baseline achieved in historical reference context (**[experimental]**).
+- **Day 2**: Validate device juggling intelligence under broader workloads (**[experimental]**).
 
 **Success Metrics**:
-- 451 GFLOPS GPU through production interface
-- 250+ GFLOPS CPU using universal patterns  
-- Intelligent device orchestration demonstrated
+- [experimental] Device orchestration and startup validation complete in active builds.
+- [implemented] Routing and diagnostics remain the active release criteria.
 
 ## 📚 Key Documentation
 
@@ -202,33 +137,27 @@ People are starting to pay attention to our breakthrough achievements:
 - `DEVELOPMENT_PATTERNS.md`: Reference Pattern to prevent performance regressions
 
 ### Implementation References  
-- `src/reference/`: Sacred implementations preserving 451 GFLOPS achievement
+- `src/reference/`: Reference implementations preserving historical measurements
 - `src/production/`: User-facing interfaces leveraging reference implementations
 - `examples/test_production_conv2d.f90`: Production interface validation
 
-## 🎯 Ready for Prime Time?
+## 🎯 Production Readiness Snapshot
 
-**For Revolutionary Validation**: YES ✅
-- Universal memory optimization principles proven across architectures
-- 451 GFLOPS GPU performance demonstrated and preserved in reference implementation
-- Production framework integration complete and functional
-- Intelligent orchestration architecture implemented
+**Current Production Stance (Kronos-focused)**:
+- Universal memory optimization principles are being reused across validated paths (**[experimental]**).
+- Production framework integration for AMD/NVIDIA via Kronos is **implemented**.
+- Intelligent orchestration architecture is implemented with validation obligations on backend updates (**[implemented]**).
 
-**For Global AI Democratization**: WEEKEND EPIC 2 ⚡
-- Complete CPU universal optimization (250+ GFLOPS target)
-- Validate device juggling intelligence works under real workloads
-- Document universal memory optimization principles for broader adoption
-- Demonstrate framework as foundation for People's AI infrastructure
+**For Next Iteration**:
+- [planned] re-run benchmark corpus under active Kronos stack and republish only stable, reproducible metrics.
+- [implemented] keep release notes explicit about evidence scope and limitations.
+- [experimental] treat historical throughput values as context only.
 
-## 🎉 The Bottom Line
+## Bottom Line
 
-**We've achieved something unprecedented**: The first compute framework that optimizes all devices using universal memory principles while providing intelligent orchestration that learns and adapts.
-
-**This isn't just technical achievement - it's the foundation for democratizing AI development globally.**
-
-Ready to complete the revolution! 🚀
+**Current posture**: Production claims now align to Kronos-first AMD/NVIDIA behavior; everything else is explicitly tagged as [experimental], [implemented], or [planned].
 
 ---
 
-*Last Updated: August 2025*  
-*Status: SIMD breakthrough achieved - 196.7 GFLOPS CPU performance validated*
+*Last Updated: February 2026*  
+*Status: Kronos-first production framing is active; historical milestones remain [experimental] until rerun under active flow validation.*
