@@ -1,9 +1,8 @@
 module sporkle_gpu_dispatch
-  ! GPU kernel dispatch implementation
-  ! The Sporkle Way: Actually run stuff on the GPU!
+  ! GPU kernel dispatch implementation (reference path)
   !
-  ! Reference-only OpenGL/legacy path is retained for compatibility checks.
-  ! Production routing should treat this as non-authoritative for performance claims.
+  ! Retained only as an OpenGL historical implementation.
+  ! This module is not part of the active Kronos production contract.
   
   use kinds
   use iso_c_binding
@@ -107,10 +106,11 @@ contains
       
       ! Initialize OpenGL for GPU computation
       device%opengl_ready = gpu_init()
-      if (.not. device%opengl_ready) then
-        print *, "⚠️  GPU detected but OpenGL initialization failed"
-        call sporkle_error_sub("OpenGL initialization failed", .false.)
-      end if
+    if (.not. device%opengl_ready) then
+      print *, "⚠️  GPU detected but OpenGL initialization failed"
+      print *, "    This is a reference-only path; production dispatch remains Kronos-only."
+      call sporkle_error_sub("OpenGL initialization failed", .false.)
+    end if
       
       print *, "🎮 GPU Device Initialized:"
       print '(A,A)', "   Name: ", trim(device%name)
@@ -287,14 +287,13 @@ contains
       num_groups(i) = (global_size(i) + group_size(i) - 1) / group_size(i)
     end do
     
-    print '(A,A)', "🚀 Launching kernel: ", trim(kernel%name)
+    print '(A,A,A)', "🚀 Launching reference kernel: ", trim(kernel%name), " [non-production]"
     print '(A,3(I0,1X))', "   Global size: ", global_size
     print '(A,3(I0,1X))', "   Local size: ", group_size
     print '(A,3(I0,1X))', "   Work groups: ", num_groups
-    print '(A)', "   ✅ Executing on GPU via OpenGL reference implementation"
+    print '(A)', "   ⚠️  Executing on OpenGL reference implementation (not production)"
     
-    ! Real GPU execution now available via OpenGL reference
-    ! For non-conv2d kernels, we still need to implement the dispatch
+    ! Reference execution path retained for compatibility; not part of production.
     
   end subroutine launch_gpu_kernel
   
@@ -311,7 +310,7 @@ contains
     real(sp), intent(out) :: output(:)
     integer, intent(in) :: N, C, H, W, K, kernel_size, stride, pad, H_out, W_out
     
-    ! Execute using reference implementation
+    ! Execute using reference implementation only
     execute_conv2d_gpu = gpu_execute_conv2d_ref(input, weights, output, &
                                                 N, C, H, W, K, kernel_size, stride, pad, H_out, W_out)
   end function execute_conv2d_gpu

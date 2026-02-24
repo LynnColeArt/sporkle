@@ -30,8 +30,8 @@
 
 3. **Created selftest framework** ✅
   - `src/compute/selftest.c` with Stage A (DEADBEEF) and Stage B (SAXPY)
-  - `src/cli/sporkle.c` with `pm4 --selftest` command
-  - Clear success criteria for "compute online"
+  - `src/cli/sporkle.c` with `kronos --selftest` command entrypoint
+  - The command remains explicitly stubbed in this phase and serves as a required diagnostics hook
 
 4. **Moved test files** ✅
    - All `test_*.f90` files moved to `tests/`
@@ -62,7 +62,7 @@
 ## Key Insights from Reorganization
 
 1. **Single submit path** prevents BO list bugs
-2. **Clear selftest** defines "working" state
+2. **Clear selftest hook** keeps recovery diagnostics explicit
 3. **Separated concerns** - production vs test code
 4. **Architecture-aware** kernel compilation
 

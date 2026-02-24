@@ -1,6 +1,6 @@
 # Sporkle: A Novel Heterogeneous Computing Framework for Device-Agnostic Parallel Execution
 
-> **Production posture (2026-02-24): Sporkle routes compute execution through Kronos as the sole production backend.**
+> **Production posture (2026-02-24): Sporkle intends to route compute execution through Kronos as the sole production backend.**
 > PM4 and legacy OpenGL paths are historical/experimental and not part of supported production runtime.
 
 ## Documentation Status
@@ -11,10 +11,12 @@ This README uses explicit claim tags:
 - `[experimental]` — implemented but not production-proven.
 - `[planned]` — roadmap item not yet implemented.
 
+During the recovery window, treat `[implemented]` and `[experimental]` as provisional until end-to-end runtime telemetry confirms active Kronos production behavior.
+
 ## Abstract
 
-Sporkle is a Fortran orchestration layer that executes through Kronos for production compute workloads.
-This is the active path for AMD/NVIDIA targets.
+Sporkle is a Fortran orchestration layer intended to execute through Kronos for production compute workloads.
+AMD/NVIDIA runtime behavior is the target production path; evidence validation is ongoing.
 Legacy PM4 and direct driver scaffolding are retained for reference only until they are explicitly deprecated or removed.
 Kronos-only production claims in this file are annotated with `[implemented]`, `[measured]`, `[experimental]`, or `[planned]`.
 
@@ -30,7 +32,7 @@ Kronos-only production claims in this file are annotated with `[implemented]`, `
 
 Benchmark-level throughput and latency claims are intentionally withheld in this document while evidence is being rebuilt against the Kronos-first production path. These quantified claims will be restored after the Kronos runtime returns to stable production behavior and the benchmark corpus is revalidated.
 
-- [implemented] Production runtime routing remains through Kronos for AMD/NVIDIA.
+- [planned] Production runtime routing remains through Kronos for AMD/NVIDIA.
 - [experimental] Concurrency and cache behavior are under active behavior-level verification.
 - [implemented] Quantitative assertions elsewhere in docs require explicit evidence tags and matching runtime metadata.
 
@@ -40,13 +42,14 @@ The proliferation of heterogeneous computing architectures has created significa
 
 ### 1.1 Key Contributions
 
-- **Orchestrated Compute via Kronos**: Primary production path for GPU/CPU task dispatch. **[implemented]**
-- **AMD/NVIDIA Support**: Production target through Kronos stack. **[implemented]**
+- **Orchestrated Compute via Kronos**: Primary production path for GPU/CPU task dispatch. **[planned]**
+- **AMD/NVIDIA Support**: Intended production target through Kronos stack. **[planned]**
+- **Kronos Dispatch Readiness (AMD/NVIDIA)**: Verify via runtime telemetry before claiming production stability. **[planned]**
 - **Zero Vulkan Runtime Assumptions in Sporkle API**: Runtime dependency is isolated to backend integration surfaces. **[implemented]**
 - **Unified Device Abstraction**: Single programming model for task scheduling and data movement. **[implemented]**
-- **Performance Validation**: Numeric claims in this document are now tagged as `[measured]`/`[implemented]`/`[experimental]`/`[planned]`. **[implemented]**
+- **Performance Validation**: Numeric claims in this document are now tagged as `[measured]`/`[implemented]`/`[experimental]`/`[planned]`. **[planned]**
 - **Intelligent Device Juggling**: Selection system retained for workload routing. **[experimental]**
-- **Thread-Safe GPU Cache**: Retained, with concurrency behavior tracked as implementation quality. **[implemented]**
+- **Thread-Safe GPU Cache**: Retained, with concurrency behavior tracked as implementation quality. **[experimental]**
 - **Cache/Kernel Rebuild Strategy**: Shader/program reuse strategy is retained while benchmarked claims are revalidated per backend. **[planned]**
 
 ## 2. System Architecture
@@ -102,16 +105,16 @@ Exposes intuitive interfaces for common parallel patterns including map, reduce,
 
 ### 3.1 GPU Backend Architecture
 
-Sporkle uses a single production compute backend:
+Sporkle uses a single intended production compute backend:
 
-- **Kronos (AMD/NVIDIA)** — [implemented] primary production path.
+- **Kronos (AMD/NVIDIA)** — [planned] primary production path.
 - **Apple path** — [experimental] requires Vulkan-compatible stack or explicit accelerator bridge status.
 - **PM4 / Direct driver paths** — [implemented] archived references only; not in production routing.
 - **OpenGL path** — [experimental] reference context retained for historical baseline and comparison.
 
 #### Platform Support Status:
-- **Linux + AMD**: [implemented] Kronos production behavior; legacy paths retained for reference only.
-- **Linux + NVIDIA**: [implemented] Kronos production behavior; legacy paths retained for reference only.
+- **Linux + AMD**: [planned] Kronos production behavior; legacy paths retained for reference only.
+- **Linux + NVIDIA**: [planned] Kronos production behavior; legacy paths retained for reference only.
 - **macOS**: [experimental] Kronos path depends on supported Vulkan bridge readiness; Neural Engine path is experimental and requires refresh.
 - **Windows**: [planned] Kronos planning is tracked separately and currently not production-validated.
 
@@ -137,20 +140,20 @@ end type
 ### 3.3 Async GPU Executor
 
 Sporkle implements an async execution model in active research codepaths; production claim status is:
-- [implemented] API-level queueing and orchestration interfaces exist.
-- [implemented] Queue/fence overlap model is integrated into the runtime shape.
+- [experimental] API-level queueing and orchestration interfaces exist.
+- [experimental] Queue/fence overlap model is integrated into the runtime shape.
 - [experimental] End-to-end throughput and latency conclusions are revalidated against the active Kronos path.
 
 ### 3.4 Adaptive Kernel Strategy
 
 Sporkle implements an innovative adaptive approach to GPU kernel execution. Rather than committing to a single implementation strategy, the framework provides multiple paths:
 
-1. **Kronos Execution Path (AMD/NVIDIA)**: [implemented] production compute scheduling path.
+1. **Kronos Execution Path (AMD/NVIDIA)**: [planned] production compute scheduling path.
 2. **OpenGL Compute Shaders (GLSL)**: [experimental] retained path for comparison.
 3. **Direct Command Buffer Generation (PM4)**: [experimental] reference path, non-production.
 
 The production framework now treats adaptive selection as:
-- [implemented] Sporkle-to-Kronos routing.
+- [planned] Sporkle-to-Kronos routing.
 - [planned] Remaining accelerator-specific strategy fallback is under review.
 
 ### 3.5 Kernel Design
@@ -168,8 +171,8 @@ end function
 ### 3.6 Implementation Status
 
 **Operational GPU Support**:
-- AMD GPUs: Kronos execution path is [implemented].
-- NVIDIA GPUs: Kronos execution path is [implemented].
+- AMD GPUs: Kronos execution path is [planned].
+- NVIDIA GPUs: Kronos execution path is [planned].
 - Async execution: queue/fence behavior is [experimental] and currently under backend validation.
 - Memory/dispatch orchestration: [implemented].
 - Platform detection: Device-level detection includes AMD/NVIDIA capability probes for Kronos [implemented].
@@ -188,7 +191,7 @@ Quantified performance tables are intentionally omitted from this document while
 
 ### 4.2 Production checks
 
-- [implemented] Runtime startup checks and backend selection are validated against documented environments.
+- [experimental] Runtime startup checks and backend selection are verified against documented environments.
 - [experimental] Cross-architecture dispatch behavior remains tracked via non-quantitative integration checks.
 - [experimental] Apple/Neural Engine behavior is treated as out-of-date until refreshed.
 
@@ -203,7 +206,7 @@ Previous heterogeneous computing frameworks including CUDA, OpenCL, and SYCL req
 Current development focuses on:
 - Apple/Kitsune acceleration refresh (Neural Engine and bridge path) [planned]
 - Vulkan/Kronos validation hardening for Apple-supported stacks [planned]
-- Documentation claim governance rollout and evidence tagging in all release docs [implemented]
+- Documentation claim governance rollout and evidence tagging in all release docs [planned]
 - Performance evidence refresh for NVIDIA/AMD baselines using the Kronos execution path [experimental]
 - Extension to additional accelerator architectures [planned]
 
@@ -320,9 +323,9 @@ make -f Makefile.smart VERBOSE=1
 
 ### Working Features
 - **Automatic Device Selection**: [implemented] heuristic-based selection with performance learning.
-- **Intelligent Device Juggling**: [implemented] runtime routing for CPU/GPU selection remains active.
+- **Intelligent Device Juggling**: [experimental] runtime routing for CPU/GPU selection remains active.
 - **CPU Backend**: [experimental] CPU path remains active in non-production experiments, with numeric performance removed for now.
-- **GPU Backend**: [implemented] Kronos production routing for AMD/NVIDIA.
+- **GPU Backend**: [planned] Kronos routing for AMD/NVIDIA is in active wiring.
 - **Direct AMDGPU Support**: [experimental] driver interface scaffolding retained for reference only.
 - **OpenGL Compute**: [experimental] retained for comparison, not production.
 - **Async Executor**: [experimental] runtime semantics under revalidation in Kronos-first flow.
@@ -333,10 +336,10 @@ make -f Makefile.smart VERBOSE=1
 - **Primary Development**: [experimental] AMD Ryzen 7 7700X + RX 7900 XT (Linux 6.14).
 - **GPU Architectures**: RDNA 3 (Navi 31), RDNA 2 (Raphael iGPU)
 - **Compiler**: GFortran 9.4+ with `-O3 -march=native -fopenmp`
-- **Backend Runtime**: [implemented] Kronos + Vulkan-capable runtime for AMD/NVIDIA paths.
+- **Backend Runtime**: [planned] Kronos + Vulkan-capable runtime for AMD/NVIDIA paths.
 
 ### Known Limitations
-- **Linux/AMD/NVIDIA via Kronos**: [implemented] supported in current production stance.
+- **Linux/AMD/NVIDIA via Kronos**: [planned] supported during Kronos-first wiring.
 - **Intel path** and legacy PM4 direct submission: [implemented] non-production and retained as reference only.
 - **Apple Neural Engine suite**: [planned] refresh required before production use.
 - **Multi-GPU support**: [planned] in-progress.
@@ -345,7 +348,7 @@ make -f Makefile.smart VERBOSE=1
 
 Quantified performance numbers are intentionally omitted until a benchmark evidence refresh completes.
 
-- **Auto-device routing**: [implemented] active for AMD/NVIDIA tasks.
+- **Auto-device routing**: [experimental] active for AMD/NVIDIA tasks.
 - **Correctness matrix**: [experimental] retained for historical comparison and under refresh.
 
 ## 9. Documentation

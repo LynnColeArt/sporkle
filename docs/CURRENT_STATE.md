@@ -8,9 +8,11 @@
 
 Current default production posture is Kronos-first and claim-scoped:
 - OpenGL and PM4 are retained as historical/reference paths.
-- AMD/NVIDIA production execution is through Kronos (**[implemented]** where validated).
+- AMD/NVIDIA production execution is through Kronos (**[planned]** while runtime telemetry is revalidated).
 - Apple Neural Engine acceleration is out-of-date and explicitly labeled as planned/experimental.
 - Performance claims below are tagged and scoped to the stated active runtime posture.
+
+During recovery, treat all **implemented** labels in this file as provisional until the recovery tasks in `docs/CREDIBILITY_RECOVERY_STATUS.md` are complete.
 
 ## Heterogeneous Memory Optimization Framework Progress
 
@@ -41,7 +43,7 @@ Sporkle has demonstrated performance in historical and archived OpenGL flows, pl
 
 ### Production Ready Components
 - [experimental] **GPU Execution**: Kronos routing remains under wiring work; explicit GPU requests fail fast by policy.
-- [implemented] **Framework Integration**: Production orchestration modules compile and execute.
+- [planned] **Framework Integration**: Production orchestration modules remain in recovery/staging.
 - [implemented] **Build System**: Backend selection matrix and integration points are present.
 - [experimental] **Device Detection**: Capability assessment for supported runtimes.
 - [implemented] **Memory Management**: Unified memory abstraction across devices.
@@ -146,7 +148,7 @@ This enables true democratization of AI development (**[experimental]**):
 
 **Current Production Stance (Kronos-focused)**:
 - Universal memory optimization principles are being reused across validated paths (**[experimental]**).
-- Production framework integration for AMD/NVIDIA via Kronos is **implemented**.
+- Production framework integration for AMD/NVIDIA via Kronos is **planned** and under active wiring.
 - Intelligent orchestration architecture is implemented with validation obligations on backend updates (**[implemented]**).
 
 **For Next Iteration**:

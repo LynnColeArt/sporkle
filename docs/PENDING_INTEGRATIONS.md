@@ -36,7 +36,7 @@ gpu_execute_conv2d_cached = gpu_execute_conv2d_ref(...)  ! Just passthrough!
 program_id = get_cached_program_v2(cache, shader_source, cache_key, compile_real_shader)
 ```
 
-## 2. Automatic Device Selection ✅ Built, ✅ Integrated
+## 2. Automatic Device Selection ✅ Built, ⚠️ Recovery-Phased Integration
 
 ### What We Built
 - `sporkle_conv2d_auto_selector.f90` - Heuristic-based device selection
@@ -44,11 +44,11 @@ program_id = get_cached_program_v2(cache, shader_source, cache_key, compile_real
 - Automatic CPU/GPU selection based on workload
 
 ### Current Status
-- ✅ Fully integrated into production
-- ✅ Working in sporkle_conv2d_juggling
-- ✅ Tested and validated
+- ⚠️ Integrated into orchestration path, with recovery-mode verification pending
+- ✅ Working in `sporkle_conv2d_juggling`
+- ⚠️ Tested and validated under active Kronos telemetry only
 
-## 3. GPU Async Executor ✅ Built, ✅ Integrated
+## 3. GPU Async Executor ✅ Built, ⚠️ Recovery-Phased Integration
 
 ### What We Built
 - `gpu_async_executor.f90` - Triple-buffered async execution
@@ -56,8 +56,8 @@ program_id = get_cached_program_v2(cache, shader_source, cache_key, compile_real
 - Fence-based synchronization
 
 ### Current Status
-- ✅ Integrated with sporkle_conv2d_juggling
-- ✅ Enabled by default
+- ✅ Integrated with `sporkle_conv2d_juggling`
+- ⚠️ Enabled by default under recovery policy
 - ⚠️ Production readiness is staged behind revalidated benchmarks
 
 ## 4. Dynamic Shader System ✅ Built, ⚠️ Not Integrated
@@ -118,8 +118,8 @@ program_id = get_cached_program_v2(cache, shader_source, cache_key, compile_real
 
 ## Summary Statistics
 
-- **Fully Integrated**: 2 components (Auto-selection, Async executor)
-- **Partially Integrated**: 1 component (Persistent kernels)
+- **Fully Integrated**: 0 components with final production guarantee
+- **Partially Integrated**: 3 components (Auto-selection, Async executor, Persistent kernels)
 - **Built but Not Integrated**: 2 active components (Dynamic shaders, Thread safety)
 - **Designed but Not Built**: 0 components
 

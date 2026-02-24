@@ -8,21 +8,21 @@ void print_usage(const char* prog) {
     printf("Usage: %s <command> [options]\n", prog);
     printf("\n");
     printf("Commands:\n");
-    printf("  kronos --selftest    Run Kronos runtime self-test (placeholder)\n");
-    printf("  kronos --info        Show Kronos runtime backend info (placeholder)\n");
+    printf("  kronos --selftest    Run Kronos runtime self-test [not implemented in CLI yet]\n");
+    printf("  kronos --info        Show Kronos runtime backend info [not implemented in CLI yet]\n");
     printf("  help                 Show this help message\n");
     printf("\n");
 }
 
 static int cmd_kronos_selftest(void) {
-    fprintf(stdout, "Kronos self-test placeholder for CLI pass.\n");
-    fprintf(stdout, "Use library-level runtime initialization paths for production checks.\n");
+    fprintf(stderr, "The CLI self-test command is not active in recovery mode.\n");
+    fprintf(stderr, "Use library-level runtime initialization and diagnostics for production checks.\n");
     return 2;
 }
 
 static int cmd_kronos_info(void) {
-    fprintf(stdout, "Kronos info placeholder for CLI pass.\n");
-    fprintf(stdout, "Runtime discovery/reporting is available through library APIs and logs.\n");
+    fprintf(stderr, "CLI backend info is not active in recovery mode.\n");
+    fprintf(stderr, "Use library-level diagnostics for backend discovery details.\n");
     return 2;
 }
 
