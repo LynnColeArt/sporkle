@@ -65,8 +65,8 @@ module sporkle_dynamic_shader_system
     procedure :: load_cache
   end type shader_system
   
-contains
-
+  contains
+  
   ! Initialize the dynamic shader system
   subroutine init_shader_system(system, device_id)
     type(shader_system), intent(out) :: system
@@ -370,18 +370,263 @@ contains
     
   end subroutine update_best_variant
   
+  function cache_dir_for_system(system) result(path)
+    class(shader_system), intent(in) :: system
+    character(len=512) :: path
+    
+    if (len_trim(system%cache_dir) > 0) then
+      path = system%cache_dir
+    else
+      path = "shader_cache/"
+    end if
+    
+    if (path(len_trim(path):len_trim(path)) /= '/') path = trim(path) // "/"
+    
+  end function cache_dir_for_system
+  
   ! Save cache to disk
   subroutine save_cache(system)
     class(shader_system), intent(in) :: system
-    ! TODO: Implement cache persistence
-    print *, "Saving shader cache (not implemented yet)"
+    integer :: unit
+    integer :: iostat_code
+    integer :: i, j
+    integer :: cache_int
+    character(len=512) :: cache_dir
+    character(len=512) :: cache_file
+    
+    if (.not. system%initialized) then
+      return
+    end if
+    
+    cache_dir = cache_dir_for_system(system)
+    cache_file = trim(cache_dir) // "dynamic_shader_cache.bin"
+    
+    ! Create cache directory if needed
+    call execute_command_line("mkdir -p '" // trim(cache_dir) // "'", &
+                             exitstat=iostat_code)
+    if (iostat_code /= 0) then
+      print *, "WARN: Unable to create shader cache directory: ", trim(cache_dir)
+      return
+    end if
+    
+    open(newunit=unit, file=trim(cache_file), access="stream", form="unformatted", &
+         status="replace", action="write", iostat=iostat_code)
+    if (iostat_code /= 0) then
+      print *, "WARN: Failed to open shader cache for writing: ", trim(cache_file)
+      return
+    end if
+    
+    cache_int = 143  ! "SHMC" marker
+    write(unit) cache_int
+    write(unit) system%cache_size
+    
+    do i = 1, system%cache_size
+      call write_cache_string(unit, trim(system%cache(i)%kernel_type))
+      
+      call write_cache_string(unit, trim(system%cache(i)%arch%vendor))
+      call write_cache_string(unit, trim(system%cache(i)%arch%arch_name))
+      write(unit) system%cache(i)%arch%wave_size
+      write(unit) system%cache(i)%arch%compute_units
+      write(unit) system%cache(i)%arch%max_workgroup_size
+      write(unit) system%cache(i)%arch%local_memory_size
+      write(unit) merge(1, 0, system%cache(i)%arch%has_dual_issue)
+      write(unit) merge(1, 0, system%cache(i)%arch%has_tensor_cores)
+      write(unit) system%cache(i)%arch%cache_line_size
+      write(unit) system%cache(i)%arch%measured_bandwidth_gbps
+      write(unit) system%cache(i)%arch%measured_tflops
+      
+      write(unit) size(system%cache(i)%variants)
+      write(unit) system%cache(i)%best_variant_idx
+      write(unit) system%cache(i)%total_executions
+      write(unit) merge(1, 0, system%cache(i)%is_learning)
+      
+      do j = 1, size(system%cache(i)%variants)
+        call write_cache_string(unit, trim(system%cache(i)%variants(j)%variant_id))
+        call write_cache_string(unit, trim(system%cache(i)%variants(j)%source_code))
+        write(unit) system%cache(i)%variants(j)%workgroup_size
+        write(unit) system%cache(i)%variants(j)%waves_per_workgroup
+        write(unit) merge(1, 0, system%cache(i)%variants(j)%uses_local_memory)
+        write(unit) merge(1, 0, system%cache(i)%variants(j)%uses_dual_issue)
+        write(unit) system%cache(i)%variants(j)%performance_gflops
+        write(unit) system%cache(i)%variants(j)%test_runs
+        write(unit) system%cache(i)%variants(j)%avg_execution_time_ms
+      end do
+    end do
+    
+    close(unit)
+    
   end subroutine save_cache
   
   ! Load cache from disk
   subroutine load_cache(system)
     class(shader_system), intent(inout) :: system
-    ! TODO: Implement cache loading
-    print *, "Loading shader cache (not implemented yet)"
+    integer :: unit
+    integer :: iostat_code
+    integer :: marker
+    integer :: cache_entries
+    integer :: i, j
+    integer :: variant_count
+    character(len=512) :: cache_dir
+    character(len=512) :: cache_file
+    character(len=:), allocatable :: tmp_string
+    integer :: best_variant
+    integer :: total_exec
+    integer :: int_bool
+    logical :: cache_file_exists
+    
+    cache_dir = cache_dir_for_system(system)
+    cache_file = trim(cache_dir) // "dynamic_shader_cache.bin"
+    
+    if (system%cache_size > 0) return
+    inquire(file=trim(cache_file), exist=cache_file_exists)
+    if (.not. cache_file_exists) return
+    
+    open(newunit=unit, file=trim(cache_file), access="stream", form="unformatted", &
+         status="old", action="read", iostat=iostat_code)
+    if (iostat_code /= 0) then
+      return
+    end if
+    
+    read(unit, iostat=iostat_code) marker
+    if (iostat_code /= 0 .or. marker /= 143) then
+      close(unit)
+      return
+    end if
+    
+    read(unit, iostat=iostat_code) cache_entries
+    if (iostat_code /= 0 .or. cache_entries <= 0) then
+      close(unit)
+      return
+    end if
+    
+    if (allocated(system%cache)) deallocate(system%cache)
+    allocate(system%cache(cache_entries))
+    system%cache_size = 0
+    
+    do i = 1, cache_entries
+      call read_cache_string(unit, tmp_string, iostat_code)
+      if (iostat_code /= 0) exit
+      system%cache(i)%kernel_type = tmp_string
+      if (allocated(tmp_string)) deallocate(tmp_string)
+
+      call read_cache_string(unit, tmp_string, iostat_code)
+      if (iostat_code /= 0) exit
+      system%cache(i)%arch%vendor = trim(tmp_string)
+      if (allocated(tmp_string)) deallocate(tmp_string)
+
+      call read_cache_string(unit, tmp_string, iostat_code)
+      if (iostat_code /= 0) exit
+      system%cache(i)%arch%arch_name = trim(tmp_string)
+      if (allocated(tmp_string)) deallocate(tmp_string)
+      if (iostat_code /= 0) exit
+      
+      read(unit, iostat=iostat_code) system%cache(i)%arch%wave_size
+      if (iostat_code /= 0) exit
+      read(unit, iostat=iostat_code) system%cache(i)%arch%compute_units
+      if (iostat_code /= 0) exit
+      read(unit, iostat=iostat_code) system%cache(i)%arch%max_workgroup_size
+      if (iostat_code /= 0) exit
+      read(unit, iostat=iostat_code) system%cache(i)%arch%local_memory_size
+      if (iostat_code /= 0) exit
+      read(unit, iostat=iostat_code) int_bool
+      if (iostat_code /= 0) exit
+      system%cache(i)%arch%has_dual_issue = (int_bool /= 0)
+      read(unit, iostat=iostat_code) int_bool
+      if (iostat_code /= 0) exit
+      system%cache(i)%arch%has_tensor_cores = (int_bool /= 0)
+      read(unit, iostat=iostat_code) system%cache(i)%arch%cache_line_size
+      if (iostat_code /= 0) exit
+      read(unit, iostat=iostat_code) system%cache(i)%arch%measured_bandwidth_gbps
+      if (iostat_code /= 0) exit
+      read(unit, iostat=iostat_code) system%cache(i)%arch%measured_tflops
+      if (iostat_code /= 0) exit
+      
+      read(unit, iostat=iostat_code) variant_count
+      if (iostat_code /= 0 .or. variant_count <= 0) exit
+      allocate(system%cache(i)%variants(variant_count))
+      
+      read(unit, iostat=iostat_code) best_variant
+      if (iostat_code /= 0) exit
+      system%cache(i)%best_variant_idx = best_variant
+      
+      read(unit, iostat=iostat_code) total_exec
+      if (iostat_code /= 0) exit
+      system%cache(i)%total_executions = total_exec
+      
+      read(unit, iostat=iostat_code) int_bool
+      if (iostat_code /= 0) exit
+      system%cache(i)%is_learning = (int_bool /= 0)
+      if (iostat_code /= 0) exit
+      
+      do j = 1, variant_count
+        call read_cache_string(unit, tmp_string, iostat_code)
+        if (iostat_code /= 0) exit
+        system%cache(i)%variants(j)%variant_id = tmp_string
+        if (allocated(tmp_string)) deallocate(tmp_string)
+
+        call read_cache_string(unit, tmp_string, iostat_code)
+        if (iostat_code /= 0) exit
+        system%cache(i)%variants(j)%source_code = tmp_string
+        if (allocated(tmp_string)) deallocate(tmp_string)
+        read(unit, iostat=iostat_code) system%cache(i)%variants(j)%workgroup_size
+        if (iostat_code /= 0) exit
+        read(unit, iostat=iostat_code) system%cache(i)%variants(j)%waves_per_workgroup
+        if (iostat_code /= 0) exit
+        read(unit, iostat=iostat_code) int_bool
+        if (iostat_code /= 0) exit
+        system%cache(i)%variants(j)%uses_local_memory = (int_bool /= 0)
+        read(unit, iostat=iostat_code) int_bool
+        if (iostat_code /= 0) exit
+        system%cache(i)%variants(j)%uses_dual_issue = (int_bool /= 0)
+        read(unit, iostat=iostat_code) system%cache(i)%variants(j)%performance_gflops
+        if (iostat_code /= 0) exit
+        read(unit, iostat=iostat_code) system%cache(i)%variants(j)%test_runs
+        if (iostat_code /= 0) exit
+        read(unit, iostat=iostat_code) system%cache(i)%variants(j)%avg_execution_time_ms
+        if (iostat_code /= 0) exit
+      end do
+      
+      system%cache_size = i
+    end do
+    
+    close(unit)
+    if (system%cache_size > 0) then
+      print '(A,I0,A)', "✅ Restored ", system%cache_size, " dynamic shader cache entries."
+    end if
+    
   end subroutine load_cache
+  
+  subroutine write_cache_string(unit, value)
+    integer, intent(in) :: unit
+    character(len=*), intent(in) :: value
+    integer :: length
+    
+    length = len_trim(value)
+    write(unit) length
+    if (length > 0) then
+      write(unit) value(1:length)
+    end if
+  end subroutine write_cache_string
+  
+  subroutine read_cache_string(unit, value, ios)
+    integer, intent(in) :: unit
+    character(len=:), allocatable, intent(out) :: value
+    integer, intent(out) :: ios
+    integer :: length
+    
+    read(unit, iostat=ios) length
+    if (ios /= 0) then
+      allocate(character(len=0) :: value)
+      return
+    end if
+    
+    if (length <= 0) then
+      allocate(character(len=0) :: value)
+      return
+    end if
+    
+    allocate(character(len=length) :: value)
+    read(unit, iostat=ios) value
+  end subroutine read_cache_string
 
 end module sporkle_dynamic_shader_system

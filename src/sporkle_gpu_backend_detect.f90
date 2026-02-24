@@ -28,24 +28,43 @@ contains
   ! Detect OpenGL version and compute capabilities
   function detect_opengl_version() result(info)
     type(opengl_info) :: info
-    character(len=256) :: glxinfo_path
-    integer :: unit, iostat
+    integer :: iostat
     character(len=512) :: line
     logical :: found_version
+    character(len=512) :: glxinfo_path
+    character(len=256) :: tmp_dir
+    integer :: status
+    integer :: unit_id
     
     ! First check if we can query OpenGL
     ! Try to read from glxinfo output file if it exists
-    glxinfo_path = "/tmp/sporkle_glxinfo.txt"
+    call get_environment_variable("TMPDIR", tmp_dir, status=status)
+    if (status /= 0 .or. len_trim(tmp_dir) == 0) then
+      call get_environment_variable("TEMP", tmp_dir, status=status)
+    end if
+    if (status /= 0 .or. len_trim(tmp_dir) == 0) then
+      call get_environment_variable("TMP", tmp_dir, status=status)
+    end if
+    if (status /= 0 .or. len_trim(tmp_dir) == 0) then
+      tmp_dir = "/tmp"
+    end if
+    if (tmp_dir(len_trim(tmp_dir):len_trim(tmp_dir)) /= "/") tmp_dir = trim(tmp_dir) // "/"
+    glxinfo_path = trim(tmp_dir) // "sporkle_glxinfo.txt"
+    
+    call execute_command_line("rm -f '" // trim(glxinfo_path) // "'", exitstat=status)
+    if (len_trim(glxinfo_path) > 0) then
+      call execute_command_line("glxinfo > '" // trim(glxinfo_path) // "' 2>/dev/null", exitstat=status)
+    end if
     
     ! In a real implementation, we'd create a minimal GL context
     ! For now, let's check if the libraries exist and parse any cached info
     
     inquire(file=glxinfo_path, exist=found_version)
     if (found_version) then
-      open(newunit=unit, file=glxinfo_path, status='old', action='read', iostat=iostat)
+      open(newunit=unit_id, file=glxinfo_path, status='old', action='read', iostat=iostat)
       if (iostat == 0) then
         do
-          read(unit, '(A)', iostat=iostat) line
+          read(unit_id, '(A)', iostat=iostat) line
           if (iostat /= 0) exit
           
           ! Parse OpenGL version
@@ -58,8 +77,9 @@ contains
             info%has_compute = .true.
           end if
         end do
-        close(unit)
+        close(unit_id)
       end if
+      call execute_command_line("rm -f '" // trim(glxinfo_path) // "'", exitstat=status)
     end if
     
     ! OpenGL 4.3+ has compute shaders

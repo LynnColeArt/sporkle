@@ -184,6 +184,7 @@ static VkResult copy_buffer(VkBuffer src, VkBuffer dst, VkDeviceSize size) {
 // Allocate buffer with staging support
 void* vk_allocate_buffer_with_staging(size_t size_bytes, int device_local) {
     vulkan_buffer_full_t* buf = calloc(1, sizeof(vulkan_buffer_full_t));
+    VkResult result;
     buf->size = size_bytes;
 
     if (device_local) {

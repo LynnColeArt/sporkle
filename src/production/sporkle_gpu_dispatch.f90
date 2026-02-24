@@ -52,9 +52,30 @@ module sporkle_gpu_dispatch
   ! GPU memory handle
   type :: gpu_memory
     integer(i64) :: size_bytes = 0
-    integer(i64) :: gpu_ptr = 0  ! Would be actual GPU pointer
+    integer(i64) :: gpu_ptr = 0  ! Real GPU virtual address or staged host pointer
     logical :: allocated = .false.
+    logical :: host_backed = .false.
   end type gpu_memory
+
+  interface
+    function c_malloc(size) bind(c, name="malloc")
+      import :: c_ptr, c_size_t
+      integer(c_size_t), value :: size
+      type(c_ptr) :: c_malloc
+    end function c_malloc
+    
+    subroutine c_free(ptr) bind(c, name="free")
+      import :: c_ptr
+      type(c_ptr), value :: ptr
+    end subroutine c_free
+    
+    subroutine c_memcpy(dst, src, n) bind(c, name="memcpy")
+      import :: c_ptr, c_size_t
+      type(c_ptr), value :: dst
+      type(c_ptr), value :: src
+      integer(c_size_t), value :: n
+    end subroutine c_memcpy
+  end interface
   
 contains
 
@@ -106,10 +127,11 @@ contains
       
       ! Initialize OpenGL for GPU computation
       device%opengl_ready = gpu_init()
-    if (.not. device%opengl_ready) then
-      print *, "⚠️  GPU detected but OpenGL initialization failed"
-      print *, "    This is a reference-only path; production dispatch remains Kronos-only."
-      call sporkle_error_sub("OpenGL initialization failed", .false.)
+      if (.not. device%opengl_ready) then
+        print *, "⚠️  GPU detected but OpenGL initialization failed"
+        print *, "    This is a reference-only path; production dispatch remains Kronos-only."
+        call sporkle_error_sub("OpenGL initialization failed", .false.)
+        error stop "sporkle_gpu_dispatch: OpenGL reference backend not available"
     end if
       
       print *, "🎮 GPU Device Initialized:"
@@ -133,8 +155,9 @@ contains
       end if
     else
       print *, "⚠️  No GPU detected"
-      print *, "   Using CPU fallback mode"
-      call sporkle_error_sub("GPU detection failed - using CPU fallback", .false.)
+      print *, "   Reference-only dispatch path cannot continue without GPU."
+      call sporkle_error_sub("GPU detection failed for reference dispatch", .false.)
+      error stop "sporkle_gpu_dispatch: no GPU detected for reference dispatch path"
     end if
     
     if (allocated(gpus)) deallocate(gpus)
@@ -168,7 +191,7 @@ contains
       kernel%work_group_size = 256
     case default
       print *, "Unknown kernel type: ", kernel_type
-      return
+      error stop "sporkle_gpu_dispatch: unknown kernel type"
     end select
     
     ! Kernel compilation handled by OpenGL reference implementation
@@ -182,22 +205,25 @@ contains
   function gpu_malloc(size_bytes) result(mem)
     integer(i64), intent(in) :: size_bytes
     type(gpu_memory) :: mem
-    integer :: ierr
+    type(c_ptr) :: host_ptr
+    integer(c_size_t) :: alloc_size
+    logical :: fallback_to_host
     
+    fallback_to_host = .false.
+
     ! Validate size
     if (size_bytes <= 0) then
       call sporkle_error_sub("Invalid GPU allocation size", .false.)
-      mem%allocated = .false.
-      return
+      error stop "sporkle_gpu_dispatch: invalid GPU allocation size"
     end if
     
     if (size_bytes > 24_int64 * 1024_int64**3) then
       call sporkle_error_sub("GPU allocation too large (>24GB)", .false.)
-      mem%allocated = .false.
-      return
+      error stop "sporkle_gpu_dispatch: GPU allocation size exceeds dispatch module limit"
     end if
     
     ! Use AMDGPU direct allocation
+    mem%size_bytes = size_bytes
     block
       use sporkle_amdgpu_direct
       type(amdgpu_buffer) :: gpu_buffer
@@ -208,40 +234,76 @@ contains
       gpu_buffer = amdgpu_allocate_buffer(get_default_device(), size_bytes, domain)
       
       if (gpu_buffer%handle == 0) then
-        print *, "❌ Failed to allocate GPU buffer"
-        mem%allocated = .false.
-        return
-      end if
-      
-      ! Map to GPU VA space
-      if (gpu_buffer%va_addr == 0) then
-        gpu_buffer%va_addr = allocate_gpu_va(size_bytes)
-        if (amdgpu_map_va(get_default_device(), gpu_buffer, gpu_buffer%va_addr) /= 0) then
-          print *, "❌ Failed to map GPU VA"
-          mem%allocated = .false.
-          return
+        fallback_to_host = .true.
+      else
+        ! Map to GPU VA space
+        if (gpu_buffer%va_addr == 0) then
+          gpu_buffer%va_addr = allocate_gpu_va(size_bytes)
+          if (amdgpu_map_va(get_default_device(), gpu_buffer, gpu_buffer%va_addr) /= 0) then
+            print *, "❌ Failed to map GPU VA; using host staging fallback"
+            fallback_to_host = .true.
+          else
+            mem%gpu_ptr = gpu_buffer%va_addr
+            mem%allocated = .true.
+            mem%host_backed = .false.
+          end if
+        else
+          mem%gpu_ptr = gpu_buffer%va_addr
+          mem%allocated = .true.
+          mem%host_backed = .false.
         end if
       end if
-      
-      mem%size_bytes = size_bytes
-      mem%gpu_ptr = gpu_buffer%va_addr  ! Real GPU virtual address
-      mem%allocated = .true.
-      
-      ! TODO: Store gpu_buffer handle for cleanup
+
+      if (mem%allocated) then
+        ! TODO: Store gpu_buffer handle for cleanup
+      end if
     end block
+
+    if (.not. mem%allocated) then
+      if (fallback_to_host) then
+        alloc_size = int(size_bytes, c_size_t)
+        host_ptr = c_malloc(alloc_size)
+        if (c_associated(host_ptr)) then
+          mem%gpu_ptr = transfer(host_ptr, mem%gpu_ptr)
+          mem%allocated = .true.
+          mem%host_backed = .true.
+          print *, "⚠️  Falling back to host-backed staging buffer for production dispatch module"
+        else
+          print *, "❌ Failed to allocate fallback staging buffer"
+          mem%size_bytes = 0
+          error stop "sporkle_gpu_dispatch: failed to allocate fallback staging buffer"
+        end if
+      else
+        error stop "sporkle_gpu_dispatch: direct GPU allocation failed and no fallback staging path was attempted"
+      end if
+    end if
     
-    print '(A,F0.2,A)', "🎯 Allocated ", real(size_bytes) / real(1024**2), " MB on GPU"
+    if (mem%allocated) then
+      print '(A,F0.2,A)', "🎯 Allocated ", real(size_bytes) / real(1024**2), " MB on GPU"
+    end if
     
   end function gpu_malloc
   
   ! Free GPU memory
   subroutine gpu_free(mem)
     type(gpu_memory), intent(inout) :: mem
+    real(sp) :: mb
+    type(c_ptr) :: host_ptr
     
     if (mem%allocated) then
+      mb = real(mem%size_bytes) / real(1024**2)
+      if (mem%host_backed) then
+        host_ptr = transfer(mem%gpu_ptr, host_ptr)
+        if (c_associated(host_ptr)) call c_free(host_ptr)
+      else
+        error stop "sporkle_gpu_dispatch: GPU-backed free requires vendor cleanup (not implemented)"
+      end if
+
       mem%allocated = .false.
+      mem%host_backed = .false.
       mem%gpu_ptr = 0
-      print '(A,F0.2,A)', "🗑️  Freed ", real(mem%size_bytes) / real(1024**2), " MB on GPU"
+      mem%size_bytes = 0
+      print '(A,F0.2,A)', "🗑️  Freed ", mb, " MB on GPU"
     end if
     
   end subroutine gpu_free
@@ -252,15 +314,52 @@ contains
     type(c_ptr), intent(in) :: src
     integer(i64), intent(in) :: size_bytes
     integer, intent(in) :: direction
+    type(c_ptr) :: dst_ptr
+    integer(c_size_t) :: copy_size
     
+    if (.not. dst%allocated) then
+      print *, "ERROR: GPU memcpy target has not been allocated"
+      error stop "sporkle_gpu_dispatch: GPU memcpy target not allocated"
+    end if
+    
+    if (size_bytes <= 0) then
+      print *, "ERROR: Copy size must be positive"
+      error stop "sporkle_gpu_dispatch: invalid memcpy size"
+    end if
+
+    if (size_bytes > dst%size_bytes) then
+      print *, "ERROR: Copy size exceeds destination staging buffer"
+      error stop "sporkle_gpu_dispatch: memcpy exceeds destination staging size"
+    end if
+
+    if (.not. c_associated(src)) then
+      print *, "ERROR: GPU memcpy source pointer is null"
+      error stop "sporkle_gpu_dispatch: memcpy source pointer is null"
+    end if
+
+    dst_ptr = transfer(dst%gpu_ptr, dst_ptr)
+    if (.not. c_associated(dst_ptr)) then
+      print *, "ERROR: GPU memcpy destination pointer is null"
+      error stop "sporkle_gpu_dispatch: memcpy destination pointer is null"
+    end if
+
+    if (.not. dst%host_backed) then
+      print *, "⚠️  GPU memcpy path is host-visible fallback only; validating mapped pointers"
+    end if
+
+    copy_size = int(size_bytes, c_size_t)
+
     select case(direction)
     case(HOST_TO_GPU)
-      print '(A,F0.2,A)', "📤 Copying ", real(size_bytes) / real(1024**2), " MB to GPU"
+      print '(A,F0.2,A)', "📤 Copying ", real(size_bytes) / real(1024**2), " MB to GPU staging"
+      call c_memcpy(dst_ptr, src, copy_size)
     case(GPU_TO_HOST)
-      print '(A,F0.2,A)', "📥 Copying ", real(size_bytes) / real(1024**2), " MB from GPU"
+      print '(A,F0.2,A)', "📥 Copying ", real(size_bytes) / real(1024**2), " MB from GPU staging"
+      call c_memcpy(src, dst_ptr, copy_size)
+    case default
+      print *, "ERROR: Invalid copy direction"
+      error stop "sporkle_gpu_dispatch: invalid copy direction"
     end select
-    
-    ! In real implementation, would do actual memory transfer
     
   end subroutine gpu_memcpy
   
@@ -294,13 +393,14 @@ contains
     print '(A)', "   ⚠️  Executing on OpenGL reference implementation (not production)"
     
     ! Reference execution path retained for compatibility; not part of production.
+    error stop "sporkle_gpu_dispatch: reference kernel launch is not wired for production"
     
   end subroutine launch_gpu_kernel
   
   ! Synchronize GPU
   subroutine gpu_synchronize()
     print *, "⏳ GPU synchronize..."
-    ! OpenGL reference implementation includes glFinish() for synchronization
+    error stop "sporkle_gpu_dispatch: reference synchronization path is non-production"
   end subroutine gpu_synchronize
   
   ! High-level conv2d execution using reference implementation
@@ -310,9 +410,8 @@ contains
     real(sp), intent(out) :: output(:)
     integer, intent(in) :: N, C, H, W, K, kernel_size, stride, pad, H_out, W_out
     
-    ! Execute using reference implementation only
-    execute_conv2d_gpu = gpu_execute_conv2d_ref(input, weights, output, &
-                                                N, C, H, W, K, kernel_size, stride, pad, H_out, W_out)
+    print *, "❌ sporkle_gpu_dispatch: direct GPU conv2d execution is non-production in this module"
+    error stop "sporkle_gpu_dispatch: reference GPU conv2d execution is disabled"
   end function execute_conv2d_gpu
 
 end module sporkle_gpu_dispatch

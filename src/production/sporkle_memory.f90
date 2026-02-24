@@ -269,6 +269,8 @@ contains
     logical :: success
     
     integer(c_size_t) :: copy_size
+    type(c_ptr) :: dst_ptr
+    type(c_ptr) :: src_ptr
     
     success = .false.
     
@@ -289,13 +291,57 @@ contains
     
     copy_size = int(size, c_size_t)
     
+    dst_ptr = dst%ptr
+    src_ptr = src%ptr
+    
     select case (direction)
     case (MEM_HOST_TO_HOST)
-      call c_memcpy(dst%ptr, src%ptr, copy_size)
+      if (.not. c_associated(dst_ptr) .or. .not. c_associated(src_ptr)) then
+        print *, "ERROR: Copy requires valid source and destination pointers"
+        return
+      end if
+      call c_memcpy(dst_ptr, src_ptr, copy_size)
       success = .true.
       
-    case (MEM_HOST_TO_DEVICE, MEM_DEVICE_TO_HOST, MEM_DEVICE_TO_DEVICE)
-      error stop "Device memory copy not implemented"
+    case (MEM_HOST_TO_DEVICE)
+      if (.not. c_associated(src_ptr) .or. .not. c_associated(dst_ptr)) then
+        print *, "ERROR: Copy requires mapped source and destination pointers"
+        return
+      end if
+      if (dst%device_id == -1) then
+        print *, "ERROR: MEM_HOST_TO_DEVICE destination must reference device memory"
+        return
+      end if
+      call c_memcpy(dst_ptr, src_ptr, copy_size)
+      success = .true.
+      
+    case (MEM_DEVICE_TO_HOST)
+      if (.not. c_associated(src_ptr) .or. .not. c_associated(dst_ptr)) then
+        print *, "ERROR: Copy requires mapped source and destination pointers"
+        return
+      end if
+      if (src%device_id == -1) then
+        print *, "ERROR: MEM_DEVICE_TO_HOST source must reference device memory"
+        return
+      end if
+      call c_memcpy(dst_ptr, src_ptr, copy_size)
+      success = .true.
+      
+    case (MEM_DEVICE_TO_DEVICE)
+      if (.not. c_associated(src_ptr) .or. .not. c_associated(dst_ptr)) then
+        print *, "ERROR: Copy requires mapped source and destination pointers"
+        return
+      end if
+      if (src%device_id /= dst%device_id) then
+        print *, "ERROR: Device-to-device copy requires same mapped device in this runtime"
+        return
+      end if
+      if (src%device_id == -1 .or. dst%device_id == -1) then
+        print *, "ERROR: Device-to-device copy requires device memory on both ends"
+        return
+      end if
+      call c_memcpy(dst_ptr, src_ptr, copy_size)
+      success = .true.
       
     case default
       print *, "ERROR: Invalid copy direction"
@@ -310,6 +356,10 @@ contains
     integer, intent(in) :: direction
     type(c_ptr), intent(in) :: stream
     logical :: success
+    
+    if (c_associated(stream)) then
+      print *, "WARN: async copy requested; executing synchronously in recovery runtime"
+    end if
     
     ! For now, just do synchronous copy
     success = memory_copy_sync(dst, src, size, direction)
@@ -333,11 +383,10 @@ contains
       set_size = int(handle%size, c_size_t)
     end if
     
-    if (handle%device_id == -1) then
-      call c_memset(handle%ptr, int(value, c_int), set_size)
-    else
-      error stop "Device memory set not implemented"
+    if (.not. c_associated(handle%ptr)) then
+      error stop "Attempt to set unallocated memory"
     end if
+    call c_memset(handle%ptr, int(value, c_int), set_size)
     
   end subroutine memory_set
   

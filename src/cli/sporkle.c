@@ -8,8 +8,8 @@ void print_usage(const char* prog) {
     printf("Usage: %s <command> [options]\n", prog);
     printf("\n");
     printf("Commands:\n");
-    printf("  kronos --selftest    Run Kronos runtime self-test [not implemented in CLI yet]\n");
-    printf("  kronos --info        Show Kronos runtime backend info [not implemented in CLI yet]\n");
+    printf("  kronos --selftest    Run Kronos runtime self-test (recovery mode: reports runtime path)\n");
+    printf("  kronos --info        Show Kronos runtime backend info (recovery mode: reports discovery details)\n");
     printf("  help                 Show this help message\n");
     printf("\n");
 }

@@ -188,7 +188,7 @@ contains
     end if
     
     if (backend%info%backend_type == GPU_BACKEND_NONE) then
-      call sporkle_warning("No GPU backend available - using CPU fallback")
+      error stop "sporkle_gpu_backend: no supported GPU backend available; hard-fail requested"
     end if
     
   end function init_gpu_backend

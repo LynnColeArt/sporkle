@@ -3,6 +3,7 @@
 ! tracked in separate recovery work.
 
 module sporkle_conv2d
+  ! Legacy production interface. GPU execution path is intentionally disabled.
   use kinds
   use cpu_conv2d_adaptive, only: conv2d_adaptive
   implicit none
@@ -47,10 +48,9 @@ contains
     real(sp), intent(in) :: input(:), weights(:)
     real(sp), intent(out) :: output(:)
     integer, intent(in) :: N, C, H, W, K, kernel_size, stride, pad, H_out, W_out
-    
-    print *, "❌ conv2d_gpu is disabled in this recovery profile."
-    print *, "   Use conv2d_auto with CPU fallback or direct CPU path until Kronos dispatch is active."
-    error stop "Kronos-native conv2d GPU dispatch is not yet active in this module."
+    print *, "❌ Legacy conv2d_gpu path is disabled in this recovery branch."
+    print *, "   Use production Kronos-backed execution path."
+    error stop "conv2d_gpu: legacy GPU execution is disabled"
   end subroutine conv2d_gpu
   
   subroutine conv2d_auto(input, weights, output, &
@@ -72,11 +72,12 @@ contains
       cpu_impl = impl_name
       print *, "CPU implementation set to: ", trim(cpu_impl)
     case("gpu")  
-      gpu_impl = impl_name
-      print *, "GPU implementation set to: ", trim(gpu_impl)
-      print *, "⚠️  GPU execution remains disabled in this recovery profile."
+      print *, "❌ GPU backend selection is disabled in production recovery mode."
+      print *, "   Legacy GPU implementations are non-functional."
+      error stop "conv2d_select_implementation: legacy GPU mode is disabled"
     case default
       print *, "Unknown device: ", trim(device)
+      error stop "conv2d_select_implementation: unknown device"
     end select
   end subroutine conv2d_select_implementation
   

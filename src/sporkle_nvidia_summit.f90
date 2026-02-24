@@ -40,10 +40,6 @@ module sporkle_nvidia_summit
   integer(c_int) :: summit_program = 0
   
   ! OpenGL constants we need
-  integer(c_int), parameter :: GL_MAP_WRITE_BIT = int(z'0002', c_int)
-  integer(c_int), parameter :: GL_MAP_PERSISTENT_BIT = int(z'0040', c_int)
-  integer(c_int), parameter :: GL_MAP_FLUSH_EXPLICIT_BIT = int(z'0010', c_int)
-  integer(c_int), parameter :: GL_DYNAMIC_STORAGE_BIT = int(z'0100', c_int)
   integer(c_int), parameter :: GL_CLIENT_STORAGE_BIT = int(z'0200', c_int)
   
   ! Interfaces

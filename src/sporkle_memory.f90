@@ -151,7 +151,7 @@ contains
   end function create_memory_host
   
   function create_memory_device(device, size, flags, tag) result(handle)
-    class(compute_device), intent(in) :: device
+    class(compute_device), intent(inout) :: device
     integer(i64), intent(in) :: size
     integer, intent(in), optional :: flags
     character(len=*), intent(in), optional :: tag
@@ -215,7 +215,7 @@ contains
   
   subroutine destroy_memory(handle, device)
     type(memory_handle), intent(inout) :: handle
-    class(compute_device), intent(in), optional :: device
+    class(compute_device), intent(inout), optional :: device
     type(sporkle_buffer) :: device_buffer
     
     if (.not. handle%is_allocated) then
@@ -262,6 +262,8 @@ contains
     logical :: success
     
     integer(c_size_t) :: copy_size
+    type(c_ptr) :: dst_ptr
+    type(c_ptr) :: src_ptr
     
     success = .false.
     
@@ -279,17 +281,45 @@ contains
       print *, "ERROR: Copy size exceeds buffer bounds"
       return
     end if
+
+    dst_ptr = dst%ptr
+    src_ptr = src%ptr
     
     copy_size = int(size, c_size_t)
     
     select case (direction)
     case (MEM_HOST_TO_HOST)
-      call c_memcpy(dst%ptr, src%ptr, copy_size)
+      call c_memcpy(dst_ptr, src_ptr, copy_size)
       success = .true.
       
-    case (MEM_HOST_TO_DEVICE, MEM_DEVICE_TO_HOST, MEM_DEVICE_TO_DEVICE)
-      print *, "ERROR: Device memory copy requires backend-specific implementation"
-      error stop "Unsupported device-to-device or host/device memory copy"
+    case (MEM_HOST_TO_DEVICE)
+      if (.not. c_associated(src_ptr) .or. .not. c_associated(dst_ptr)) then
+        print *, "ERROR: Copy requires mapped source and destination pointers"
+        return
+      end if
+      ! Recovery contract: device pointers are treated as host-visible when mapped.
+      call c_memcpy(dst_ptr, src_ptr, copy_size)
+      success = .true.
+
+    case (MEM_DEVICE_TO_HOST)
+      if (.not. c_associated(src_ptr) .or. .not. c_associated(dst_ptr)) then
+        print *, "ERROR: Copy requires mapped source and destination pointers"
+        return
+      end if
+      call c_memcpy(dst_ptr, src_ptr, copy_size)
+      success = .true.
+
+    case (MEM_DEVICE_TO_DEVICE)
+      if (src%device_id /= dst%device_id) then
+        print *, "ERROR: Device-to-device copy requires same mapped device in this runtime"
+        return
+      end if
+      if (.not. c_associated(src_ptr) .or. .not. c_associated(dst_ptr)) then
+        print *, "ERROR: Copy requires mapped source and destination pointers"
+        return
+      end if
+      call c_memcpy(dst_ptr, src_ptr, copy_size)
+      success = .true.
       
     case default
       print *, "ERROR: Invalid copy direction"
@@ -305,7 +335,10 @@ contains
     type(c_ptr), intent(in) :: stream
     logical :: success
     
-    ! For now, just do synchronous copy
+    if (c_associated(stream)) then
+      print *, "WARN: async copy stream provided; using synchronous fallback in current recovery runtime"
+    end if
+
     success = memory_copy_sync(dst, src, size, direction)
     
   end function memory_copy_async
@@ -326,13 +359,12 @@ contains
     else
       set_size = int(handle%size, c_size_t)
     end if
-    
-    if (handle%device_id == -1) then
-      call c_memset(handle%ptr, int(value, c_int), set_size)
-    else
-      print *, "ERROR: Device memory set requires backend-specific implementation"
-      error stop "Unsupported device memory operation"
+
+    if (.not. c_associated(handle%ptr)) then
+      error stop "Attempt to set unallocated memory"
     end if
+
+    call c_memset(handle%ptr, int(value, c_int), set_size)
     
   end subroutine memory_set
   
@@ -368,7 +400,7 @@ contains
   function pool_allocate(pool, size, device, tag) result(handle)
     class(memory_pool), intent(inout) :: pool
     integer(i64), intent(in) :: size
-    class(compute_device), intent(in), optional :: device
+    class(compute_device), intent(inout), optional :: device
     character(len=*), intent(in), optional :: tag
     type(memory_handle) :: handle
     
@@ -404,7 +436,7 @@ contains
   subroutine pool_deallocate(pool, handle, device)
     class(memory_pool), intent(inout) :: pool
     type(memory_handle), intent(inout) :: handle
-    class(compute_device), intent(in), optional :: device
+    class(compute_device), intent(inout), optional :: device
     
     integer :: i, j
 
@@ -456,7 +488,7 @@ contains
   
   subroutine pool_cleanup(pool, device)
     class(memory_pool), intent(inout) :: pool
-    class(compute_device), intent(in), optional :: device
+    class(compute_device), intent(inout), optional :: device
     integer :: i
     
     ! Deallocate all remaining allocations

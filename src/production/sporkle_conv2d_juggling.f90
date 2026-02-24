@@ -3,8 +3,8 @@
 !
 ! This module integrates:
 !   - CPU: Adaptive K×N tiling with AVX-512
-!   - GPU: OpenGL reference implementation
-!   - GPU: Async pipeline with triple buffering (status in telemetry only)
+!   - GPU: OpenGL reference implementation is archived reference only
+!   - GPU: Async pipeline is telemetry-only and intentionally hard-failed in recovery
 !   - Intelligent device selection and workload distribution
 !   - Universal memory optimization principles
 
@@ -16,6 +16,8 @@ module sporkle_conv2d_juggling
                                   gpu_get_program_id
   use gpu_async_executor
   use universal_memory_optimization, only: memory_params, detect_memory_params
+  use sporkle_discovery, only: scan_devices
+  use sporkle_mesh_types, only: KIND_CPU, KIND_AMD, KIND_NVIDIA, KIND_APPLE, mesh_topology
   implicit none
   
   private
@@ -39,7 +41,7 @@ module sporkle_conv2d_juggling
   
   ! Async GPU executor state
   type(gpu_async_state), save :: async_state
-  logical, save :: async_gpu_enabled = .true.
+  logical, save :: async_gpu_enabled = .false.
   logical, save :: async_gpu_initialized = .false.
   integer, save :: gpu_weight_buffer = 0
   integer(i64), save :: weight_hash = 0  ! Simple hash to detect weight changes
@@ -86,8 +88,13 @@ contains
 
   ! Initialize the juggling system
   subroutine init_juggling_system()
+    type(mesh_topology) :: mesh
     logical :: gpu_ok
     integer :: max_threads
+    integer :: i
+    real(sp) :: discovered_gflops
+    character(len=64) :: discovered_name
+    character(len=64) :: discovered_kind
     
     if (initialized) return
     
@@ -99,17 +106,62 @@ contains
     !$omp end parallel
     
     devices%cpu_available = .true.
-    devices%cpu_gflops = 100.0  ! Conservative estimate
+    devices%cpu_gflops = max(20.0_sp, real(devices%cpu_threads, sp) * 6.0_sp)
     
-    ! Try to initialize GPU
-    gpu_ok = gpu_init()
-    if (gpu_ok) then
-      devices%gpu_available = .true.
-      devices%gpu_gflops = 400.0  ! Conservative estimate for 7900 XTX
-      devices%gpu_name = "AMD Radeon RX 7900 XTX"
-      print *, "✅ GPU initialized successfully"
+    ! Discover GPUs and prefer the best candidate
+    mesh = scan_devices()
+    devices%gpu_available = .false.
+    devices%gpu_gflops = 0.0
+    devices%gpu_name = "None"
+
+    do i = 1, mesh%num_devices
+      if (.not. mesh%devices(i)%healthy) cycle
+      if (.not. allocated(mesh%devices(i)%caps%kind)) cycle
+      if (trim(mesh%devices(i)%caps%kind) == KIND_CPU) cycle
+
+      if (allocated(mesh%devices(i)%caps%pci_id)) then
+        discovered_name = trim(mesh%devices(i)%caps%pci_id)
+      else
+        write(discovered_name, '(A)') trim(mesh%devices(i)%caps%kind)
+      end if
+
+      if (mesh%devices(i)%caps%peak_gflops > 0.0_rk64) then
+        discovered_gflops = real(mesh%devices(i)%caps%peak_gflops, sp)
+      else if (mesh%devices(i)%caps%cores > 0) then
+        discovered_gflops = real(mesh%devices(i)%caps%cores, sp) * 5.0_sp
+      else
+        discovered_gflops = 150.0_sp
+      end if
+
+      if (.not. devices%gpu_available .or. discovered_gflops > devices%gpu_gflops) then
+        devices%gpu_available = .true.
+        devices%gpu_gflops = discovered_gflops
+        discovered_kind = trim(mesh%devices(i)%caps%kind)
+        if (discovered_kind == KIND_AMD) then
+          devices%gpu_name = trim(discovered_name) // " (AMD)"
+        else if (discovered_kind == KIND_NVIDIA) then
+          devices%gpu_name = trim(discovered_name) // " (NVIDIA)"
+        else if (discovered_kind == KIND_APPLE) then
+          devices%gpu_name = trim(discovered_name) // " (Apple)"
+        else
+          devices%gpu_name = trim(discovered_name)
+        end if
+        if (allocated(mesh%devices(i)%caps%driver_ver)) then
+          devices%gpu_name = trim(devices%gpu_name) // " - " // trim(mesh%devices(i)%caps%driver_ver)
+        end if
+      end if
+    end do
+
+    if (allocated(mesh%devices)) deallocate(mesh%devices)
+    if (allocated(mesh%links)) deallocate(mesh%links)
+
+    if (devices%gpu_available) then
+      print *, "✅ GPU discovered:", trim(devices%gpu_name), "with estimated", devices%gpu_gflops, "GFLOPS"
+      gpu_ok = gpu_init()
+      if (.not. gpu_ok) then
+        print *, "ℹ️  GPU reference backend not initialized; GPU dispatch remains limited"
+      end if
     else
-      devices%gpu_available = .false.
       print *, "ℹ️  GPU not available, using CPU only"
     end if
     
@@ -170,7 +222,7 @@ contains
     total_flops = int(N, int64) * int(K, int64) * int(H_out, int64) * int(W_out, int64) * &
                   int(C, int64) * int(kernel_size, int64) * int(kernel_size, int64) * 2_int64
     
-    ! Estimate memory footprint (GB)
+    ! Estimate memory footprint (GB) (informational only; not used for scheduling yet)
     workload_size_gb = real(size(input) + size(weights) + size(output)) * 4.0 / 1e9
     
     ! Intelligent device selection
@@ -186,14 +238,13 @@ contains
     ! Execute on selected device
     if (use_gpu) then
       if (async_gpu_enabled) then
-        print '(A,I0,A)', "🚀 GPU ASYNC selected for workload (", total_flops/1000000, " MFLOPS)"
-        time_ms = execute_gpu_async(input, weights, output, &
-                                   N, C, H, W, K, kernel_size, stride, pad, H_out, W_out)
+        print *, "❌ sporkle_conv2d_juggling: GPU async path is not active in recovery mode."
       else
-        print '(A,I0,A)', "🎮 GPU selected for workload (", total_flops/1000000, " MFLOPS)"
-        time_ms = gpu_execute_conv2d_ref(input, weights, output, &
-                                        N, C, H, W, K, kernel_size, stride, pad, H_out, W_out)
+        print *, "❌ sporkle_conv2d_juggling: GPU synchronous reference path is not active in recovery mode."
       end if
+      print *, "   Route this workload through a Kronos-backed conv2d path."
+      time_ms = -1.0_sp
+      error stop "sporkle_conv2d_juggling: GPU execution branch is hard-failed"
     else
       print '(A,I0,A)', "🖥️  CPU selected for workload (", total_flops/1000000, " MFLOPS)"
       time_ms = conv2d_adaptive(input, weights, output, &
@@ -239,49 +290,11 @@ contains
     integer, intent(in) :: N, C, H, W, K, kernel_size, stride, pad, H_out, W_out
     real(sp) :: time_ms
     
-    integer :: compute_program
-    integer(i64) :: weight_size, new_hash
-    integer(i64) :: start_time, end_time
-    real(dp) :: clock_rate
-    
-    ! Check if weights have changed
-    new_hash = compute_weight_hash(weights)
-    
-    ! Initialize async executor if needed
-    if (.not. async_gpu_initialized) then
-      ! Get compute program from GPU interface
-      compute_program = gpu_get_program_id()
-      
-      ! Create and upload weight buffer
-      weight_size = int(size(weights), int64) * 4  ! sizeof(float)
-      call glGenBuffers(1, gpu_weight_buffer)
-      call glBindBuffer(GL_SHADER_STORAGE_BUFFER, gpu_weight_buffer)
-      call glBufferData(GL_SHADER_STORAGE_BUFFER, weight_size, &
-                       c_loc(weights), GL_STATIC_DRAW)
-      
-      ! Initialize async executor
-      call gpu_async_executor_init(async_state, compute_program, gpu_weight_buffer)
-      async_gpu_initialized = .true.
-      weight_hash = new_hash
-    else if (new_hash /= weight_hash) then
-      ! Weights have changed - update buffer
-      print *, "ℹ️  Weights changed, updating GPU buffer..."
-      weight_size = int(size(weights), int64) * 4
-      call glBindBuffer(GL_SHADER_STORAGE_BUFFER, gpu_weight_buffer)
-      call glBufferData(GL_SHADER_STORAGE_BUFFER, weight_size, &
-                       c_loc(weights), GL_STATIC_DRAW)
-      weight_hash = new_hash
-    end if
-    
-    ! Execute using async pipeline
-    call system_clock(start_time, count_rate=clock_rate)
-    
-    call gpu_async_conv2d(async_state, input, weights, output, &
-                         N, C, H, W, K, kernel_size, stride, pad, H_out, W_out)
-    
-    call system_clock(end_time)
-    time_ms = real((end_time - start_time) / clock_rate * 1000.0, real32)
-    
+    print *, "❌ sporkle_conv2d_juggling: async helper is disabled in this recovery branch."
+    print *, "   GPU execution is intentionally hard-failed to avoid synthetic behavior."
+    time_ms = -1.0_sp
+    error stop "sporkle_conv2d_juggling: execute_gpu_async is disabled"
+
   end function execute_gpu_async
   
 end module sporkle_conv2d_juggling

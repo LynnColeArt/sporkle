@@ -72,8 +72,9 @@ ifeq ($(UNAME_S),Linux)
         GPU_TYPE = CPU
         $(info No supported GPU detected, using CPU configuration)
     endif
-    
-else ifeq ($(UNAME_S),Darwin)
+endif
+
+ifeq ($(UNAME_S),Darwin)
     PLATFORM = MACOS
     GPU_TYPE = APPLE
     LDFLAGS = -framework Metal -framework Foundation -framework CoreGraphics
@@ -116,6 +117,15 @@ COMMON_MODULES = \
     $(SRC_DIR)/sporkle_fortran_params.f90 \
     $(SRC_DIR)/sporkle_shader_parser_v2.f90 \
     $(SRC_DIR)/sporkle_fortran_shaders_v2.f90 \
+    $(SRC_DIR)/production/timing_helpers.f90 \
+    $(SRC_DIR)/production/gemm_simd_optimized_v2.f90 \
+    $(SRC_DIR)/production/cpu_conv2d_adaptive.f90 \
+    $(SRC_DIR)/production/gemm_simd_prefetch.f90 \
+    $(SRC_DIR)/production/gemm_simd_streaming.f90 \
+    $(SRC_DIR)/production/gemm_simd_optimized.f90 \
+    $(SRC_DIR)/production/universal_memory_optimization.f90 \
+    $(SRC_DIR)/cpu_device.f90 \
+    $(SRC_DIR)/sporkle_discovery.f90 \
     $(SRC_DIR)/sporkle_universal_device_selector.f90 \
     $(SRC_DIR)/sporkle_hardware_profiler.f90 \
     $(SRC_DIR)/sporkle_autotuner_enhanced.f90
@@ -138,14 +148,8 @@ ifeq ($(PLATFORM),LINUX)
             
         ifeq ($(HAS_OPENGL),yes)
             PLATFORM_MODULES += $(SRC_DIR)/production/gpu_opengl_interface.f90 \
-                                $(SRC_DIR)/sporkle_gpu_opengl.f90 \
                                 $(SRC_DIR)/sporkle_gpu_dispatch.f90 \
-                                $(SRC_DIR)/reference/universal_memory_optimization.f90 \
-                                $(SRC_DIR)/reference/gemm_simd_optimized.f90 \
                                 $(SRC_DIR)/reference/cpu_conv2d_reference.f90 \
-                                $(SRC_DIR)/production/timing_helpers.f90 \
-                                $(SRC_DIR)/production/gemm_simd_optimized_v2.f90 \
-                                $(SRC_DIR)/production/cpu_conv2d_adaptive.f90 \
                                 $(SRC_DIR)/production/gpu_fence_primitives.f90 \
                                 $(SRC_DIR)/production/gpu_opengl_interface_fence.f90 \
                                 $(SRC_DIR)/production/gpu_unified_buffers.f90 \
@@ -160,16 +164,18 @@ ifeq ($(PLATFORM),LINUX)
                                 $(SRC_DIR)/production/gpu_binary_cache.f90 \
                                 $(SRC_DIR)/production/gpu_program_cache_v2.f90 \
                                 $(SRC_DIR)/production/gpu_program_cache_threadsafe.f90 \
-                                $(SRC_DIR)/production/gpu_ring_buffer.f90 \
                                 # $(SRC_DIR)/production/gpu_dynamic_shader_cache.f90 \
                                 $(SRC_DIR)/production/sporkle_conv2d_v3.f90
             PLATFORM_C_SOURCES += $(SRC_DIR)/reference/gpu_opengl_reference.c \
                                   $(SRC_DIR)/gpu_dynamic_shader_exec.c \
                                   $(SRC_DIR)/production/aligned_alloc.c \
+                                  $(SRC_DIR)/production/prefetch_wrapper.c \
+                                  $(SRC_DIR)/production/streaming_wrapper.c
         endif
         
         ifeq ($(HAS_VULKAN),yes)
-            PLATFORM_MODULES += $(SRC_DIR)/production/gpu_vulkan_interface.f90
+            PLATFORM_MODULES += $(SRC_DIR)/production/gpu_vulkan_interface.f90 \
+                                $(SRC_DIR)/production/sporkle_conv2d_unified.f90
             PLATFORM_C_SOURCES += $(SRC_DIR)/production/gpu_vulkan_backend.c \
                                   $(SRC_DIR)/production/glsl_to_spirv.c \
                                   $(SRC_DIR)/production/conv2d_spirv_bytecode.c \
@@ -193,31 +199,42 @@ ifeq ($(PLATFORM),LINUX)
         ifeq ($(HAS_OPENGL),yes)
             PLATFORM_MODULES += $(SRC_DIR)/production/gpu_opengl_interface.f90 \
                                 $(SRC_DIR)/sporkle_gpu_dispatch.f90 \
-                                $(SRC_DIR)/production/universal_memory_optimization.f90 \
-                                $(SRC_DIR)/reference/gemm_simd_optimized.f90 \
-                                $(SRC_DIR)/production/gemm_simd_optimized_v2.f90 \
-                                $(SRC_DIR)/reference/cpu_conv2d_reference.f90 \
-                                $(SRC_DIR)/production/timing_helpers.f90 \
-                                $(SRC_DIR)/production/cpu_conv2d_adaptive.f90 \
                                 $(SRC_DIR)/production/gpu_fence_primitives.f90 \
+                                $(SRC_DIR)/reference/cpu_conv2d_reference.f90 \
                                 $(SRC_DIR)/production/gpu_async_executor.f90 \
-                                $(SRC_DIR)/production/sporkle_conv2d_v2.f90 \
                                 $(SRC_DIR)/production/gpu_program_cache.f90 \
                                 $(SRC_DIR)/production/gpu_binary_cache.f90 \
                                 $(SRC_DIR)/production/gpu_program_cache_threadsafe.f90
+            PLATFORM_C_SOURCES += $(SRC_DIR)/reference/gpu_opengl_reference.c \
+                                  $(SRC_DIR)/gpu_dynamic_shader_exec.c \
+                                  $(SRC_DIR)/production/aligned_alloc.c \
+                                  $(SRC_DIR)/production/prefetch_wrapper.c \
+                                  $(SRC_DIR)/production/streaming_wrapper.c \
+                                  $(SRC_DIR)/production/rdtsc_wrapper.c
+        endif
+        ifeq ($(HAS_VULKAN),yes)
+            PLATFORM_MODULES += $(SRC_DIR)/production/gpu_vulkan_interface.f90 \
+                                $(SRC_DIR)/production/sporkle_conv2d.f90 \
+                                $(SRC_DIR)/production/sporkle_conv2d_unified.f90 \
+                                $(SRC_DIR)/production/sporkle_conv2d_v2.f90
+            PLATFORM_C_SOURCES += $(SRC_DIR)/production/gpu_vulkan_backend.c \
+                                  $(SRC_DIR)/production/glsl_to_spirv.c \
+                                  $(SRC_DIR)/production/conv2d_spirv_bytecode.c \
+                                  $(SRC_DIR)/production/valid_spirv_generator.c \
+                                  $(SRC_DIR)/production/minimal_valid_spirv.c \
+                                  $(SRC_DIR)/production/vulkan_buffer_utils.c \
+                                  $(SRC_DIR)/production/vulkan_timing.c
         endif
     endif
     
     ifeq ($(GPU_TYPE),CPU)
         # CPU-only configuration - minimal dependencies
-        PLATFORM_MODULES = \
-            $(SRC_DIR)/cpu_device.f90 \
-            $(SRC_DIR)/reference/cpu_conv2d_reference.f90 \
-            $(SRC_DIR)/reference/gemm_simd_optimized.f90 \
-            $(SRC_DIR)/production/gemm_simd_optimized_v2.f90 \
-            $(SRC_DIR)/production/timing_helpers.f90 \
-            $(SRC_DIR)/production/cpu_conv2d_adaptive.f90 \
-            $(SRC_DIR)/reference/universal_memory_optimization.f90
+        PLATFORM_MODULES =
+
+        PLATFORM_C_SOURCES = \
+            $(SRC_DIR)/production/aligned_alloc.c \
+            $(SRC_DIR)/production/prefetch_wrapper.c \
+            $(SRC_DIR)/production/streaming_wrapper.c
         
         # No GPU libraries needed for CPU-only build
         LDFLAGS += -fopenmp

@@ -5,7 +5,7 @@ module sporkle_conv2d_v2
   use kinds
   use sporkle_universal_device_selector
   use gpu_async_executor
-  use sporkle_conv2d_unified, only: sporkle_conv2d_unified
+  use sporkle_conv2d_unified, only: kronos_conv2d_unified
   implicit none
   
   private
@@ -148,7 +148,7 @@ contains
         print '(A)', " 🚀 Dispatching through Kronos unified path."
       end if
 
-      elapsed_ms = sporkle_conv2d_unified(input, weights, output, &
+      elapsed_ms = kronos_conv2d_unified(input, weights, output, &
                                           N, C, H, W, K, kernel_size, stride, pad, &
                                           device_type="kronos")
     else

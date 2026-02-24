@@ -9,6 +9,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include <unistd.h>
+#include <errno.h>
 
 // External SPIR-V compiler functions
 extern int compile_glsl_to_spirv(const char* glsl_source, const char* output_path);
@@ -23,6 +25,48 @@ extern float vk_dispatch_compute_timed(VkCommandBuffer cmd_buffer,
                                      VkDescriptorSet descriptor_set,
                                      uint32_t groups_x, uint32_t groups_y, uint32_t groups_z,
                                      uint32_t query_base);
+
+static void resolve_temp_dir(char* out, size_t out_len) {
+    const char* temp_dir = getenv("TMPDIR");
+    if (temp_dir == NULL || temp_dir[0] == '\0') {
+        temp_dir = getenv("TEMP");
+    }
+    if (temp_dir == NULL || temp_dir[0] == '\0') {
+        temp_dir = getenv("TMP");
+    }
+    if (temp_dir == NULL || temp_dir[0] == '\0') {
+        temp_dir = "/tmp";
+    }
+
+    snprintf(out, out_len, "%s", temp_dir);
+    if (out_len > 1 && out[strlen(out) - 1] != '/') {
+        strncat(out, "/", out_len - strlen(out) - 1);
+    }
+}
+
+static int make_temp_file_path(char* out, size_t out_len, const char* stem, const char* ext) {
+    char template_path[320];
+    char temp_dir[256];
+    int fd;
+
+    resolve_temp_dir(temp_dir, sizeof(temp_dir));
+    int ext_len = (ext != NULL) ? (int)strlen(ext) : 0;
+    snprintf(template_path, sizeof(template_path), "%s%s_XXXXXX%s", temp_dir, stem, (ext != NULL) ? ext : "");
+
+    if (ext_len > 0) {
+        fd = mkstemps(template_path, ext_len);
+    } else {
+        fd = mkstemp(template_path);
+    }
+
+    if (fd < 0) {
+        return -1;
+    }
+
+    close(fd);
+    snprintf(out, out_len, "%s", template_path);
+    return 0;
+}
 
 // Module initialization
 // Removed constructor - might be causing issues
@@ -775,10 +819,14 @@ void* vk_create_conv2d_shader() {
     size_t spirv_size;
     const uint32_t* spirv_data;
     void* shader = NULL;
+    char spirv_path[320];
 
     // First try to compile from GLSL if compiler available
     const char* glsl_source = generate_vulkan_conv2d_shader();
-    const char* spirv_path = "/tmp/conv2d.spv";
+    if (make_temp_file_path(spirv_path, sizeof(spirv_path), "sporkle_vulkan_conv2d", ".spv") != 0) {
+        printf("❌ Failed to allocate temporary SPIR-V path\n");
+        return NULL;
+    }
 
     printf("🔧 Attempting to compile GLSL to SPIR-V...\n");
     if (compile_glsl_to_spirv(glsl_source, spirv_path) == 0) {
@@ -789,6 +837,7 @@ void* vk_create_conv2d_shader() {
             printf("🔍 Loaded SPIR-V: %zu bytes\n", spirv_size);
             shader = vk_compile_shader(loaded_data, spirv_size);
             free(loaded_data);
+            unlink(spirv_path);
             if (shader) {
                 printf("✅ Using freshly compiled SPIR-V shader\n");
                 return shader;
@@ -801,6 +850,7 @@ void* vk_create_conv2d_shader() {
     } else {
         printf("❌ GLSL compilation failed\n");
     }
+    unlink(spirv_path);
 
     // Fallback to pre-compiled bytecode
     printf("⚠️  Using pre-compiled SPIR-V bytecode (limited functionality)\n");
@@ -936,21 +986,29 @@ void* vk_create_conv2d_shader_real() {
     // Load and compile the real conv2d shader
     const char* shader_path = "src/production/conv2d_real_compute.glsl";
     char command[512];
+    char spirv_path[320];
+    
+    if (make_temp_file_path(spirv_path, sizeof(spirv_path), "sporkle_conv2d_real", ".spv") != 0) {
+        printf("❌ Failed to allocate temporary SPIR-V path\n");
+        return NULL;
+    }
 
     // Compile to SPIR-V
     snprintf(command, sizeof(command),
-             "glslc -fshader-stage=compute %s -o /tmp/conv2d_real.spv 2>&1",
-             shader_path);
+             "glslc -fshader-stage=compute %s -o %s 2>&1",
+             shader_path, spirv_path);
 
     printf("🔧 Compiling real conv2d shader...\n");
     if (system(command) != 0) {
         printf("\u274c Failed to compile real conv2d shader\n");
+        unlink(spirv_path);
         return NULL;
     }
 
     // Load SPIR-V
     size_t spirv_size;
-    void* spirv_data = load_spirv_file("/tmp/conv2d_real.spv", &spirv_size);
+    void* spirv_data = load_spirv_file(spirv_path, &spirv_size);
+    unlink(spirv_path);
     if (!spirv_data) {
         printf("\u274c Failed to load compiled SPIR-V\n");
         return NULL;

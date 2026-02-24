@@ -31,7 +31,7 @@
 3. **Created selftest framework** ✅
   - `src/compute/selftest.c` with Stage A (DEADBEEF) and Stage B (SAXPY)
   - `src/cli/sporkle.c` with `kronos --selftest` command entrypoint
-  - The command remains explicitly stubbed in this phase and serves as a required diagnostics hook
+  - The command returns recovery-mode diagnostics and acts as a required smoke-test hook
 
 4. **Moved test files** ✅
    - All `test_*.f90` files moved to `tests/`

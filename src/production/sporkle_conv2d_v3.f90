@@ -22,7 +22,7 @@ module sporkle_conv2d_v3
                                 gpu_async_executor_init, gpu_async_executor_cleanup
   use sporkle_conv2d_auto_selector, only: init_auto_selector
   use cpu_conv2d_adaptive, only: conv2d_adaptive
-  use sporkle_conv2d_unified, only: sporkle_conv2d_unified
+  use sporkle_conv2d_unified, only: kronos_conv2d_unified
   use timing_helpers
   use iso_c_binding, only: c_ptr, c_f_pointer, c_loc
   implicit none
@@ -209,7 +209,7 @@ contains
       call c_f_pointer(output_ptr, output_flat, [size(output)])
 
       print *, "🚀 Conv2D V3 dispatching through unified Kronos path."
-      kronos_time_ms = sporkle_conv2d_unified(input_flat, weights_flat, output_flat, &
+      kronos_time_ms = kronos_conv2d_unified(input_flat, weights_flat, output_flat, &
                                               N, C, H, W, K, KH, actual_stride_h, actual_pad_h, &
                                               device_type="kronos")
       if (kronos_time_ms <= 0.0_sp) then

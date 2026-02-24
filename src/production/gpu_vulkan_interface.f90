@@ -17,6 +17,8 @@ module gpu_vulkan_interface
   public :: gpu_compile_shader_vulkan, gpu_dispatch_vulkan
   public :: gpu_wait_fence_vulkan, gpu_create_fence_vulkan
   public :: vk_create_conv2d_shader, vk_dispatch_conv2d
+  public :: gpu_map_buffer_vulkan, gpu_unmap_buffer_vulkan
+  public :: gpu_copy_to_buffer_vulkan, gpu_copy_from_buffer_vulkan
   
   ! Vulkan handle types (opaque pointers)
   type(c_ptr) :: vk_instance = c_null_ptr
@@ -111,6 +113,13 @@ module gpu_vulkan_interface
       integer(c_int), value :: N, C, H, W, K, kernel_size, stride, pad, H_out, W_out
       real(c_float) :: vk_dispatch_conv2d
     end function
+
+    ! Raw memcpy for buffer copy helpers
+    subroutine c_memcpy(dst, src, n) bind(C, name="memcpy")
+      import :: c_ptr, c_size_t
+      type(c_ptr), value :: dst, src
+      integer(c_size_t), value :: n
+    end subroutine
   end interface
   
 contains
@@ -162,6 +171,60 @@ contains
       call vk_free_buffer(buffer)
     end if
   end subroutine gpu_free_buffer_vulkan
+
+  ! Map a Vulkan buffer for host access
+  type(c_ptr) function gpu_map_buffer_vulkan(buffer)
+    type(c_ptr), intent(in) :: buffer
+
+    gpu_map_buffer_vulkan = vk_map_buffer(buffer)
+    if (.not. c_associated(gpu_map_buffer_vulkan)) then
+      print *, "❌ Failed to map Vulkan buffer for host access"
+    end if
+  end function gpu_map_buffer_vulkan
+
+  ! Unmap a Vulkan buffer
+  subroutine gpu_unmap_buffer_vulkan(buffer)
+    type(c_ptr), intent(in) :: buffer
+    call vk_unmap_buffer(buffer)
+  end subroutine gpu_unmap_buffer_vulkan
+
+  ! Copy host bytes into a host-visible Vulkan buffer.
+  logical function gpu_copy_to_buffer_vulkan(buffer, src, n_bytes)
+    type(c_ptr), intent(in) :: buffer
+    type(c_ptr), intent(in) :: src
+    integer(i64), intent(in) :: n_bytes
+    type(c_ptr) :: mapped
+
+    gpu_copy_to_buffer_vulkan = .false.
+    if (.not. c_associated(buffer) .or. .not. c_associated(src)) return
+    if (n_bytes <= 0) return
+
+    mapped = vk_map_buffer(buffer)
+    if (.not. c_associated(mapped)) return
+
+    call c_memcpy(mapped, src, int(n_bytes, c_size_t))
+    gpu_copy_to_buffer_vulkan = .true.
+    call vk_unmap_buffer(buffer)
+  end function gpu_copy_to_buffer_vulkan
+
+  ! Copy bytes from a host-visible Vulkan buffer back to host memory.
+  logical function gpu_copy_from_buffer_vulkan(buffer, dst, n_bytes)
+    type(c_ptr), intent(in) :: buffer
+    type(c_ptr), intent(in) :: dst
+    integer(i64), intent(in) :: n_bytes
+    type(c_ptr) :: mapped
+
+    gpu_copy_from_buffer_vulkan = .false.
+    if (.not. c_associated(buffer) .or. .not. c_associated(dst)) return
+    if (n_bytes <= 0) return
+
+    mapped = vk_map_buffer(buffer)
+    if (.not. c_associated(mapped)) return
+
+    call c_memcpy(dst, mapped, int(n_bytes, c_size_t))
+    gpu_copy_from_buffer_vulkan = .true.
+    call vk_unmap_buffer(buffer)
+  end function gpu_copy_from_buffer_vulkan
   
   ! Compile shader from SPIR-V binary
   type(c_ptr) function gpu_compile_shader_vulkan(spirv_file)

@@ -17,6 +17,7 @@ module gpu_dynamic_shader_cache
   use sporkle_dynamic_shader_system
   use sporkle_rdna_shader_generator
   use sporkle_glsl_generator, only: convolution_config
+  use sporkle_gpu_kernels, only: get_gemm_shader
   use gpu_opengl_interface
   use gpu_binary_cache
   use omp_lib
@@ -129,11 +130,15 @@ contains
                               auto_load=.true., &
                               enable_thread_safety=.true.)
     
-    ! Detect GPU architecture
-    cache%gpu_arch = detect_gpu_architecture(0)  ! Use device 0
-    
     ! Initialize dynamic shader system
-    ! TODO: Properly initialize when shader system is ready
+    call init_shader_system(cache%shader_gen, 0)
+    if (.not. cache%shader_gen%initialized) then
+      cache%initialized = .false.
+      print *, "ERROR: Failed to initialize dynamic shader system"
+      return
+    end if
+    
+    cache%gpu_arch = cache%shader_gen%current_arch
     
     cache%initialized = .true.
     
@@ -155,13 +160,33 @@ contains
     integer :: program_id
     
     character(len=:), allocatable :: shader_source
-    character(len=128) :: cache_key, variant_suffix
+    character(len=128) :: cache_key
     type(convolution_config) :: conv_config
     real(dp) :: start_time, end_time
     integer :: thread_id
     
     if (.not. cache%initialized) then
       print *, "ERROR: Dynamic cache not initialized!"
+      program_id = 0
+      return
+    end if
+    if (.not. cache%shader_gen%initialized) then
+      print *, "ERROR: Dynamic shader generator not initialized!"
+      program_id = 0
+      return
+    end if
+    if (KH <= 0 .or. KW <= 0 .or. C <= 0 .or. K <= 0) then
+      print *, "ERROR: Invalid convolution dimensions for dynamic shader generation"
+      program_id = 0
+      return
+    end if
+    if (H <= 0 .or. W <= 0 .or. N <= 0) then
+      print *, "ERROR: Input dimensions must be positive for dynamic shader generation"
+      program_id = 0
+      return
+    end if
+    if (stride_h <= 0 .or. stride_w <= 0) then
+      print *, "ERROR: Strides must be positive for dynamic shader generation"
       program_id = 0
       return
     end if
@@ -176,6 +201,12 @@ contains
     conv_config%kernel_width = KW
     conv_config%output_height = (H + 2*pad_h - KH) / stride_h + 1
     conv_config%output_width = (W + 2*pad_w - KW) / stride_w + 1
+    if (conv_config%output_height <= 0 .or. conv_config%output_width <= 0) then
+      print *, "ERROR: Invalid convolution output shape for dynamic shader generation"
+      program_id = 0
+      return
+    end if
+
     conv_config%output_channels = K
     conv_config%stride_y = stride_h
     conv_config%stride_x = stride_w
@@ -202,9 +233,12 @@ contains
     
     call cpu_time(start_time)
     
-    ! For now, use a placeholder shader source
-    ! TODO: Integrate actual dynamic shader generation
-    shader_source = "// Dynamic shader placeholder"
+    shader_source = get_optimal_shader(cache%shader_gen, "conv2d", conv_config)
+    if (.not. allocated(shader_source) .or. len_trim(shader_source) == 0) then
+      print '(A,I0,A,A)', "[Thread ", thread_id, "] ❌ Dynamic shader generation failed for: ", trim(cache_key)
+      program_id = 0
+      return
+    end if
     
     ! Compile the shader
     program_id = compile_compute_shader(shader_source)
@@ -243,6 +277,16 @@ contains
       program_id = 0
       return
     end if
+    if (M <= 0 .or. N <= 0 .or. K <= 0) then
+      print *, "ERROR: Invalid GEMM dimensions for dynamic shader generation"
+      program_id = 0
+      return
+    end if
+    if (transA .or. transB) then
+      print *, "ERROR: Dynamic GEMM generation currently supports only non-transposed input"
+      program_id = 0
+      return
+    end if
     
     ! Generate cache key
     write(cache_key, '(A,I0,A,I0,A,I0,A,L1,A,L1,A,A)') &
@@ -253,8 +297,12 @@ contains
     program_id = find_in_program_cache(cache, cache_key)
     if (program_id > 0) return
     
-    ! Generate and compile
-    shader_source = "// GEMM shader placeholder"
+    shader_source = get_gemm_shader()
+    if (.not. allocated(shader_source) .or. len_trim(shader_source) == 0) then
+      print *, "ERROR: GEMM shader generation produced no source"
+      program_id = 0
+      return
+    end if
     program_id = compile_compute_shader(shader_source)
     
     if (program_id > 0) then
@@ -415,9 +463,8 @@ contains
         return
       end if
       
-      ! For now, use the reference implementation while dynamic path lands
-      ! TODO: Extend to support arbitrary shader source compilation
-      if (gpu_compile_conv2d_shader() /= 0) then
+      prog_id = gpu_compile_custom_shader_fortran(shader_source)
+      if (prog_id > 0) then
         prog_id = gpu_get_program_id()
         if (prog_id <= 0) then
           print *, "WARNING: Got invalid program ID from compilation"

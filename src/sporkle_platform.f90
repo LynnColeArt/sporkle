@@ -43,24 +43,36 @@ contains
   function detect_platform() result(info)
     type(platform_info) :: info
     character(len=256) :: uname_s, uname_r
+    character(len=512) :: uname_s_path, uname_r_path
     integer :: status
+    integer :: file_unit
+    integer :: io_status
     logical :: exists
     
     ! Try uname first (Unix-like systems)
-    call execute_command_line("uname -s > /tmp/sporkle_uname_s.txt", exitstat=status)
+    uname_s_path = resolve_temp_path("sporkle_uname_s.txt")
+    uname_r_path = resolve_temp_path("sporkle_uname_r.txt")
+    
+    call execute_command_line("uname -s > '" // trim(uname_s_path) // "'", exitstat=status)
     
     if (status == 0) then
       ! Read the output
-      open(unit=10, file="/tmp/sporkle_uname_s.txt", status='old', action='read')
-      read(10, '(A)') uname_s
-      close(10)
+      open(newunit=file_unit, file=trim(uname_s_path), status='old', action='read', iostat=io_status)
+      if (io_status == 0) then
+        read(file_unit, '(A)') uname_s
+        close(file_unit)
+      end if
+      call execute_command_line("rm -f '" // trim(uname_s_path) // "'", exitstat=status)
       
       ! Get kernel version too
-      call execute_command_line("uname -r > /tmp/sporkle_uname_r.txt", exitstat=status)
+      call execute_command_line("uname -r > '" // trim(uname_r_path) // "'", exitstat=status)
       if (status == 0) then
-        open(unit=10, file="/tmp/sporkle_uname_r.txt", status='old', action='read')
-        read(10, '(A)') uname_r
-        close(10)
+        open(newunit=file_unit, file=trim(uname_r_path), status='old', action='read', iostat=io_status)
+        if (io_status == 0) then
+          read(file_unit, '(A)') uname_r
+          close(file_unit)
+        end if
+        call execute_command_line("rm -f '" // trim(uname_r_path) // "'", exitstat=status)
       end if
       
       if (index(uname_s, "Linux") > 0) then
@@ -202,6 +214,28 @@ contains
     inquire(file=path, exist=exists)
     
   end subroutine check_library_exists
+
+  function resolve_temp_path(file_name) result(path)
+    character(len=*), intent(in) :: file_name
+    character(len=512) :: path
+    character(len=256) :: tmp_dir
+    integer :: io_status
+    
+    call get_environment_variable("TMPDIR", tmp_dir, status=io_status)
+    if (io_status /= 0 .or. len_trim(tmp_dir) == 0) then
+      call get_environment_variable("TEMP", tmp_dir, status=io_status)
+    end if
+    if (io_status /= 0 .or. len_trim(tmp_dir) == 0) then
+      call get_environment_variable("TMP", tmp_dir, status=io_status)
+    end if
+    if (io_status /= 0 .or. len_trim(tmp_dir) == 0) then
+      tmp_dir = "/tmp"
+    end if
+    
+    if (tmp_dir(len_trim(tmp_dir):len_trim(tmp_dir)) /= '/') tmp_dir = trim(tmp_dir) // "/"
+    path = trim(tmp_dir) // trim(file_name)
+    
+  end function resolve_temp_path
   
   subroutine print_platform_info(info)
     type(platform_info), intent(in) :: info

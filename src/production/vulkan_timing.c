@@ -98,10 +98,7 @@ void vk_reset_queries(uint32_t first_query, uint32_t query_count) {
         return;
     }
 
-    VkResult result = vkResetQueryPool(g_device, g_query_pool, first_query, query_count);
-    if (result != VK_SUCCESS) {
-        printf("❌ Failed to reset query pool\n");
-    }
+    vkResetQueryPool(g_device, g_query_pool, first_query, query_count);
 }
 
 // Timed dispatch helper

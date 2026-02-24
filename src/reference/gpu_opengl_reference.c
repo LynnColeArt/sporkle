@@ -190,6 +190,27 @@ static const char* conv2d_shader_source =
 // Shader program handle
 static GLuint g_compute_program = 0;
 
+static void query_compute_workgroup_size(GLuint program, GLint* size_x, GLint* size_y, GLint* size_z) {
+    GLint sizes[3];
+
+    if (size_x == NULL || size_y == NULL || size_z == NULL) return;
+    if (!gpu_is_initialized() || program == 0) {
+        *size_x = 1;
+        *size_y = 1;
+        *size_z = 1;
+        return;
+    }
+
+    sizes[0] = 1;
+    sizes[1] = 1;
+    sizes[2] = 1;
+    glGetProgramiv(program, GL_COMPUTE_WORK_GROUP_SIZE, sizes);
+
+    *size_x = (sizes[0] > 0) ? sizes[0] : 1;
+    *size_y = (sizes[1] > 0) ? sizes[1] : 1;
+    *size_z = (sizes[2] > 0) ? sizes[2] : 1;
+}
+
 // Compile and link compute shader
 int gpu_compile_conv2d_shader() {
     if (!gpu_is_initialized()) {
@@ -348,7 +369,14 @@ double gpu_execute_conv2d(const float* input, const float* weights, float* outpu
     
     // Calculate work groups
     int total_elements = params->N * params->K * params->H_out * params->W_out;
-    int num_groups = (total_elements + 63) / 64;  // 64 is local_size_x
+    GLint wg_size_x = 64, wg_size_y = 1, wg_size_z = 1;
+    size_t invocations_per_group;
+    int num_groups_x;
+    query_compute_workgroup_size(g_compute_program, &wg_size_x, &wg_size_y, &wg_size_z);
+    invocations_per_group = (size_t)wg_size_x * (size_t)wg_size_y * (size_t)wg_size_z;
+    if (invocations_per_group == 0) invocations_per_group = 64;
+    num_groups_x = (total_elements + (int)invocations_per_group - 1) / (int)invocations_per_group;
+    if (num_groups_x < 1) num_groups_x = 1;
     
     // Use GPU timestamp queries for precise timing (like original test)
     GLuint query_ids[2];
@@ -361,7 +389,7 @@ double gpu_execute_conv2d(const float* input, const float* weights, float* outpu
     
     // Execute multiple times
     for (int i = 0; i < bench_iters; i++) {
-        glDispatchCompute(num_groups, 1, 1);
+        glDispatchCompute(num_groups_x, 1, 1);
         glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
     }
     glFinish();
@@ -436,27 +464,111 @@ int gpu_get_compute_program() {
     return (int)g_compute_program;
 }
 
-// TODO: Implement custom shader compilation
-// For now, return a stub to keep the build working
 int gpu_compile_custom_shader(const char* shader_source) {
-    printf("gpu_compile_custom_shader: Custom shader compilation not yet implemented\n");
+    GLuint compute_shader;
+    GLuint program;
+    GLint compile_status;
+    GLint log_length;
+
+    if (!gpu_is_initialized()) {
+        printf("GPU not initialized\n");
+        return 0;
+    }
+
+    if (shader_source == NULL) {
+        printf("Invalid shader source\n");
+        return 0;
+    }
+
+    printf("Compiling custom shader...\n");
     printf("  Shader source length: %zu characters\n", strlen(shader_source));
-    // Return reference program ID as fallback
+
+    // Create compute shader
+    compute_shader = glCreateShader(GL_COMPUTE_SHADER);
+    if (compute_shader == 0) {
+        printf("Failed to create compute shader\n");
+        return 0;
+    }
+
+    // Compile custom source
+    glShaderSource(compute_shader, 1, &shader_source, NULL);
+    glCompileShader(compute_shader);
+
+    glGetShaderiv(compute_shader, GL_COMPILE_STATUS, &compile_status);
+    if (compile_status != GL_TRUE) {
+        glGetShaderiv(compute_shader, GL_INFO_LOG_LENGTH, &log_length);
+        if (log_length > 0) {
+            char* log = (char*)malloc(log_length);
+            glGetShaderInfoLog(compute_shader, log_length, NULL, log);
+            printf("Custom shader compilation failed:\n%s\n", log);
+            free(log);
+        }
+        glDeleteShader(compute_shader);
+        return 0;
+    }
+
+    // Create program
+    program = glCreateProgram();
+    if (program == 0) {
+        printf("Failed to create compute program\n");
+        glDeleteShader(compute_shader);
+        return 0;
+    }
+
+    // Attach and link
+    glAttachShader(program, compute_shader);
+    glLinkProgram(program);
+    glGetProgramiv(program, GL_LINK_STATUS, &compile_status);
+    if (compile_status != GL_TRUE) {
+        glGetProgramiv(program, GL_INFO_LOG_LENGTH, &log_length);
+        if (log_length > 0) {
+            char* log = (char*)malloc(log_length);
+            glGetProgramInfoLog(program, log_length, NULL, log);
+            printf("Custom program linking failed:\n%s\n", log);
+            free(log);
+        }
+        glDeleteProgram(program);
+        glDeleteShader(compute_shader);
+        return 0;
+    }
+
+    glDeleteShader(compute_shader);
+
+    if (g_compute_program != 0) {
+        glDeleteProgram(g_compute_program);
+    }
+    g_compute_program = program;
+
+    printf("Custom compute shader compiled successfully\n");
     return (int)g_compute_program;
 }
 
-// TODO: Implement custom shader execution  
-// For now, fall back to reference implementation
 float gpu_execute_conv2d_custom(int custom_program, const float* input, const float* weights, float* output,
                                 int N, int C, int H, int W, int K, int kernel_size, int stride, int pad, int H_out, int W_out) {
-    printf("gpu_execute_conv2d_custom: Custom execution not yet implemented, using reference\n");
-    
-    // Fall back to reference implementation
+    GLuint active_program;
+    GLuint previous_program;
+
+    if (custom_program <= 0) {
+        printf("gpu_execute_conv2d_custom: Invalid program handle, falling back to current program\n");
+        active_program = g_compute_program;
+    } else {
+        active_program = (GLuint)custom_program;
+    }
+
+    if (active_program == 0) {
+        printf("gpu_execute_conv2d_custom: No executable program available\n");
+        return -1.0f;
+    }
+
     conv2d_params_t params = {
         .N = N, .C = C, .H = H, .W = W, .K = K,
         .kernel_size = kernel_size, .stride = stride, .pad = pad,
         .H_out = H_out, .W_out = W_out
     };
-    
-    return (float)gpu_execute_conv2d(input, weights, output, &params);
+
+    previous_program = g_compute_program;
+    g_compute_program = active_program;
+    float result = (float)gpu_execute_conv2d(input, weights, output, &params);
+    g_compute_program = previous_program;
+    return result;
 }

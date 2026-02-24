@@ -1,39 +1,27 @@
 // Streaming (non-temporal) store wrappers for Fortran
-// Provides access to cache-bypass store instructions
+// Portable fallback implementation to keep symbol coverage in all toolchains.
 
-#include <immintrin.h>
-#include <string.h>
 #include <stdint.h>
+#include <string.h>
 
-// Wrapper for _mm512_stream_ps (AVX-512 non-temporal store)
 void mm512_stream_ps_wrapper(float* addr, const float* data) {
-    // Load the data into a vector register
-    __m512 vec = _mm512_loadu_ps(data);
-    
-    // Stream it out, bypassing cache
-    _mm512_stream_ps(addr, vec);
+    memcpy(addr, data, 16 * sizeof(float));
 }
 
-// Wrapper for _mm256_stream_ps (AVX2 non-temporal store) 
 void mm256_stream_ps_wrapper(float* addr, const float* data) {
-    __m256 vec = _mm256_loadu_ps(data);
-    _mm256_stream_ps(addr, vec);
+    memcpy(addr, data, 8 * sizeof(float));
 }
 
-// Wrapper for _mm_stream_ps (SSE non-temporal store)
 void mm128_stream_ps_wrapper(float* addr, const float* data) {
-    __m128 vec = _mm_loadu_ps(data);
-    _mm_stream_ps(addr, vec);
+    memcpy(addr, data, 4 * sizeof(float));
 }
 
-// Memory fence to ensure streaming stores complete
 void sfence_wrapper(void) {
-    _mm_sfence();
+    __asm__ __volatile__("sfence" : : : "memory");
 }
 
-// Non-temporal prefetch (different from regular prefetch)
 void prefetchnta_wrapper(const void* addr) {
-    _mm_prefetch((const char*)addr, _MM_HINT_NTA);
+    __builtin_prefetch(addr, 0, 0);
 }
 
 // Utility: Check if address is aligned for streaming stores

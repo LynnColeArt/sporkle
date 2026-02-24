@@ -246,10 +246,10 @@ contains
 
     if (device%name == "") device%name = "Unknown compute device"
     if (device%caps%peak_gflops == 0.0_dp) then
-      device%caps%peak_gflops = real(handle%caps%cores, rk64) * 20.0_dp
+      print '(A,A)', "  ⚠️  Unmeasured peak performance for ", trim(device%name)
     end if
     if (device%caps%memory_bandwidth == 0.0_dp) then
-      device%caps%memory_bandwidth = max(10.0_dp, real(handle%caps%vram_mb, rk64) / 1024.0_dp)
+      print '(A,A)', "  ⚠️  Unmeasured memory bandwidth for ", trim(device%name)
     end if
   end subroutine map_mesh_device
   
@@ -387,11 +387,12 @@ contains
     cpu_device%device_type = UNI_DEVICE_CPU_PERFORMANCE
     cpu_device%device_id = 0
     cpu_device%available = .true.
-    cpu_device%caps%peak_gflops = 20.0_dp
-    cpu_device%caps%memory_bandwidth = 50.0_dp
+    cpu_device%caps%peak_gflops = 0.0_dp
+    cpu_device%caps%memory_bandwidth = 0.0_dp
     cpu_device%caps%supports_fp64 = .true.
     cpu_device%caps%supports_async = .true.
     cpu_device%caps%vector_width = 16
+    print '(A)', "  [fallback] legacy CPU fallback includes no measured perf."
     call add_device(this, cpu_device)
     
   end subroutine discover_cpu_devices
@@ -405,11 +406,12 @@ contains
     gpu_device%device_id = 0
     gpu_device%available = .true.
     gpu_device%name = "Discrete GPU (legacy fallback)"
-    gpu_device%caps%peak_gflops = 1000.0_dp
-    gpu_device%caps%memory_bandwidth = 400.0_dp
+    gpu_device%caps%peak_gflops = 0.0_dp
+    gpu_device%caps%memory_bandwidth = 0.0_dp
     gpu_device%caps%supports_fp16 = .true.
     gpu_device%caps%supports_async = .true.
     gpu_device%caps%warp_size = 32
+    print '(A)', "  [fallback] legacy GPU fallback includes no measured perf."
     call add_device(this, gpu_device)
     
   end subroutine discover_gpu_devices
@@ -524,16 +526,95 @@ contains
     class(universal_device_selector), intent(inout) :: this
     type(workload_characteristics), intent(in) :: workload
     type(device_routing_decision) :: decision
-    
-    ! TODO: Implement workload splitting across multiple devices
-    ! For now, just use single device selection
-    decision = this%select_optimal_device(workload)
+    integer :: i
+    integer :: primary_idx, secondary_idx
+    real(dp) :: primary_score, secondary_score
+    real(dp), allocatable :: scores(:)
+    real(dp) :: score_sum
+    real(dp) :: primary_ratio, secondary_ratio
+    logical :: has_secondary
+
+    if (this%num_devices <= 1) then
+      decision = this%select_optimal_device(workload)
+      return
+    end if
+
+    allocate(scores(this%num_devices))
+    scores = 0.0_dp
+
+    primary_idx = 0
+    secondary_idx = 0
+    primary_score = -1.0_dp
+    secondary_score = -1.0_dp
+
+    do i = 1, this%num_devices
+      if (.not. this%devices(i)%available) cycle
+      if (this%devices(i)%busy) cycle
+      scores(i) = this%get_device_score(i, workload)
+
+      if (scores(i) > primary_score) then
+        secondary_score = primary_score
+        secondary_idx = primary_idx
+        primary_score = scores(i)
+        primary_idx = i
+      else if (scores(i) > secondary_score) then
+        secondary_score = scores(i)
+        secondary_idx = i
+      end if
+    end do
+
+    if (primary_idx <= 0) then
+      deallocate(scores)
+      decision = this%select_optimal_device(workload)
+      return
+    end if
+
+    score_sum = primary_score + max(0.0_dp, secondary_score)
+    if (score_sum <= 0.0_dp) score_sum = 1.0_dp
+
+    primary_ratio = primary_score / score_sum
+    secondary_ratio = 0.0_dp
+    has_secondary = .false.
+
+    if (secondary_idx > 0 .and. secondary_score > 0.0_dp) then
+      secondary_ratio = secondary_score / score_sum
+      if (primary_ratio + secondary_ratio >= 0.20_dp) has_secondary = .true.
+    end if
+
+    decision%split_ratios = 0.0_dp
+    if (has_secondary) then
+      decision%primary_device = primary_idx
+      allocate(decision%secondary_devices(1))
+      decision%secondary_devices(1) = secondary_idx
+      decision%split_ratios(1) = primary_ratio
+      decision%split_ratios(2) = secondary_ratio
+      decision%expected_gflops = primary_ratio * this%devices(primary_idx)%caps%peak_gflops + &
+                                  secondary_ratio * this%devices(secondary_idx)%caps%peak_gflops
+      write(decision%reasoning, '(A,I0,A,F0.3,A,I0,A,F0.3,A)') &
+        "Split across devices ", primary_idx, " (", primary_ratio, ") and ", secondary_idx, " (", secondary_ratio, ")"
+    else
+      decision%primary_device = primary_idx
+      decision%split_ratios(1) = 1.0_dp
+      decision%expected_gflops = this%devices(primary_idx)%caps%peak_gflops
+      write(decision%reasoning, '(A,I0,A,F0.1,A)') &
+        "Single-device routing to ", primary_idx, " at ", decision%expected_gflops, " GFLOPS"
+    end if
+
+    deallocate(scores)
+    return
     
   end function select_multi_device
   
   subroutine rebalance_load(this)
     class(universal_device_selector), intent(inout) :: this
-    ! TODO: Implement dynamic load rebalancing
+    integer :: i
+
+    if (.not. allocated(this%devices)) return
+
+    do i = 1, this%num_devices
+      if (.not. this%devices(i)%available) cycle
+      this%devices(i)%busy = this%devices(i)%current_load > 0.95_dp
+    end do
   end subroutine rebalance_load
 
 end module sporkle_universal_device_selector

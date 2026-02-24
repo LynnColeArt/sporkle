@@ -18,7 +18,7 @@ module sporkle_conv2d_auto_selector
   use sporkle_universal_device_selector
   use cpu_conv2d_adaptive
   use gpu_async_executor
-  use sporkle_conv2d_unified, only: sporkle_conv2d_unified
+  use sporkle_conv2d_unified, only: kronos_conv2d_unified
   implicit none
   
   private
@@ -182,7 +182,7 @@ contains
     integer, intent(in) :: N, C, H, W, K, kernel_size, stride, pad, H_out, W_out
     real(sp) :: time_ms
 
-    time_ms = sporkle_conv2d_unified(input, weights, output, &
+    time_ms = kronos_conv2d_unified(input, weights, output, &
                                      N, C, H, W, K, kernel_size, stride, pad, &
                                      device_type="kronos")
 

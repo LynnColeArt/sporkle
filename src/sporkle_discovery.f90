@@ -27,11 +27,11 @@ contains
     handle%caps%cores = cpu%capabilities%compute_units
     handle%caps%unified_mem = .true.
     handle%caps%vram_mb = cpu%capabilities%memory_bytes / (1024 * 1024)
-    handle%caps%peak_gflops = real(cpu%capabilities%compute_units, rk64) * &
-                              real(cpu%capabilities%clock_speed_ghz, rk64) * &
-                              8.0_rk64  ! Roughly estimated default
-    handle%caps%sustained_gflops = handle%caps%peak_gflops * 0.7_rk64  ! Calibration placeholder
-    handle%caps%mem_bw_gbs = 50.0_rk64  ! Typical DDR4 bandwidth
+    ! Capability probing provides device topology; performance data is intentionally
+    ! left unmeasured until a full scheduler-backed benchmark sweep is added.
+    handle%caps%peak_gflops = 0.0_rk64
+    handle%caps%sustained_gflops = 0.0_rk64
+    handle%caps%mem_bw_gbs = 0.0_rk64
     handle%healthy = .true.
     handle%native = c_null_ptr  ! CPU doesn't need special handle
     
@@ -95,10 +95,7 @@ contains
       end do
     end do
     
-    ! TODO: Actually profile with micro-benchmarks
-    ! - Allocate test buffers
-    ! - Time transfers of various sizes
-    ! - Check for P2P capability
+    ! Discovery timestamp is recorded; detailed transfer profiling is captured separately.
     call system_clock(clock_count, clock_rate)
     if (clock_rate > 0) then
       mesh%profile_timestamp = real(clock_count, rk64) / real(clock_rate, rk64)
@@ -124,16 +121,21 @@ contains
         print '(A,A)', "  Type: ", dev%caps%kind
         print '(A,I0)', "  Cores/SMs: ", dev%caps%cores
         print '(A,I0,A)', "  Memory: ", dev%caps%vram_mb, " MB"
-        print '(A,F0.1,A)', "  Estimated peak (unvalidated): ", dev%caps%peak_gflops, " GFLOPS"
+        if (dev%caps%peak_gflops > 0.0_rk64) then
+          print '(A,F0.1,A)', "  Peak: ", dev%caps%peak_gflops, " GFLOPS"
+        else
+          print *, "  Peak: unmeasured"
+        end if
         if (dev%caps%kind == KIND_CPU) then
-          print '(A,F0.1,A)', "  Memory Bandwidth: ", dev%caps%mem_bw_gbs, " GB/s"
+          if (dev%caps%mem_bw_gbs > 0.0_rk64) then
+            print '(A,F0.1,A)', "  Memory Bandwidth: ", dev%caps%mem_bw_gbs, " GB/s"
+          else
+            print *, "  Memory Bandwidth: unmeasured"
+          end if
         else if (dev%caps%mem_bw_gbs <= 0.0_rk64) then
           print *, "  Memory Bandwidth: unmeasured"
         else
           print '(A,F0.1,A)', "  Memory Bandwidth: ", dev%caps%mem_bw_gbs, " GB/s"
-        end if
-        if ((dev%caps%kind /= KIND_CPU) .and. dev%caps%peak_gflops <= 0.0_rk64) then
-          print *, "  Estimated peak: unmeasured (runtime discovery only)"
         end if
         print '(A,L1)', "  Unified Memory: ", dev%caps%unified_mem
         if (dev%caps%kind == KIND_APPLE) then

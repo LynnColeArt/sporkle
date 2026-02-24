@@ -3,7 +3,7 @@ module sporkle_conv2d_unified
   ! Production intent: unsupported or unimplemented GPU/Kronos launch requests fail hard.
 
   use kinds
-  use iso_c_binding, only: c_ptr, c_sizeof, c_loc
+  use iso_c_binding, only: c_ptr, c_sizeof, c_loc, c_float, c_null_ptr, c_associated
   use sporkle_conv2d, only: conv2d_cpu
   use gpu_vulkan_interface, only: gpu_allocate_buffer_vulkan, gpu_copy_from_buffer_vulkan, gpu_copy_to_buffer_vulkan, &
                                    gpu_init_vulkan, &
@@ -11,7 +11,7 @@ module sporkle_conv2d_unified
   implicit none
   private
   
-  public :: sporkle_conv2d_unified
+  public :: kronos_conv2d_unified
 
   logical, save :: vulkan_conv2d_initialized = .false.
   logical, save :: vulkan_conv2d_unavailable = .false.
@@ -19,7 +19,7 @@ module sporkle_conv2d_unified
   
 contains
 
-  function sporkle_conv2d_unified(input, weights, output, &
+  function kronos_conv2d_unified(input, weights, output, &
                                  N, C, H, W, K, kernel_size, stride, pad, &
                                  device_type) result(time_ms)
     real(sp), intent(in), target :: input(:), weights(:)
@@ -51,7 +51,7 @@ contains
     case("gpu", "kronos", "amd", "nvidia", "apple", "apple_neural", "neural", "neural_engine")
       time_ms = execute_gpu_conv2d()
     case("auto")
-      if (workload_flops > 5_000_000_int64) then
+      if (workload_flops > 5000000_int64) then
         time_ms = execute_gpu_conv2d()
       else
         time_ms = execute_cpu_conv2d()
@@ -213,6 +213,6 @@ contains
       end if
     end subroutine mark_vulkan_conv2d_unavailable
     
-  end function sporkle_conv2d_unified
+  end function kronos_conv2d_unified
 
 end module sporkle_conv2d_unified

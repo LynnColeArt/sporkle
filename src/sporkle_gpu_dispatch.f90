@@ -48,9 +48,30 @@ module sporkle_gpu_dispatch
   ! GPU memory handle
   type :: gpu_memory
     integer(i64) :: size_bytes = 0
-    integer(i64) :: gpu_ptr = 0  ! Placeholder handle in non-production fallback path
+    integer(i64) :: gpu_ptr = 0
     logical :: allocated = .false.
   end type gpu_memory
+
+  ! C runtime interfaces for host-backed staging fallback
+  interface
+    function c_malloc(size) bind(c, name="malloc")
+      import :: c_ptr, c_size_t
+      integer(c_size_t), value :: size
+      type(c_ptr) :: c_malloc
+    end function c_malloc
+    
+    subroutine c_free(ptr) bind(c, name="free")
+      import :: c_ptr
+      type(c_ptr), value :: ptr
+    end subroutine c_free
+    
+    subroutine c_memcpy(dst, src, n) bind(c, name="memcpy")
+      import :: c_ptr, c_size_t
+      type(c_ptr), value :: dst
+      type(c_ptr), value :: src
+      integer(c_size_t), value :: n
+    end subroutine c_memcpy
+  end interface
   
 contains
 
@@ -177,7 +198,8 @@ contains
   function gpu_malloc(size_bytes) result(mem)
     integer(i64), intent(in) :: size_bytes
     type(gpu_memory) :: mem
-    integer :: ierr
+    type(c_ptr) :: host_ptr
+    integer(c_size_t) :: alloc_size
     
     ! Validate size
     if (size_bytes <= 0) then
@@ -193,7 +215,16 @@ contains
     end if
     
     mem%size_bytes = size_bytes
-    mem%gpu_ptr = int(loc(mem), int64)  ! Fake GPU pointer for now
+    alloc_size = int(size_bytes, c_size_t)
+    host_ptr = c_malloc(alloc_size)
+    if (.not. c_associated(host_ptr)) then
+      print *, "❌ Failed to allocate GPU staging buffer"
+      mem%allocated = .false.
+      mem%size_bytes = 0
+      return
+    end if
+
+    mem%gpu_ptr = transfer(host_ptr, mem%gpu_ptr)
     mem%allocated = .true.
     
     print '(A,F0.2,A)', "🎯 Allocated ", real(size_bytes) / real(1024**2), " MB on GPU"
@@ -203,11 +234,17 @@ contains
   ! Free GPU memory
   subroutine gpu_free(mem)
     type(gpu_memory), intent(inout) :: mem
+    type(c_ptr) :: host_ptr
     
     if (mem%allocated) then
+      host_ptr = transfer(mem%gpu_ptr, host_ptr)
+      if (c_associated(host_ptr)) then
+        call c_free(host_ptr)
+      end if
       mem%allocated = .false.
       mem%gpu_ptr = 0
       print '(A,F0.2,A)', "🗑️  Freed ", real(mem%size_bytes) / real(1024**2), " MB on GPU"
+      mem%size_bytes = 0
     end if
     
   end subroutine gpu_free
@@ -218,15 +255,47 @@ contains
     type(c_ptr), intent(in) :: src
     integer(i64), intent(in) :: size_bytes
     integer, intent(in) :: direction
+    integer(c_size_t) :: copy_size
+    type(c_ptr) :: dst_ptr
     
+    if (.not. dst%allocated) then
+      print *, "ERROR: GPU memcpy target has not been allocated"
+      return
+    end if
+
+    if (size_bytes <= 0) then
+      print *, "ERROR: Copy size must be positive"
+      return
+    end if
+
+    if (size_bytes > dst%size_bytes) then
+      print *, "ERROR: Copy size exceeds destination staging buffer"
+      return
+    end if
+
+    dst_ptr = transfer(dst%gpu_ptr, dst_ptr)
+    if (.not. c_associated(src) .or. .not. c_associated(dst_ptr)) then
+      print *, "ERROR: GPU memcpy requires valid source and destination pointers"
+      return
+    end if
+
+    copy_size = int(size_bytes, c_size_t)
+
     select case(direction)
     case(HOST_TO_GPU)
       print '(A,F0.2,A)', "📤 Copying ", real(size_bytes) / real(1024**2), " MB to GPU"
     case(GPU_TO_HOST)
       print '(A,F0.2,A)', "📥 Copying ", real(size_bytes) / real(1024**2), " MB from GPU"
+    case default
+      print *, "ERROR: Invalid copy direction"
+      return
     end select
-    
-    ! In real implementation, would do actual memory transfer
+
+    if (direction == HOST_TO_GPU) then
+      call c_memcpy(dst_ptr, src, copy_size)
+    else
+      call c_memcpy(src, dst_ptr, copy_size)
+    end if
     
   end subroutine gpu_memcpy
   

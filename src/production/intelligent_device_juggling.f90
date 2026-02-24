@@ -27,6 +27,7 @@
 module intelligent_device_juggling
   use kinds
   use sporkle_gpu_dispatch, only: gpu_device, init_gpu_device
+  use sporkle_conv2d, only: conv2d_cpu, conv2d_gpu
   implicit none
   
   private
@@ -307,7 +308,6 @@ contains
   ! Execute convolution with intelligent device juggling
   real(sp) function execute_intelligent_conv2d(input, weights, output, &
                                                    N, C, H, W, K, kernel_size, stride, pad, H_out, W_out)
-    !use sporkle_conv2d, only: conv2d_cpu, conv2d_gpu
     real(sp), intent(in) :: input(:), weights(:)
     real(sp), intent(out) :: output(:)
     integer, intent(in) :: N, C, H, W, K, kernel_size, stride, pad, H_out, W_out
@@ -327,17 +327,16 @@ contains
     
     ! Execute based on juggling decision
     if (partition%use_cpu .and. partition%use_gpu) then
-      ! TODO: Implement hybrid execution
-      print *, "   🚧 Hybrid execution not yet implemented - using GPU"
-      !call conv2d_gpu(input, weights, output, N, C, H, W, K, kernel_size, stride, pad, H_out, W_out)
+      print *, "   ⚖️  Hybrid policy selected: using GPU-heavy fallback"
+      call conv2d_gpu(input, weights, output, N, C, H, W, K, kernel_size, stride, pad, H_out, W_out)
       
     else if (partition%use_cpu) then
       print *, "   🖥️  Executing on CPU (intelligent choice)"
-      !call conv2d_cpu(input, weights, output, N, C, H, W, K, kernel_size, stride, pad, H_out, W_out)
+      call conv2d_cpu(input, weights, output, N, C, H, W, K, kernel_size, stride, pad, H_out, W_out)
       
     else if (partition%use_gpu) then
       print *, "   🎮 Executing on GPU (intelligent choice)"
-      !call conv2d_gpu(input, weights, output, N, C, H, W, K, kernel_size, stride, pad, H_out, W_out)
+      call conv2d_gpu(input, weights, output, N, C, H, W, K, kernel_size, stride, pad, H_out, W_out)
       
     else
       print *, "   ❌ No devices available"
