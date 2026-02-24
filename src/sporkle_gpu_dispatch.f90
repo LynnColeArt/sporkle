@@ -1,9 +1,7 @@
 module sporkle_gpu_dispatch
-  ! GPU kernel dispatch implementation
-  ! The Sporkle Way: Actually run stuff on the GPU!
-  !
-  ! ✅ REAL IMPLEMENTATION: Using OpenGL reference implementation
-  ! Achieved performance: 451 GFLOPS on AMD RX 7900 XTX
+  ! GPU dispatch implementation
+  ! Legacy OpenGL reference path is retained for comparison; production routing
+  ! is moving to Kronos-native compute execution.
   
   use kinds
   use iso_c_binding
@@ -50,7 +48,7 @@ module sporkle_gpu_dispatch
   ! GPU memory handle
   type :: gpu_memory
     integer(i64) :: size_bytes = 0
-    integer(i64) :: gpu_ptr = 0  ! Would be actual GPU pointer
+    integer(i64) :: gpu_ptr = 0  ! Placeholder handle in non-production fallback path
     logical :: allocated = .false.
   end type gpu_memory
   
@@ -116,7 +114,7 @@ contains
       print '(A,F0.1,A)', "   Clock: ", device%clock_mhz, " MHz"
       print '(A,F0.1,A)', "   Memory: ", real(device%memory_total) / real(1024**3), " GB"
       if (device%opengl_ready) then
-        print *, "   ✅ OpenGL compute ready (Reference: 451 GFLOPS)"
+        print *, "   ℹ️  OpenGL compute reference path initialized"
       else
         print *, "   ❌ OpenGL compute not available"
       end if
@@ -259,17 +257,14 @@ contains
     print '(A,3(I0,1X))', "   Global size: ", global_size
     print '(A,3(I0,1X))', "   Local size: ", group_size
     print '(A,3(I0,1X))', "   Work groups: ", num_groups
-    print '(A)', "   ✅ Executing on GPU via OpenGL reference implementation"
-    
-    ! Real GPU execution now available via OpenGL reference
-    ! For non-conv2d kernels, we still need to implement the dispatch
+    print '(A)', "   ℹ️  Launching through OpenGL reference path (non-production)"
     
   end subroutine launch_gpu_kernel
   
   ! Synchronize GPU
   subroutine gpu_synchronize()
     print *, "⏳ GPU synchronize..."
-    ! OpenGL reference implementation includes glFinish() for synchronization
+    ! Legacy OpenGL path uses glFinish() for synchronization
   end subroutine gpu_synchronize
   
   ! High-level conv2d execution using reference implementation
