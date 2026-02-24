@@ -14,12 +14,12 @@ The current goal is production-safe scheduling: keep runtime honest, route workl
 
 1. **Multiple High-Performance Backends**
    - CPU: [deferred throughput metric] with AVX-512 SIMD
-     - Vulkan: Modern GPU compute with SPIR-V shaders
-       - Cross-platform GPU abstraction
-       - Async compute queues for pipeline optimization
-     - Metal/Neural Engine: Explicit capability-aware path when available
-       - Runtime probing for vendor/accelerator availability
-       - No synthetic timing or hidden fallback in production selection
+   - Vulkan: Modern GPU compute with SPIR-V shaders
+     - Cross-platform GPU abstraction
+     - Async compute queues for pipeline optimization
+   - Metal/Neural Engine: Explicit capability-aware path when available
+     - Runtime probing for vendor/accelerator availability
+     - No synthetic timing or hidden fallback in production selection
 
 2. **Abstract Device Interface**
    ```fortran
