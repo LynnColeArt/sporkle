@@ -48,6 +48,12 @@ contains
     
     ! Try to scan for AMD GPUs
     call try_amd_discovery(mesh)
+
+    ! Try to scan for NVIDIA GPUs
+    call try_nvidia_discovery(mesh)
+
+    ! Try to scan for Apple GPUs/Neural Engine
+    call try_apple_discovery(mesh)
     
     ! Try to scan for Intel GPUs
     call try_intel_discovery(mesh)
@@ -145,119 +151,93 @@ contains
     type(mesh_topology), intent(inout) :: mesh
     
     logical :: amd_gpu_found
-    integer :: unit, iostat, gpu_count
+    integer :: iostat
+    integer :: card_index
+    integer(i64) :: vram_bytes
     character(len=256) :: line
     character(len=64) :: vendor, device
+    character(len=256) :: sysfs_path
     
     amd_gpu_found = .false.
-    gpu_count = 0
     
-    ! Check for AMD GPUs via sysfs (no external dependencies!)
-    open(newunit=unit, file="/sys/class/drm/card0/device/vendor", &
-         status="old", action="read", iostat=iostat)
-    if (iostat == 0) then
-      read(unit, '(A)', iostat=iostat) vendor
-      close(unit)
+    ! Check up to eight DRM cards for AMD vendor ID
+    do card_index = 0, 7
+      write(sysfs_path, '(A,I0,A)') "/sys/class/drm/card", card_index, "/device/vendor"
+      if (.not. read_text_file_line(trim(sysfs_path), vendor)) then
+        cycle
+      end if
       
       ! AMD vendor ID is 0x1002
       if (index(vendor, "0x1002") > 0 .or. index(vendor, "1002") > 0) then
         amd_gpu_found = .true.
-        gpu_count = gpu_count + 1
       end if
-    end if
-    
-    ! Check card1 too (for multi-GPU systems)
-    open(newunit=unit, file="/sys/class/drm/card1/device/vendor", &
-         status="old", action="read", iostat=iostat)
-    if (iostat == 0) then
-      read(unit, '(A)', iostat=iostat) vendor
-      close(unit)
-      
-      if (index(vendor, "0x1002") > 0 .or. index(vendor, "1002") > 0) then
-        amd_gpu_found = .true.
-        gpu_count = gpu_count + 1
-      end if
-    end if
+    end do
     
     if (amd_gpu_found) then
       print *, "AMD GPU(s) detected via kernel driver"
       
-      ! Detect actual AMD GPU properties from sysfs
+      ! Detect AMD GPU properties from sysfs
       block
         type(device_handle) :: handle
-        integer :: i, card_num
-        character(len=256) :: sysfs_path, mem_info
-        integer(i64) :: vram_bytes
+        integer :: i
+        integer :: added_count
         
-        card_num = 0
+        added_count = 0
         do i = 0, 7  ! Check up to 8 cards
           write(sysfs_path, '(A,I0,A)') "/sys/class/drm/card", i, "/device/vendor"
-          open(newunit=unit, file=trim(sysfs_path), status="old", action="read", iostat=iostat)
-          if (iostat == 0) then
-            read(unit, '(A)', iostat=iostat) vendor
-            close(unit)
-            
-            if (index(vendor, "1002") > 0) then
-              ! Found AMD GPU - read its properties
-              handle%id = mesh%num_devices + card_num
-              handle%caps%kind = KIND_AMD
-              
-              ! Read device ID for identification
-              write(sysfs_path, '(A,I0,A)') "/sys/class/drm/card", i, "/device/device"
-              open(newunit=unit, file=trim(sysfs_path), status="old", action="read", iostat=iostat)
-              if (iostat == 0) then
-                read(unit, '(A)', iostat=iostat) device
-                close(unit)
-                ! Map device IDs to known GPUs
-                if (index(device, "744c") > 0) then
-                  handle%caps%pci_id = "RX 7900 XT"
-                else if (index(device, "73bf") > 0) then
-                  handle%caps%pci_id = "RX 6900 XT"  
-                else if (index(device, "164e") > 0) then
-                  handle%caps%pci_id = "Raphael APU"
-                else
-                  handle%caps%pci_id = "AMD GPU"
-                end if
-              else
-                handle%caps%pci_id = "AMD GPU"
-              end if
-              
-              ! Read VRAM size from mem_info_vram_total
-              write(sysfs_path, '(A,I0,A)') "/sys/class/drm/card", i, "/device/mem_info_vram_total"
-              open(newunit=unit, file=trim(sysfs_path), status="old", action="read", iostat=iostat)
-              if (iostat == 0) then
-                read(unit, *, iostat=iostat) vram_bytes
-                close(unit)
-                if (iostat == 0) then
-                  handle%caps%vram_mb = int(vram_bytes / (1024 * 1024), int32)
-                else
-                  handle%caps%vram_mb = 8192  ! Default 8GB if can't read
-                end if
-              else
-                handle%caps%vram_mb = 8192
-              end if
-              
-              ! TODO: Read actual core count, frequencies from sysfs
-              ! For now, use conservative estimates
-              handle%caps%cores = 60  ! Conservative estimate
-              handle%caps%sm_count = 60
-              handle%caps%mem_bw_gbs = 400.0_rk64  ! Conservative bandwidth
-              handle%caps%peak_gflops = 20000.0_rk64  ! Placeholder for unvalidated topology probing
-              handle%caps%sustained_gflops = 10000.0_rk64
-              handle%caps%unified_mem = .false.
-              handle%caps%p2p_direct = .false.
-              handle%caps%driver_ver = "AMDGPU"
-              handle%healthy = .true.
-              handle%load = 0.0
-              
-              call mesh%add_device(handle)
-              card_num = card_num + 1
-              
-              print '(A,I0,A,A,A,I0,A)', "  Card", i, ": ", &
-                    trim(handle%caps%pci_id), " with ", &
-                    handle%caps%vram_mb, " MB VRAM"
+          if (.not. read_text_file_line(trim(sysfs_path), vendor)) then
+            cycle
+          end if
+          
+          if (index(vendor, "1002") == 0) then
+            cycle
+          end if
+
+          handle%id = mesh%num_devices + added_count
+          handle%caps%kind = KIND_AMD
+
+          ! Read device ID for identification
+          write(sysfs_path, '(A,I0,A)') "/sys/class/drm/card", i, "/device/device"
+          if (read_text_file_line(trim(sysfs_path), device)) then
+            if (index(device, "744c") > 0) then
+              handle%caps%pci_id = "RX 7900 XT"
+            else if (index(device, "73bf") > 0) then
+              handle%caps%pci_id = "RX 6900 XT"
+            else if (index(device, "164e") > 0) then
+              handle%caps%pci_id = "Raphael APU"
+            else
+              handle%caps%pci_id = "AMD GPU (" // trim(adjustl(device)) // ")"
+            end if
+          else
+            handle%caps%pci_id = "AMD GPU"
+          end if
+
+          ! Read VRAM size if available
+          handle%caps%vram_mb = 0_i64
+          write(sysfs_path, '(A,I0,A)') "/sys/class/drm/card", i, "/device/mem_info_vram_total"
+          if (read_text_file_line(trim(sysfs_path), line)) then
+            read(line, *, iostat=iostat) vram_bytes
+            if (iostat == 0 .and. vram_bytes > 0) then
+              handle%caps%vram_mb = vram_bytes / (1024_i64 * 1024_i64)
             end if
           end if
+          
+          handle%caps%cores = 0
+          handle%caps%sm_count = 0
+          handle%caps%mem_bw_gbs = 0.0_rk64
+          handle%caps%peak_gflops = 0.0_rk64
+          handle%caps%sustained_gflops = 0.0_rk64
+          handle%caps%unified_mem = .false.
+          handle%caps%p2p_direct = .false.
+          handle%caps%driver_ver = "AMDGPU"
+          handle%healthy = .true.
+          handle%load = 0.0
+          
+          call mesh%add_device(handle)
+          added_count = added_count + 1
+
+          print '(A,I0,A,A,A,I0,A)', "  Card", i, ": ", trim(handle%caps%pci_id), " with ", &
+            handle%caps%vram_mb, " MB VRAM (unmeasured capabilities)"
         end do
       end block
     else
@@ -266,6 +246,163 @@ contains
     
   end subroutine try_amd_discovery
   
+  ! Try to discover NVIDIA devices through kernel driver
+  subroutine try_nvidia_discovery(mesh)
+    type(mesh_topology), intent(inout) :: mesh
+    
+    logical :: nvidia_gpu_found
+    integer :: card_index, iostat, added_count
+    integer(i64) :: vram_bytes
+    character(len=256) :: line
+    character(len=64) :: vendor, device
+    character(len=256) :: sysfs_path
+    type(device_handle) :: handle
+    
+    nvidia_gpu_found = .false.
+    
+    do card_index = 0, 7
+      write(sysfs_path, '(A,I0,A)') "/sys/class/drm/card", card_index, "/device/vendor"
+      if (.not. read_text_file_line(trim(sysfs_path), vendor)) then
+        cycle
+      end if
+      
+      if (index(vendor, "0x10de") > 0 .or. index(vendor, "10de") > 0) then
+        nvidia_gpu_found = .true.
+      end if
+    end do
+    
+    if (.not. nvidia_gpu_found) then
+      print *, "No NVIDIA GPUs detected (checked kernel driver)"
+      return
+    end if
+    
+    print *, "NVIDIA GPU(s) detected via kernel driver"
+    added_count = 0
+    
+    do card_index = 0, 7
+      write(sysfs_path, '(A,I0,A)') "/sys/class/drm/card", card_index, "/device/vendor"
+      if (.not. read_text_file_line(trim(sysfs_path), vendor)) then
+        cycle
+      end if
+      
+      if (index(vendor, "0x10de") == 0 .and. index(vendor, "10de") == 0) then
+        cycle
+      end if
+      
+      handle%id = mesh%num_devices + added_count
+      handle%caps%kind = KIND_NVIDIA
+      handle%caps%unified_mem = .false.
+      handle%caps%p2p_direct = .false.
+      
+      write(sysfs_path, '(A,I0,A)') "/sys/class/drm/card", card_index, "/device/device"
+      if (read_text_file_line(trim(sysfs_path), device)) then
+        write(handle%caps%pci_id, '(A)') trim(adjustl(device))
+      else
+        handle%caps%pci_id = "NVIDIA GPU"
+      end if
+      
+      handle%caps%vram_mb = 0_i64
+      write(sysfs_path, '(A,I0,A)') "/sys/class/drm/card", card_index, "/device/mem_info_vram_total"
+      if (read_text_file_line(trim(sysfs_path), line)) then
+        read(line, *, iostat=iostat) vram_bytes
+        if (iostat == 0 .and. vram_bytes > 0) then
+          handle%caps%vram_mb = vram_bytes / (1024_i64 * 1024_i64)
+        end if
+      end if
+      
+      ! Probe compute units and performance only where the kernel exposes fields directly.
+      ! Leave unmeasured performance fields at zero by design.
+      handle%caps%cores = 0
+      handle%caps%sm_count = 0
+      handle%caps%mem_bw_gbs = 0.0_rk64
+      handle%caps%peak_gflops = 0.0_rk64
+      handle%caps%sustained_gflops = 0.0_rk64
+      handle%caps%driver_ver = "NVIDIA kernel DRM"
+      handle%healthy = .true.
+      handle%load = 0.0
+      
+      call mesh%add_device(handle)
+      added_count = added_count + 1
+      
+      print '(A,I0,A,A)', "  Card", card_index, ": NVIDIA GPU (", &
+            trim(handle%caps%pci_id), ") (unmeasured capabilities)"
+    end do
+  end subroutine try_nvidia_discovery
+  
+  ! Try to discover Apple GPUs/Neural Engine candidates
+  subroutine try_apple_discovery(mesh)
+    type(mesh_topology), intent(inout) :: mesh
+    
+    logical :: apple_gpu_found
+    integer :: card_index
+    character(len=64) :: vendor
+    character(len=256) :: sysfs_path
+    type(device_handle) :: handle
+    
+    apple_gpu_found = .false.
+    
+    do card_index = 0, 7
+      write(sysfs_path, '(A,I0,A)') "/sys/class/drm/card", card_index, "/device/vendor"
+      if (.not. read_text_file_line(trim(sysfs_path), vendor)) then
+        cycle
+      end if
+      
+      if (index(vendor, "0x106b") > 0 .or. index(vendor, "106b") > 0) then
+        apple_gpu_found = .true.
+        exit
+      end if
+    end do
+    
+    if (.not. apple_gpu_found) then
+      ! macOS path: discover Apple Silicon via platform APIs when possible
+      if (inquire_directory("/System/Library/Frameworks/Metal.framework/")) then
+        apple_gpu_found = .true.
+        card_index = 0
+      else
+        print *, "No Apple GPUs detected (checked kernel driver)"
+      end if
+    end if
+    
+    if (.not. apple_gpu_found) then
+      return
+    end if
+    
+    print *, "Apple GPU/ANE candidate detected"
+    if (card_index > 7) then
+      card_index = 0
+    end if
+    
+    if (card_index <= 7) then
+      write(sysfs_path, '(A,I0,A)') "/sys/class/drm/card", card_index, "/device/name"
+      handle%id = mesh%num_devices
+      handle%caps%kind = KIND_UNKNOWN
+      if (read_text_file_line(trim(sysfs_path), vendor)) then
+        handle%caps%pci_id = trim(adjustl(vendor))
+      else
+        handle%caps%pci_id = "Apple GPU"
+      end if
+    else
+      handle%caps%pci_id = "Apple GPU"
+    end if
+    
+    handle%caps%kind = KIND_UNKNOWN
+    handle%caps%cores = 0
+    handle%caps%sm_count = 0
+    handle%caps%vram_mb = 0_i64
+    handle%caps%mem_bw_gbs = 0.0_rk64
+    handle%caps%peak_gflops = 0.0_rk64
+    handle%caps%sustained_gflops = 0.0_rk64
+    handle%caps%unified_mem = .true.
+    handle%caps%p2p_direct = .false.
+    handle%caps%uvm_supported = .true.
+    handle%caps%driver_ver = "Apple Foundation/Metal/ANE (candidate)"
+    handle%healthy = .true.
+    handle%load = 0.0
+    
+    call mesh%add_device(handle)
+    print '(A,A)', "  Apple GPU/ANE candidate: ", trim(handle%caps%pci_id)
+  end subroutine try_apple_discovery
+
   ! Try to discover Intel GPUs (gracefully handles missing Level Zero)
   subroutine try_intel_discovery(mesh)
     type(mesh_topology), intent(inout) :: mesh
@@ -295,4 +432,38 @@ contains
     
   end subroutine try_intel_discovery
   
+  logical function read_text_file_line(path, line)
+    character(len=*), intent(in) :: path
+    character(len=*), intent(out) :: line
+    integer :: unit
+    integer :: iostat
+    logical :: exists
+    
+    read_text_file_line = .false.
+    line = ""
+    
+    inquire(file=path, exist=exists)
+    if (.not. exists) then
+      return
+    end if
+    
+    open(newunit=unit, file=trim(path), status="old", action="read", iostat=iostat)
+    if (iostat /= 0) then
+      return
+    end if
+    
+    read(unit, "(A)", iostat=iostat) line
+    close(unit)
+    if (iostat == 0) then
+      read_text_file_line = .true.
+    end if
+  end function read_text_file_line
+  
+  logical function inquire_directory(path)
+    character(len=*), intent(in) :: path
+    logical :: exists
+
+    inquire(file=trim(path), exist=exists)
+    inquire_directory = exists
+  end function inquire_directory
 end module sporkle_discovery
