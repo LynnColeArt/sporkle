@@ -159,9 +159,8 @@ contains
       end if
       
     case default
-      print *, "⚠️  Unknown device selected, falling back to CPU"
-      elapsed_ms = conv2d_cpu_with_warmup(input, weights, output, &
-                                         N, C, H, W, K, kernel_size, stride, pad, H_out, W_out)
+      print '(A,I0)', "❌ sporkle_conv2d_v2 received invalid device selection: ", selected_device
+      error stop "sporkle_conv2d_v2 does not allow unknown device fallback"
     end select
     
     ! Calculate performance

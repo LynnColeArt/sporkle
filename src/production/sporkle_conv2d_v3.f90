@@ -242,57 +242,12 @@ contains
         !$omp atomic
         global_state%gpu_executions = global_state%gpu_executions + 1
       else
-        use_gpu = .false.  ! Fall back to CPU
+        error stop "sporkle_conv2d_v3: no valid GPU program was selected"
       end if
     end if
     
     if (.not. use_gpu) then
-      ! CPU path
-      ! CPU conv2d_adaptive requires flat arrays and doesn't support bias/activation
-      block
-        real(sp), allocatable :: flat_input(:), flat_weights(:), flat_output(:)
-        integer :: input_size, weight_size, output_size
-        
-        ! Flatten arrays for CPU execution
-        input_size = N * H * W * C
-        weight_size = K * KH * KW * C
-        output_size = N * OH * OW * K
-        
-        allocate(flat_input(input_size))
-        allocate(flat_weights(weight_size))
-        allocate(flat_output(output_size))
-        
-        ! Copy to flat arrays
-        flat_input = reshape(input, [input_size])
-        flat_weights = reshape(weights, [weight_size])
-        
-        ! Execute on CPU (returns time in ms)
-        cpu_time_ms = conv2d_adaptive(flat_input, flat_weights, flat_output, &
-                                     N, C, H, W, K, KH, actual_stride_h, &
-                                     actual_pad_h, OH, OW)
-        
-        ! Copy output back
-        output = reshape(flat_output, shape(output))
-        
-        ! Apply bias if provided
-        if (present(bias)) then
-          do concurrent (ii = 1:N, jj = 1:OH, kk = 1:OW, ll = 1:K)
-            output(ii,jj,kk,ll) = output(ii,jj,kk,ll) + bias(ll)
-          end do
-        end if
-        
-        ! Apply activation if requested (ReLU only for now)
-        if (present(activation)) then
-          if (trim(activation) == "relu" .or. trim(activation) == "ReLU") then
-            where (output < 0.0) output = 0.0
-          end if
-        end if
-        
-        deallocate(flat_input, flat_weights, flat_output)
-      end block
-      
-      !$omp atomic
-      global_state%cpu_executions = global_state%cpu_executions + 1
+      error stop "sporkle_conv2d_v3: CPU fallback is disabled; GPU execution must succeed"
     end if
     
     call cpu_time(end_time)

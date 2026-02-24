@@ -132,10 +132,8 @@ ifeq ($(PLATFORM),LINUX)
             $(SRC_DIR)/sporkle_amdgpu_memory.f90 \
             $(SRC_DIR)/sporkle_amdgpu_shaders.f90 \
             $(SRC_DIR)/amdgpu_device.f90 \
-            $(SRC_DIR)/sporkle_pm4_packets.f90 \
             $(SRC_DIR)/sporkle_gpu_va_allocator.f90 \
             $(SRC_DIR)/sporkle_rdna3_shaders.f90 \
-            $(SRC_DIR)/sporkle_pm4_compute.f90 \
             $(SRC_DIR)/production/gpu_safety_guards.f90
             
         ifeq ($(HAS_OPENGL),yes)
@@ -163,16 +161,11 @@ ifeq ($(PLATFORM),LINUX)
                                 $(SRC_DIR)/production/gpu_program_cache_v2.f90 \
                                 $(SRC_DIR)/production/gpu_program_cache_threadsafe.f90 \
                                 $(SRC_DIR)/production/gpu_ring_buffer.f90 \
-                                $(SRC_DIR)/production/pm4_conv2d_builder.f90 \
-                                $(SRC_DIR)/production/pm4_submit.f90 \
-                                $(SRC_DIR)/production/pm4_buffer_raii.f90 \
-                                $(SRC_DIR)/production/pm4_safe_submit.f90 \
                                 # $(SRC_DIR)/production/gpu_dynamic_shader_cache.f90 \
                                 $(SRC_DIR)/production/sporkle_conv2d_v3.f90
             PLATFORM_C_SOURCES += $(SRC_DIR)/reference/gpu_opengl_reference.c \
                                   $(SRC_DIR)/gpu_dynamic_shader_exec.c \
                                   $(SRC_DIR)/production/aligned_alloc.c \
-                                  $(SRC_DIR)/production/pm4_submit_impl.c
         endif
         
         ifeq ($(HAS_VULKAN),yes)
@@ -275,7 +268,7 @@ info:
 	@echo "Available targets:"
 	@echo "  make cpu                - Full CPU stack (AVX-512, OpenMP, adaptive tiling)"
 	@echo "  make apple              - Full Apple stack (Metal, Neural Engine, AMX)"
-	@echo "  make amd                - Full AMD stack (OpenGL, PM4, async pipeline)"
+	@echo "  make amd                - Full AMD stack (OpenGL, async pipeline)"
 	@echo "  make nvidia             - Full NVIDIA stack (OpenGL, persistent kernels)"
 	@echo ""
 	@echo "Development targets:"
@@ -417,33 +410,17 @@ $(BUILD_DIR)/test_glsl_simple: $(EXAMPLES_DIR)/test_glsl_simple.f90
 RUN_DEVICE ?= /dev/dri/renderD129  # iGPU (Raphael)
 # alt: RUN_DEVICE=/dev/dri/renderD128  # dGPU (7900 XT)
 
-BIN_PM4 := $(BUILD_DIR)/test_minimal_pm4
 BIN_GL  := $(BUILD_DIR)/test_glsl_debug
 
-.PHONY: build_gpu run_pm4 run_gl run_dry
+.PHONY: build_gpu run_gl
 
-build_gpu: $(BIN_PM4) $(BIN_GL)
+build_gpu: $(BIN_GL)
 
 # --- SAFE RUN MODES (no auto-run during build) ---
-
-run_pm4:
-	@echo ">>> RUNNING PM4 on $(RUN_DEVICE)"
-	SPORKLE_DRI=$(RUN_DEVICE) $(BIN_PM4) --safe --once
 
 run_gl:
 	@echo ">>> RUNNING GL compute on $(RUN_DEVICE)"
 	SPORKLE_DRI=$(RUN_DEVICE) $(BIN_GL) --safe --once
-
-# dry-run prints the PM4 chunk/IB but does NOT submit
-run_dry:
-	@echo ">>> DRY-RUN PM4 on $(RUN_DEVICE)"
-	SPORKLE_DRI=$(RUN_DEVICE) $(BIN_PM4) --dry-run
-
-# Build targets (no auto-run)
-$(BUILD_DIR)/test_minimal_pm4: $(OBJECTS) $(EXAMPLES_DIR)/test_minimal_pm4.f90
-	@echo "🔨 Building minimal PM4 test..."
-	$(FC) $(BASE_FFLAGS) -I$(BUILD_DIR) $(OBJECTS) \
-		$(EXAMPLES_DIR)/test_minimal_pm4.f90 -o $@ $(LDFLAGS)
 
 $(BUILD_DIR)/test_glsl_debug: $(EXAMPLES_DIR)/test_glsl_debug.f90
 	@echo "🔨 Building GL debug test..."
@@ -748,46 +725,6 @@ $(BUILD_DIR)/benchmark_v3_fixed: $(OBJECTS) $(C_OBJECTS) $(EXAMPLES_DIR)/benchma
 	$(FC) $(BASE_FFLAGS) -I$(BUILD_DIR) $(OBJECTS) $(C_OBJECTS) \
 		$(EXAMPLES_DIR)/benchmark_v3_fixed.f90 -o $@ $(LDFLAGS)
 
-# PM4 basic test
-test_pm4_basic: $(BUILD_DIR)/test_pm4_basic
-	@echo "🚀 Running PM4 basic test..."
-	@./$(BUILD_DIR)/test_pm4_basic
-
-# PM4 driverless test
-test_pm4_driverless: $(BUILD_DIR)/test_pm4_driverless
-	@echo "🚀 Running PM4 driverless test..."
-	@./$(BUILD_DIR)/test_pm4_driverless
-
-# PM4 Neo Geo test
-test_pm4_neogeo: $(BUILD_DIR)/test_pm4_neogeo
-	@echo "🕹️  Running PM4 Neo Geo test..."
-	@./$(BUILD_DIR)/test_pm4_neogeo
-
-$(BUILD_DIR)/test_pm4_basic: $(OBJECTS) $(C_OBJECTS) $(EXAMPLES_DIR)/test_pm4_basic.f90
-	@echo "🔨 Building PM4 basic test..."
-	$(FC) $(BASE_FFLAGS) -I$(BUILD_DIR) $(OBJECTS) $(C_OBJECTS) \
-		$(EXAMPLES_DIR)/test_pm4_basic.f90 -o $@ $(LDFLAGS)
-
-$(BUILD_DIR)/test_pm4_driverless: $(OBJECTS) $(C_OBJECTS) test_pm4_driverless.f90
-	@echo "🔨 Building PM4 driverless test..."
-	$(FC) $(BASE_FFLAGS) -I$(BUILD_DIR) $(OBJECTS) $(C_OBJECTS) \
-		test_pm4_driverless.f90 -o $@ $(LDFLAGS)
-
-$(BUILD_DIR)/test_pm4_neogeo: $(OBJECTS) $(C_OBJECTS) test_pm4_neogeo.f90
-	@echo "🔨 Building PM4 Neo Geo test..."
-	$(FC) $(BASE_FFLAGS) -I$(BUILD_DIR) $(OBJECTS) $(C_OBJECTS) \
-		test_pm4_neogeo.f90 -o $@ $(LDFLAGS)
-
-# PM4 Ring Buffer concept test
-test_pm4_ring_buffer: $(BUILD_DIR)/test_pm4_ring_buffer_concept
-	@echo "💍 Running PM4 Ring Buffer concept test..."
-	@./$(BUILD_DIR)/test_pm4_ring_buffer_concept
-
-$(BUILD_DIR)/test_pm4_ring_buffer_concept: $(OBJECTS) $(C_OBJECTS) test_pm4_ring_buffer_concept.f90
-	@echo "🔨 Building PM4 Ring Buffer concept test..."
-	$(FC) $(BASE_FFLAGS) -I$(BUILD_DIR) $(OBJECTS) $(C_OBJECTS) \
-		test_pm4_ring_buffer_concept.f90 -o $@ $(LDFLAGS)
-
 # RDNA3 ISA shader test
 test_rdna3_isa: $(BUILD_DIR)/test_rdna3_isa_shader
 	@echo "🔧 Running RDNA3 ISA shader test..."
@@ -817,16 +754,6 @@ $(BUILD_DIR)/test_neo_geo_quality: $(OBJECTS) $(C_OBJECTS) test_neo_geo_quality.
 	@echo "🔨 Building Neo Geo quality test..."
 	$(FC) $(BASE_FFLAGS) -I$(BUILD_DIR) $(OBJECTS) $(C_OBJECTS) \
 		test_neo_geo_quality.f90 -o $@ $(LDFLAGS)
-
-# PM4 Direct concept test
-test_pm4_direct: $(BUILD_DIR)/test_pm4_direct_concept
-	@echo "🚀 Running PM4 Direct concept test..."
-	@./$(BUILD_DIR)/test_pm4_direct_concept
-
-$(BUILD_DIR)/test_pm4_direct_concept: $(OBJECTS) $(C_OBJECTS) test_pm4_direct_concept.f90
-	@echo "🔨 Building PM4 Direct concept test..."
-	$(FC) $(BASE_FFLAGS) -I$(BUILD_DIR) $(OBJECTS) $(C_OBJECTS) \
-		test_pm4_direct_concept.f90 -o $@ $(LDFLAGS)
 
 # Juggler fence upgrade test
 test_juggler_fence: $(BUILD_DIR)/test_juggler_fence_upgrade
@@ -918,56 +845,6 @@ $(BUILD_DIR)/test_zero_copy_large: $(OBJECTS) $(C_OBJECTS) test_zero_copy_large.
 	$(FC) $(BASE_FFLAGS) -I$(BUILD_DIR) $(OBJECTS) $(C_OBJECTS) \
 		test_zero_copy_large.f90 -o $@ $(LDFLAGS)
 
-# PM4 direct Conv2D test
-test_pm4_conv2d: $(BUILD_DIR)/test_pm4_conv2d
-	@echo "🎮 Running PM4 direct Conv2D test..."
-	@./$(BUILD_DIR)/test_pm4_conv2d
-
-$(BUILD_DIR)/test_pm4_conv2d: $(OBJECTS) $(C_OBJECTS) test_pm4_conv2d.f90
-	@echo "🔨 Building PM4 direct Conv2D test..."
-	$(FC) $(BASE_FFLAGS) -I$(BUILD_DIR) $(OBJECTS) $(C_OBJECTS) \
-		test_pm4_conv2d.f90 -o $@ $(LDFLAGS)
-
-# PM4 canary test (real submission)
-test_pm4_canary: $(BUILD_DIR)/test_pm4_canary
-	@echo "🐤 Running PM4 canary test..."
-	@./$(BUILD_DIR)/test_pm4_canary
-
-$(BUILD_DIR)/test_pm4_canary: $(OBJECTS) $(C_OBJECTS) test_pm4_canary.f90
-	@echo "🔨 Building PM4 canary test..."
-	$(FC) $(BASE_FFLAGS) -I$(BUILD_DIR) $(OBJECTS) $(C_OBJECTS) \
-		test_pm4_canary.f90 -o $@ $(LDFLAGS)
-
-# PM4 minimal test (just NOPs)
-test_pm4_minimal: $(BUILD_DIR)/test_pm4_minimal
-	@echo "🔵 Running PM4 minimal test..."
-	@SPORKLE_LOG_LEVEL=TRACE SPORKLE_RENDER_NODE=/dev/dri/renderD129 ./$(BUILD_DIR)/test_pm4_minimal
-
-$(BUILD_DIR)/test_pm4_minimal: $(OBJECTS) $(C_OBJECTS) test_pm4_minimal.f90
-	@echo "🔨 Building PM4 minimal test..."
-	$(FC) $(BASE_FFLAGS) -I$(BUILD_DIR) $(OBJECTS) $(C_OBJECTS) \
-		test_pm4_minimal.f90 -o $@ $(LDFLAGS)
-
-# PM4 RAII test
-test_pm4_raii: $(BUILD_DIR)/test_pm4_raii
-	@echo "🧹 Running PM4 RAII test..."
-	@SPORKLE_RENDER_NODE=/dev/dri/renderD129 ./$(BUILD_DIR)/test_pm4_raii
-
-$(BUILD_DIR)/test_pm4_raii: $(OBJECTS) $(C_OBJECTS) test_pm4_raii.f90
-	@echo "🔨 Building PM4 RAII test..."
-	$(FC) $(BASE_FFLAGS) -I$(BUILD_DIR) $(OBJECTS) $(C_OBJECTS) \
-		test_pm4_raii.f90 -o $@ $(LDFLAGS)
-
-# PM4 leak test
-test_pm4_leak: $(BUILD_DIR)/test_pm4_leak
-	@echo "💧 Running PM4 leak test (1000 iterations)..."
-	@SPORKLE_RENDER_NODE=/dev/dri/renderD129 ./$(BUILD_DIR)/test_pm4_leak
-
-$(BUILD_DIR)/test_pm4_leak: $(OBJECTS) $(C_OBJECTS) test_pm4_leak.f90
-	@echo "🔨 Building PM4 leak test..."
-	$(FC) $(BASE_FFLAGS) -I$(BUILD_DIR) $(OBJECTS) $(C_OBJECTS) \
-		test_pm4_leak.f90 -o $@ $(LDFLAGS)
-
 .PHONY: info clean clean-all cpu apple amd nvidia
 
 $(BUILD_DIR)/test_gpu_async_honest: $(OBJECTS) $(C_OBJECTS) $(EXAMPLES_DIR)/test_gpu_async_honest.f90
@@ -1007,9 +884,9 @@ $(BUILD_DIR)/sporkle_apple_stack: $(OBJECTS) $(C_OBJECTS) $(EXAMPLES_DIR)/test_a
 	@$(FC) $(FFLAGS) -I$(BUILD_DIR) $(OBJECTS) $(C_OBJECTS) \
 		$(EXAMPLES_DIR)/test_apple_full_stack.f90 -o $@ $(LDFLAGS)
 
-# AMD Stack: OpenGL + PM4 + Async Pipeline + Thread-Safe Cache
+# AMD Stack: OpenGL + Async Pipeline + Thread-Safe Cache
 $(BUILD_DIR)/sporkle_amd_stack: $(OBJECTS) $(C_OBJECTS) $(EXAMPLES_DIR)/test_amd_full_stack.f90
-	@echo "🔨 Building AMD full stack (OpenGL + PM4 + Async Pipeline)..."
+	@echo "🔨 Building AMD full stack (OpenGL + Async Pipeline)..."
 	@$(FC) $(FFLAGS) -I$(BUILD_DIR) $(OBJECTS) $(C_OBJECTS) \
 		$(EXAMPLES_DIR)/test_amd_full_stack.f90 -o $@ $(LDFLAGS)
 
