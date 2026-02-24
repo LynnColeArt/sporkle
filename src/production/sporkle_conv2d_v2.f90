@@ -1,12 +1,11 @@
 ! Production interface for convolution with intelligent device selection
 ! Uses Universal Device Selector for optimal performance
 !
-! ⚠️  Throughput figures in this module are unverified placeholders.
-
 module sporkle_conv2d_v2
   use kinds
   use sporkle_universal_device_selector
   use gpu_async_executor
+  use sporkle_conv2d_unified, only: sporkle_conv2d_unified
   implicit none
   
   private
@@ -84,6 +83,7 @@ contains
     real(dp) :: elapsed_ms, gflops
     logical :: async_requested
     integer :: selected_device
+    logical :: has_gpu_candidate
     
     ! Initialize if needed
     if (.not. selector_initialized) call conv2d_init()
@@ -106,7 +106,11 @@ contains
       case("cpu")
         selected_device = 1  ! Force CPU
       case("gpu")
-        selected_device = 2  ! Force GPU
+        selected_device = find_first_gpu_device()
+        if (selected_device == 0) then
+          print *, "❌ No GPU device was discovered in selector inventory."
+          error stop "sporkle_conv2d_v2: GPU hint was requested but no GPU backend is available"
+        end if
       case default
         decision = global_selector%select_optimal_device(workload)
         selected_device = decision%primary_device
@@ -119,28 +123,38 @@ contains
     ! Check async request
     async_requested = .false.
     if (present(use_async)) async_requested = use_async
-    
+
     ! Execute on selected device
-    select case(selected_device)
-    case(1)  ! CPU
+    if (selected_device < 1 .or. selected_device > global_selector%num_devices) then
+      print '(A,I0)', "❌ sporkle_conv2d_v2 received invalid device selection: ", selected_device
+      error stop "sporkle_conv2d_v2: invalid device selection from selector"
+    end if
+
+    has_gpu_candidate = is_gpu_selector_device(selected_device)
+
+    if (selected_device == 1 .and. is_cpu_selector_device(selected_device)) then
       if (profiling_enabled) print '(A)', " 🖥️  Executing on CPU with universal memory optimization"
       elapsed_ms = conv2d_cpu_with_warmup(input, weights, output, &
                                          N, C, H, W, K, kernel_size, stride, pad, H_out, W_out)
-      
-    case(2, 3, 4)  ! GPU (discrete or integrated)
-      if (profiling_enabled) then
-        print '(A)', " ⚠️  GPU selection was made but Kronos-native dispatch is not wired yet in this path"
-        print '(A)', " ⚠️  Device requested: " // trim(global_selector%devices(selected_device)%name)
-      end if
+
+    else if (has_gpu_candidate) then
       if (async_requested) then
-        print '(A)', " ℹ️  Async execution hint was ignored because Kronos-native path is not active."
+        print *, "❌ Async execution is not supported by sporkle_conv2d_v2 path."
+        error stop "sporkle_conv2d_v2: async path is currently not supported"
       end if
-      error stop "Kronos-native GPU conv2d execution is not active in sporkle_conv2d_v2. Use CPU or call sporkle_conv2d_unified with explicit cpu."
-      
-    case default
-      print '(A,I0)', "❌ sporkle_conv2d_v2 received invalid device selection: ", selected_device
-      error stop "sporkle_conv2d_v2 does not allow unknown device fallback"
-    end select
+
+      if (profiling_enabled) then
+        print '(A)', " ⚠️  Device requested: " // trim(global_selector%devices(selected_device)%name)
+        print '(A)', " 🚀 Dispatching through Kronos unified path."
+      end if
+
+      elapsed_ms = sporkle_conv2d_unified(input, weights, output, &
+                                          N, C, H, W, K, kernel_size, stride, pad, &
+                                          device_type="kronos")
+    else
+      print '(A,I0,A)', "❌ sporkle_conv2d_v2 selected unsupported device index ", selected_device, " from unified selector."
+      error stop "sporkle_conv2d_v2: unsupported device class for this selector index"
+    end if
     
     ! Calculate performance
     gflops = real(total_flops, real64) / (elapsed_ms * 1.0e6_real64)
@@ -194,5 +208,47 @@ contains
     end do
     
   end subroutine conv2d_show_stats
+
+  function find_first_gpu_device() result(device_idx)
+    integer :: device_idx
+    integer :: i
+
+    device_idx = 0
+    do i = 1, global_selector%num_devices
+      if (is_gpu_selector_device(i)) then
+        device_idx = i
+        return
+      end if
+    end do
+  end function find_first_gpu_device
+
+  logical function is_cpu_selector_device(device_idx)
+    integer, intent(in) :: device_idx
+
+    if (device_idx < 1 .or. device_idx > global_selector%num_devices) then
+      is_cpu_selector_device = .false.
+      return
+    end if
+
+    is_cpu_selector_device = (global_selector%devices(device_idx)%device_type == UNI_DEVICE_CPU_PERFORMANCE) .or. &
+      (global_selector%devices(device_idx)%device_type == UNI_DEVICE_CPU_EFFICIENCY)
+  end function is_cpu_selector_device
+
+  logical function is_gpu_selector_device(device_idx)
+    integer, intent(in) :: device_idx
+
+    if (device_idx < 1 .or. device_idx > global_selector%num_devices) then
+      is_gpu_selector_device = .false.
+      return
+    end if
+
+    select case (global_selector%devices(device_idx)%device_type)
+    case (UNI_DEVICE_GPU_DISCRETE, UNI_DEVICE_GPU_INTEGRATED, UNI_DEVICE_NEURAL_ENGINE, UNI_DEVICE_MATRIX_UNIT, &
+          UNI_DEVICE_DSP)
+      is_gpu_selector_device = .true.
+    case default
+      is_gpu_selector_device = .false.
+    end select
+  end function is_gpu_selector_device
 
 end module sporkle_conv2d_v2

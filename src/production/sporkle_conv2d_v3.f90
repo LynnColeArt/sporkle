@@ -5,8 +5,8 @@
 ! 1. Thread-safe GPU program cache
 ! 2. Dynamic shader generation
 ! 3. Binary persistence
-! 4. Async execution
-! 5. Auto device selection
+! 4. Async execution (deferred)
+! 5. Auto device selection (deferred for production recovery)
 !
 ! This replaces sporkle_conv2d_juggling as the main interface.
 
@@ -22,7 +22,9 @@ module sporkle_conv2d_v3
                                 gpu_async_executor_init, gpu_async_executor_cleanup
   use sporkle_conv2d_auto_selector, only: init_auto_selector
   use cpu_conv2d_adaptive, only: conv2d_adaptive
+  use sporkle_conv2d_unified, only: sporkle_conv2d_unified
   use timing_helpers
+  use iso_c_binding, only: c_ptr, c_f_pointer, c_loc
   implicit none
   
   private
@@ -39,7 +41,7 @@ module sporkle_conv2d_v3
     logical :: use_dynamic_shaders = .true.
     logical :: use_async = .true.
     logical :: use_auto_select = .true.
-    
+
     ! Statistics
     integer(i64) :: total_executions = 0
     integer(i64) :: gpu_executions = 0
@@ -75,10 +77,14 @@ contains
     actual_cache_dir = "production_cache/"
     if (present(cache_dir)) actual_cache_dir = cache_dir
     
-    ! Initialize GPU
-    if (.not. gpu_init()) then
-      print *, "❌ Failed to initialize GPU!"
-      return
+    ! Initialize GPU only when auto-selection requires recovery-policy routing.
+    if (global_state%use_auto_select) then
+      if (.not. gpu_init()) then
+        print *, "❌ Failed to initialize GPU for auto-select policy"
+        error stop "sporkle_conv2d_v3_init: auto-select policy requires GPU initialization"
+      end if
+    else
+      print *, "⚠️  Auto-select disabled: skipping GPU init in CPU-recovery mode"
     end if
     
     ! Initialize dynamic shader cache (includes thread-safe cache)
@@ -121,10 +127,10 @@ contains
   subroutine sporkle_conv2d_v3_execute(input, weights, bias, output, &
                                       stride_h, stride_w, pad_h, pad_w, &
                                       activation, group_count)
-    real(sp), intent(in) :: input(:,:,:,:)    ! [N,H,W,C]
-    real(sp), intent(in) :: weights(:,:,:,:)  ! [K,KH,KW,C]
+    real(sp), intent(in), target, contiguous :: input(:,:,:,:)    ! [N,H,W,C]
+    real(sp), intent(in), target, contiguous :: weights(:,:,:,:)  ! [K,KH,KW,C]
     real(sp), intent(in), optional :: bias(:)  ! [K]
-    real(sp), intent(out) :: output(:,:,:,:)  ! [N,OH,OW,K]
+    real(sp), intent(out), target, contiguous :: output(:,:,:,:)  ! [N,OH,OW,K]
     integer, intent(in), optional :: stride_h, stride_w
     integer, intent(in), optional :: pad_h, pad_w
     character(len=*), intent(in), optional :: activation
@@ -135,12 +141,14 @@ contains
     integer :: ii, jj, kk, ll  ! Loop indices for bias and activation
     integer :: actual_stride_h, actual_stride_w
     integer :: actual_pad_h, actual_pad_w
-    integer :: program_id
     logical :: use_gpu
     real(dp) :: start_time, end_time, elapsed_ms
     real(dp) :: gflops
-    integer :: flops
-    real(sp) :: cpu_time_ms
+    integer(i64) :: flops
+    real(dp) :: cpu_time_ms
+    real(sp) :: kronos_time_ms
+    type(c_ptr) :: input_ptr, weights_ptr, output_ptr
+    real(sp), pointer :: input_flat(:), weights_flat(:), output_flat(:)
     
     if (.not. global_state%initialized) then
       print *, "❌ Conv2D V3 not initialized! Call sporkle_conv2d_v3_init first."
@@ -163,96 +171,95 @@ contains
     actual_stride_w = 1; if (present(stride_w)) actual_stride_w = stride_w
     actual_pad_h = 0; if (present(pad_h)) actual_pad_h = pad_h
     actual_pad_w = 0; if (present(pad_w)) actual_pad_w = pad_w
-    
-    ! Calculate FLOPs
-    flops = N * OH * OW * K * KH * KW * C * 2
-    
-    ! Auto device selection
-    if (global_state%use_auto_select) then
-      ! Auto selector doesn't expose should_use_gpu - just use default
-      use_gpu = .true.  ! Will fall back to CPU if GPU fails
-    else
-      use_gpu = .true.  ! Default to GPU
+    if (present(group_count) .and. group_count /= 1) then
+      print *, "❌ sporkle_conv2d_v3_execute does not support grouped convolution in recovery mode."
+      print '(A,I0)', "   Received group_count=", group_count
+      error stop "sporkle_conv2d_v3_execute: grouped convolution unsupported in recovery mode"
     end if
     
-    call cpu_time(start_time)
+    if (actual_stride_w /= actual_stride_h) then
+      print *, "❌ sporkle_conv2d_v3_execute: stride_w must equal stride_h in recovery path."
+      print '(A,I0,A,I0)', "   Got stride_h=", actual_stride_h, ", stride_w=", actual_stride_w
+      error stop "sporkle_conv2d_v3_execute: asymmetric stride unsupported"
+    end if
+    if (actual_pad_w /= actual_pad_h) then
+      print *, "❌ sporkle_conv2d_v3_execute: pad_w must equal pad_h in recovery path."
+      print '(A,I0,A,I0)', "   Got pad_h=", actual_pad_h, ", pad_w=", actual_pad_w
+      error stop "sporkle_conv2d_v3_execute: asymmetric padding unsupported"
+    end if
+    if (KH /= KW) then
+      print *, "❌ sporkle_conv2d_v3_execute requires square kernels in this CPU fallback."
+      print '(A,I0,A,I0)', "   Got KH=", KH, ", KW=", KW
+      error stop "sporkle_conv2d_v3_execute: non-square kernels unsupported in recovery"
+    end if
+
+    ! Calculate FLOPs
+    flops = int(N, int64) * int(OH, int64) * int(OW, int64) * int(K, int64) * &
+            int(KH, int64) * int(KW, int64) * int(C, int64) * 2_int64
+    
+    ! Auto policy: if enabled, this path currently requires active Kronos/GPU backend.
+    use_gpu = global_state%use_auto_select
     
     if (use_gpu) then
-      ! GPU path
-      if (global_state%use_dynamic_shaders) then
-        ! Get optimal shader for this convolution
-        program_id = get_optimal_conv2d_shader(global_state%shader_cache, &
-                                              N, H, W, C, K, KH, KW, &
-                                              actual_stride_h, actual_stride_w, &
-                                              actual_pad_h, actual_pad_w)
-      else
-        ! Use standard shader
-        program_id = gpu_get_program_id()
+      input_ptr = c_loc(input)
+      weights_ptr = c_loc(weights)
+      output_ptr = c_loc(output)
+      call c_f_pointer(input_ptr, input_flat, [size(input)])
+      call c_f_pointer(weights_ptr, weights_flat, [size(weights)])
+      call c_f_pointer(output_ptr, output_flat, [size(output)])
+
+      print *, "🚀 Conv2D V3 dispatching through unified Kronos path."
+      kronos_time_ms = sporkle_conv2d_unified(input_flat, weights_flat, output_flat, &
+                                              N, C, H, W, K, KH, actual_stride_h, actual_pad_h, &
+                                              device_type="kronos")
+      if (kronos_time_ms <= 0.0_sp) then
+        error stop "sporkle_conv2d_v3: unified Kronos path returned non-positive timing"
       end if
-      
-      if (program_id > 0) then
-        ! For now, just use sync execution
-        ! TODO: Integrate async executor properly
-        ! gpu_execute_conv2d_ref requires flat arrays and returns time
-        block
-          real(sp), allocatable :: flat_input(:), flat_weights(:), flat_output(:)
-          real(sp) :: gpu_time_ms
-          integer :: input_size, weight_size, output_size
-          
-          ! Flatten arrays for GPU execution
-          input_size = N * H * W * C
-          weight_size = K * KH * KW * C
-          output_size = N * OH * OW * K
-          
-          allocate(flat_input(input_size))
-          allocate(flat_weights(weight_size))
-          allocate(flat_output(output_size))
-          
-          ! Copy to flat arrays (assuming NHWC layout)
-          flat_input = reshape(input, [input_size])
-          flat_weights = reshape(weights, [weight_size])
-          
-          ! Execute on GPU (OpenGL is not thread-safe)
-          !$omp critical(gpu_execution)
-          gpu_time_ms = gpu_execute_conv2d_ref(flat_input, flat_weights, flat_output, &
-                                              N, C, H, W, K, KH, actual_stride_h, &
-                                              actual_pad_h, OH, OW)
-          !$omp end critical(gpu_execution)
-          
-          ! Copy output back
-          output = reshape(flat_output, shape(output))
-          
-          ! Apply bias if provided
-          if (present(bias)) then
-            do concurrent (ii = 1:N, jj = 1:OH, kk = 1:OW, ll = 1:K)
-              output(ii,jj,kk,ll) = output(ii,jj,kk,ll) + bias(ll)
-            end do
-          end if
-          
-          ! Apply activation if requested (ReLU only for now)
-          if (present(activation)) then
-            if (trim(activation) == "relu" .or. trim(activation) == "ReLU") then
-              where (output < 0.0) output = 0.0
-            end if
-          end if
-          
-          deallocate(flat_input, flat_weights, flat_output)
-        end block
-        
-        !$omp atomic
-        global_state%gpu_executions = global_state%gpu_executions + 1
-      else
-        error stop "sporkle_conv2d_v3: no valid GPU program was selected"
+      elapsed_ms = real(kronos_time_ms, dp)
+
+      !$omp atomic
+      global_state%gpu_executions = global_state%gpu_executions + 1
+
+    else
+      call cpu_time(start_time)
+
+      ! CPU recovery path
+      print *, "🖥️  Conv2D V3 CPU path active (recovery mode)"
+      input_ptr = c_loc(input)
+      weights_ptr = c_loc(weights)
+      output_ptr = c_loc(output)
+      call c_f_pointer(input_ptr, input_flat, [size(input)])
+      call c_f_pointer(weights_ptr, weights_flat, [size(weights)])
+      call c_f_pointer(output_ptr, output_flat, [size(output)])
+
+      cpu_time_ms = conv2d_adaptive(input_flat, weights_flat, output_flat, &
+                                    N, C, H, W, K, KH, actual_stride_h, actual_pad_h, OH, OW)
+
+      if (present(bias)) then
+        do concurrent (ii = 1:N, jj = 1:OH, kk = 1:OW, ll = 1:K)
+          output(ii, jj, kk, ll) = output(ii, jj, kk, ll) + bias(ll)
+        end do
       end if
+      if (present(activation)) then
+        if (trim(activation) == "relu" .or. trim(activation) == "ReLU") then
+          where (output < 0.0_sp) output = 0.0_sp
+        end if
+      end if
+
+      cpu_time_ms = real(cpu_time_ms, real(dp))
+
+      !$omp atomic
+      global_state%cpu_executions = global_state%cpu_executions + 1
+
+      call cpu_time(end_time)
+      elapsed_ms = (end_time - start_time) * 1000.0
     end if
-    
-    if (.not. use_gpu) then
-      error stop "sporkle_conv2d_v3: CPU fallback is disabled; GPU execution must succeed"
+
+    if (elapsed_ms > 0.0_dp) then
+      gflops = real(flops, dp) / (elapsed_ms * 1.0e6_dp)
+    else
+      gflops = 0.0_dp
     end if
-    
-    call cpu_time(end_time)
-    elapsed_ms = (end_time - start_time) * 1000.0
-    gflops = real(flops) / (elapsed_ms * 1.0e6)
     
     ! Update statistics
     !$omp atomic
@@ -265,10 +272,6 @@ contains
     global_state%total_gflops = global_state%total_gflops + gflops
     
     ! Update performance feedback
-    if (use_gpu .and. global_state%use_dynamic_shaders .and. program_id > 0) then
-      call update_shader_performance(global_state%shader_cache, program_id, real(gflops, real32))
-    end if
-    
     ! Update device selector
     if (global_state%use_auto_select) then
       ! Auto selector doesn't expose update_performance
