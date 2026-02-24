@@ -206,15 +206,19 @@ int vk_init() {
 void vk_cleanup() {
     if (g_descriptor_pool != VK_NULL_HANDLE) {
         vkDestroyDescriptorPool(g_device, g_descriptor_pool, NULL);
+        g_descriptor_pool = VK_NULL_HANDLE;
     }
     if (g_command_pool != VK_NULL_HANDLE) {
         vkDestroyCommandPool(g_device, g_command_pool, NULL);
+        g_command_pool = VK_NULL_HANDLE;
     }
     if (g_device != VK_NULL_HANDLE) {
         vkDestroyDevice(g_device, NULL);
+        g_device = VK_NULL_HANDLE;
     }
     if (g_instance != VK_NULL_HANDLE) {
         vkDestroyInstance(g_instance, NULL);
+        g_instance = VK_NULL_HANDLE;
     }
 }
 
@@ -326,6 +330,7 @@ void vk_free_buffer(void* buffer) {
 
 // Map buffer for CPU access
 void* vk_map_buffer(void* buffer) {
+    if (!buffer) return NULL;
     vulkan_buffer_t* buf = (vulkan_buffer_t*)buffer;
     return buf->mapped_ptr;  // Already mapped for HOST_VISIBLE buffers
 }
@@ -358,7 +363,13 @@ static int create_descriptor_pool() {
         .maxSets = 100
     };
 
-    return vkCreateDescriptorPool(g_device, &pool_info, NULL, &g_descriptor_pool) == VK_SUCCESS;
+    VkResult result = vkCreateDescriptorPool(g_device, &pool_info, NULL, &g_descriptor_pool);
+    if (result != VK_SUCCESS) {
+        printf("❌ Failed to create descriptor pool\n");
+        return 0;
+    }
+
+    return 1;
 }
 
 // Compile compute shader from SPIR-V
@@ -669,13 +680,19 @@ void* vk_create_fence() {
 }
 
 void vk_wait_fence(void* fence, uint64_t timeout_ns) {
+    if (!fence) return;
     VkFence vk_fence = (VkFence)fence;
-    vkWaitForFences(g_device, 1, &vk_fence, VK_TRUE, timeout_ns);
+    if (vkWaitForFences(g_device, 1, &vk_fence, VK_TRUE, timeout_ns) != VK_SUCCESS) {
+        printf("❌ Failed to wait for fence\n");
+    }
 }
 
 void vk_reset_fence(void* fence) {
+    if (!fence) return;
     VkFence vk_fence = (VkFence)fence;
-    vkResetFences(g_device, 1, &vk_fence);
+    if (vkResetFences(g_device, 1, &vk_fence) != VK_SUCCESS) {
+        printf("❌ Failed to reset fence\n");
+    }
 }
 
 // Submit command buffer and measure time
