@@ -127,6 +127,10 @@ contains
         print '(A,F0.1,A)', "  Estimated peak (unvalidated): ", dev%caps%peak_gflops, " GFLOPS"
         print '(A,F0.1,A)', "  Memory Bandwidth: ", dev%caps%mem_bw_gbs, " GB/s"
         print '(A,L1)', "  Unified Memory: ", dev%caps%unified_mem
+        if (dev%caps%kind == KIND_APPLE) then
+          print '(A,L1)', "  Has Metal: ", dev%caps%has_metal
+          print '(A,L1)', "  Has Neural Engine: ", dev%caps%has_neural_engine
+        end if
         print '(A,L1)', "  P2P Capable: ", dev%caps%p2p_direct
         if (allocated(dev%caps%driver_ver)) then
           print '(A,A)', "  Driver/ISA: ", dev%caps%driver_ver
@@ -381,8 +385,10 @@ contains
       else
         handle%caps%pci_id = "Apple GPU"
       end if
+      handle%caps%has_metal = .true.
     else
       handle%caps%pci_id = "Apple GPU"
+      handle%caps%has_metal = .true.
     end if
     
     handle%caps%kind = KIND_APPLE
@@ -395,6 +401,7 @@ contains
     handle%caps%unified_mem = .true.
     handle%caps%p2p_direct = .false.
     handle%caps%uvm_supported = .true.
+    handle%caps%has_neural_engine = .true.
     handle%caps%driver_ver = "Apple Foundation/Metal/ANE (candidate)"
     handle%healthy = .true.
     handle%load = 0.0

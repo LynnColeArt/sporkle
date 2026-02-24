@@ -267,8 +267,12 @@ contains
       estimated_power_watts = 200.0_real64
       
     case (KIND_APPLE)
-      ! Apple GPUs and integrated accelerator variants
-      estimated_power_watts = 80.0_real64
+      ! Apple GPUs and dedicated accelerator variants
+      if (device%caps%has_neural_engine) then
+        estimated_power_watts = 60.0_real64
+      else
+        estimated_power_watts = 80.0_real64
+      end if
 
     case default
       estimated_power_watts = 50.0_real64

@@ -24,6 +24,8 @@ module sporkle_mesh_types
     integer :: sm_count = 0                      ! streaming multiprocessors (GPU)
     integer(i64) :: vram_mb = 0               ! device memory in MB
     logical :: unified_mem = .false.             ! supports unified memory
+    logical :: has_metal = .false.              ! Apple Metal runtime available
+    logical :: has_neural_engine = .false.      ! Apple Neural Engine or dedicated accelerator
     real(rk64) :: peak_gflops = 0.0_rk64       ! theoretical peak
     real(rk64) :: sustained_gflops = 0.0_rk64   ! measured sustained
     real(rk64) :: mem_bw_gbs = 0.0_rk64        ! memory bandwidth GB/s
