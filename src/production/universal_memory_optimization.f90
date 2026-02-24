@@ -8,8 +8,8 @@
 ! high performance across all compute architectures.
 !
 ! Performance targets:
-!   - CPU: 250+ GFLOPS (vs current 2 GFLOPS)  
-!   - GPU: 451 GFLOPS (already achieved)
+!   - CPU: [deferred]
+!   - GPU: [deferred]
 !
 ! Key principles:
 !   1. Memory bandwidth optimization (cache-oblivious algorithms)
@@ -62,13 +62,13 @@ contains
     type(memory_params) :: params
     
     ! TODO: Implement hardware detection
-    ! For now, use defaults for AMD Ryzen 7 7700X
+    ! For now, use conservative defaults pending measured calibration
     params%l1_cache_kb = 32      ! 32KB L1D per core
     params%l2_cache_kb = 1024    ! 1MB L2 per core
     params%l3_cache_kb = 32768   ! 32MB L3 shared
-    params%num_cores = 8         ! 8 physical cores
-    params%num_threads = 16      ! 16 threads (SMT)
-    params%peak_bandwidth_gb = 83.2  ! DDR5-5200 dual channel
+    params%num_cores = 8         ! Default heuristic
+    params%num_threads = 16       ! Default heuristic
+    params%peak_bandwidth_gb = 80.0
     
     ! Calculate optimal tile sizes based on cache
     params%tile_m = cache_optimal_tile_size(params%l1_cache_kb, 4)  ! 4 bytes per float
@@ -176,7 +176,7 @@ contains
     !$omp end parallel do
   end subroutine im2col_cache_optimal
   
-  ! Universal memory-optimized GEMM (improved hand-coded for 50+ GFLOPS)
+  ! Universal memory-optimized GEMM (improved hand-coded kernel)
   subroutine gemm_universal_memory(A, B, C, m, n, k, alpha, beta)
     real(sp), intent(in) :: A(:), B(:), alpha, beta
     real(sp), intent(inout) :: C(:)
@@ -187,7 +187,7 @@ contains
     integer :: i_end, j_end, kk_end
     real(sp) :: sum1, sum2, sum3, sum4
     
-    ! Use proven tile sizes that achieved 50+ GFLOPS
+    ! Use conservative tile sizes for cache locality
     tile_size = 64     ! L2 cache tile
     micro_tile = 4     ! Unroll factor for better ILP
     

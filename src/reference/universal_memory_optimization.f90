@@ -8,8 +8,8 @@
 ! high performance across all compute architectures.
 !
 ! Performance targets:
-!   - CPU: 250+ GFLOPS (vs current 2 GFLOPS)  
-!   - GPU: 451 GFLOPS (already achieved)
+!   - CPU: [deferred target] GFLOPS
+!   - GPU: [deferred target] GFLOPS
 !
 ! Key principles:
 !   1. Memory bandwidth optimization (cache-oblivious algorithms)
@@ -145,7 +145,8 @@ contains
     type(memory_params) :: params
     
     ! TODO: Implement hardware detection
-    ! For now, use conservative defaults for AMD Ryzen 7900X
+    ! TODO: Implement hardware detection
+    ! For now, use conservative defaults for a generic x86-like profile
     params%l1_cache_kb = 32
     params%l2_cache_kb = 1024  
     params%l3_cache_kb = 65536

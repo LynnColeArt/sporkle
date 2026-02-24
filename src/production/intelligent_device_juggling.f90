@@ -128,18 +128,16 @@ contains
   subroutine profile_cpu_device(profile)
     type(device_profile), intent(out) :: profile
     
-    profile%device_name = "AMD Ryzen 7900X"
+    profile%device_name = "CPU (detected)"
     profile%device_type = "CPU"
-    profile%cores = 16  ! Physical cores
-    profile%cache_size_mb = 64.0  ! L3 cache
-    profile%memory_bandwidth_gb = 100.0  ! DDR5-5200
+    profile%cores = 16  ! Baseline core count
+    profile%cache_size_mb = 64.0  ! Baseline topology
+    profile%memory_bandwidth_gb = 100.0  ! Baseline topology
     profile%available = .true.
     
-    ! Conservative CPU GFLOPS estimate
-    ! 16 cores * 2 threads * 4.7 GHz * 8 FLOPS/cycle ≈ 600 GFLOPS theoretical
-    ! But convolution is memory-bound, expect much lower
+    ! Conservative CPU GFLOPS estimate (heuristic)
     profile%peak_gflops = 600.0
-    profile%conv2d_gflops = 2.7  ! Current measured performance
+    profile%conv2d_gflops = 2.7  ! Baseline seed for early scheduling
     profile%efficiency_ratio = profile%conv2d_gflops / profile%peak_gflops
     
     profile%optimal_tile_size = 64
@@ -155,14 +153,12 @@ contains
       profile%device_name = gpu%name
       profile%device_type = "GPU"
       profile%cores = gpu%compute_units
-      profile%memory_bandwidth_gb = 800.0  ! GDDR6X estimated
+      profile%memory_bandwidth_gb = 800.0
       profile%available = .true.
       
-      ! GPU GFLOPS estimate from compute units
-      ! RX 7900 XTX: 84 CUs * 128 shaders * 2.4 GHz * 2 FLOPS ≈ 65 TFLOPS theoretical  
-      ! But convolution achieves about 0.6% efficiency
+      ! GPU GFLOPS estimate from device profile (heuristic)
       profile%peak_gflops = 65000.0  ! Theoretical
-      profile%conv2d_gflops = 414.0  ! Current measured performance
+      profile%conv2d_gflops = 414.0  ! Baseline seed for early scheduling
       profile%efficiency_ratio = profile%conv2d_gflops / profile%peak_gflops
       
       profile%optimal_tile_size = 64

@@ -1,8 +1,6 @@
 // REFERENCE IMPLEMENTATION - DO NOT MODIFY WITHOUT DISCUSSION
 // 
-// Performance achieved:
-//   - 493 GFLOPS on AMD Radeon RX 7900 XTX
-//   - 451 GFLOPS typical runtime performance
+// Performance achieved: deferred
 //
 // Key features:
 //   - Direct convolution with boundary checking

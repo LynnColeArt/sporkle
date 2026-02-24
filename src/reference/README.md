@@ -7,19 +7,19 @@ This directory contains the optimized, tested, and verified reference implementa
 ## Rules
 
 1. **NO DIRECT MODIFICATIONS** - Changes must be discussed and benchmarked
-2. **PERFORMANCE DOCUMENTED** - Each implementation must document its achieved performance
-3. **FULLY OPTIMIZED** - These are the best versions we have
+2. **PERFORMANCE DOCUMENTED** - Each implementation must document performance status (deferred/measured/stable)
+3. **PRODUCTION CLAIMS CONTROLLED** - Throughput claims are only published after measured rebaseline
 4. **WELL COMMENTED** - Future us needs to understand the optimizations
 
 ## Current Reference Implementations
 
 ### CPU Kernels
-- [ ] `conv2d_reference.f90` - Optimized convolution (TARGET: 250 GFLOPS)
+- [ ] `conv2d_reference.f90` - Optimized convolution (status: [deferred])
 - [ ] `matmul_reference.f90` - Cache-aware matrix multiplication
 - [ ] `gemm_reference.f90` - BLAS-level GEMM implementation
 
 ### GPU Kernels  
-- [x] `conv2d_glsl_reference.glsl` - Direct convolution shader (493 GFLOPS achieved)
+- [x] `conv2d_glsl_reference.glsl` - Direct convolution shader (status: [deferred])
 - [ ] `matmul_glsl_reference.glsl` - Tiled matrix multiplication
 
 ### Memory Management
@@ -38,7 +38,7 @@ This directory contains the optimized, tested, and verified reference implementa
 Each file should start with:
 ```fortran
 ! REFERENCE IMPLEMENTATION - DO NOT MODIFY
-! Performance: XXX GFLOPS achieved on [hardware]
+! Performance status: [measured]/[deferred]/[planned]
 ! Optimizations: [list key techniques used]
 ! Last verified: [date]
 ```

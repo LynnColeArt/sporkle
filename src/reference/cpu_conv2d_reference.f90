@@ -3,17 +3,16 @@
 ! High-Performance CPU Convolution Reference
 ! ==========================================
 !
-! Target: 250+ GFLOPS on AMD Ryzen 7900X using universal memory optimization patterns
+! Target: deferred GFLOPS target using universal memory optimization patterns
 ! 
-! This implementation proves that the same optimization principles that achieve
-! 451 GFLOPS on GPU can also achieve high performance on CPU:
+! This implementation applies the same optimization principles used by GPU and CPU paths.
 !
 !   1. Memory bandwidth optimization (cache-oblivious algorithms)
 !   2. Arithmetic intensity amplification (im2col + GEMM fusion)
 !   3. Cache-friendly data layouts (blocked tiling)
 !   4. Compute/memory overlap (OpenMP parallelism)
 !
-! Performance achieved: TBD (target 250+ GFLOPS)
+! Performance achieved: TBD (deferred)
 ! Last verified: TBD
 ! Original breakthrough: Memory Wall Breakthrough document
 !
@@ -100,16 +99,8 @@ contains
     print '(A,F8.1,A)', "   Performance: ", gflops, " GFLOPS"
     print '(A,I0)', "   Total FLOPs: ", total_flops
     
-    ! Performance targets
-    if (gflops >= 250.0) then
-      print *, "   🎉 TARGET ACHIEVED: ≥250 GFLOPS!"
-    else if (gflops >= 100.0) then
-      print *, "   🟡 Good progress: ≥100 GFLOPS"
-    else if (gflops >= 50.0) then
-      print *, "   🟠 Moderate improvement: ≥50 GFLOPS"  
-    else
-      print *, "   🔴 Needs optimization: <50 GFLOPS"
-    end if
+    ! Performance tiers are intentionally deferred for this phase.
+    print *, "   📌 Throughput claims deferred until benchmark refresh."
   end function conv2d_cpu_benchmark
   
   ! Convenient wrapper with warmup

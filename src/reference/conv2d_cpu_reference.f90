@@ -1,15 +1,15 @@
 ! REFERENCE IMPLEMENTATION - DO NOT MODIFY WITHOUT DISCUSSION
 ! 
-! Performance target:
-!   - 250 GFLOPS (based on achieved GEMM performance)
+! Performance context:
+!   - Target: deferred until benchmark refresh
 !   - Using im2col + cache-aware GEMM approach
 !
-! Status: IMPLEMENTED - See cpu_conv2d_adaptive_fixed.f90
+! Status: IMPLEMENTED (benchmarked evidence deferred)
 ! 
 ! The optimized implementation exists in src/production/:
 !   - cpu_conv2d_adaptive_fixed.f90: Full im2col + GEMM implementation
 !   - Uses cache-aware tiling with OpenMP parallelization
-!   - Achieves 196.7 GFLOPS (verified in production)
+!   - Throughput claims are deferred until benchmark refresh
 !
 ! This reference file serves as a pointer to the actual implementation
 ! which was moved during restructuring but not lost.
@@ -33,8 +33,8 @@ contains
     integer, intent(in) :: N, C, H, W, K, kernel_size, stride, pad, H_out, W_out
     real(f64) :: gflops
     
-    ! Use the production CPU implementation which achieves 196.7 GFLOPS
-    ! This is the actual optimized code with im2col + cache-aware GEMM
+    ! Use the production CPU implementation with im2col + cache-aware GEMM.
+    ! Throughput values are deferred until stable benchmark verification.
     gflops = conv2d_adaptive(input, weights, output, &
                             N, C, H, W, K, kernel_size, stride, pad, H_out, W_out)
     
@@ -51,7 +51,7 @@ contains
   !
   ! subroutine cache_aware_conv_gemm(col_buffer, weights, output, ...)
   !   ! Use tiling and fusion techniques from MEMORY_WALL_BREAKTHROUGH.md
-  !   ! Target: 250 GFLOPS sustained
+  !   ! Target bands are deferred pending benchmark refresh.
   ! end subroutine
   
 end module sporkle_conv2d_cpu_reference

@@ -191,10 +191,12 @@ contains
     integer :: thread_id, num_threads
     integer(i64) :: j0, j1, local_cols
     
-    ! Thread-local arrays
-    type(c_ptr) :: bt_ptr, at_ptr, ct_ptr
-    real(sp), pointer :: Bt(:,:), At(:,:), Ct(:,:)
-    integer(i64) :: bt_size, at_size, ct_size
+  ! Thread-local arrays
+  type(c_ptr) :: bt_ptr, at_ptr, ct_ptr
+  real(sp), pointer :: Bt(:,:), At(:,:), Ct(:,:)
+  real(sp), allocatable :: At_flat(:), Bt_flat(:), Ct_flat(:)
+  integer(i64) :: bt_size, at_size, ct_size
+  integer(i64) :: at_flat_size, bt_flat_size, ct_flat_size
     
     ! Loop variables
     integer(i64) :: jj, j_col, k0, k1, kt_size
@@ -224,10 +226,11 @@ contains
     !$omp parallel default(none) &
     !$omp shared(input, weights, output, N, C, H, W, K, kernel_size, stride, pad) &
     !$omp shared(H_out, W_out, I, N_total, tiles) &
-    !$omp private(thread_id, num_threads, j0, j1, local_cols) &
-    !$omp private(bt_ptr, at_ptr, ct_ptr, Bt, At, Ct, bt_size, at_size, ct_size) &
-    !$omp private(jj, j_col, k0, k1, kt_size, n_idx, ch_idx, kh_idx, kw_idx, i_idx) &
-    !$omp private(h_out_pos, w_out_pos, h_in_pos, w_in_pos, in_idx, out_idx, rem)
+  !$omp private(thread_id, num_threads, j0, j1, local_cols) &
+  !$omp private(bt_ptr, at_ptr, ct_ptr, Bt, At, Ct, bt_size, at_size, ct_size) &
+  !$omp private(At_flat, Bt_flat, Ct_flat, at_flat_size, bt_flat_size, ct_flat_size) &
+  !$omp private(jj, j_col, k0, k1, kt_size, n_idx, ch_idx, kh_idx, kw_idx, i_idx) &
+  !$omp private(h_out_pos, w_out_pos, h_in_pos, w_in_pos, in_idx, out_idx, rem)
     
     !$omp barrier  ! All threads ready
     
@@ -248,6 +251,9 @@ contains
     bt_size = int(tiles%I_pad, int64) * local_cols * 4
     at_size = int(tiles%Kt, int64) * int(tiles%I_pad, int64) * 4
     ct_size = int(tiles%Kt, int64) * local_cols * 4
+    at_flat_size = int(tiles%Kt, int64) * int(tiles%I_pad, int64)
+    bt_flat_size = int(tiles%I_pad, int64) * local_cols
+    ct_flat_size = int(tiles%Kt, int64) * local_cols
     
     bt_ptr = posix_memalign_wrapper(bt_size)
     at_ptr = posix_memalign_wrapper(at_size)
@@ -256,6 +262,9 @@ contains
     call c_f_pointer(bt_ptr, Bt, [tiles%I_pad, int(local_cols)])
     call c_f_pointer(at_ptr, At, [tiles%Kt, tiles%I_pad])
     call c_f_pointer(ct_ptr, Ct, [tiles%Kt, int(local_cols)])
+    allocate(At_flat(at_flat_size))
+    allocate(Bt_flat(bt_flat_size))
+    allocate(Ct_flat(ct_flat_size))
     
     ! Build Bt(I_pad, local_cols) once for this thread
     call pack_bt_columns(input, Bt, j0, local_cols, tiles, &
@@ -270,13 +279,17 @@ contains
       call load_a_block(weights, At, k0, kt_size, I, int(tiles%I_pad, int64), int(K, int64))
       
       ! GEMM: Ct(kt_size, local_cols) = At(kt_size, I_pad) * Bt(I_pad, local_cols)
-      call adaptive_gemm_microkernel(At, Bt, Ct, int(kt_size), int(local_cols), tiles%I_pad)
+      call adaptive_gemm_microkernel(At, Bt, Ct, int(kt_size), int(local_cols), tiles%I_pad, &
+                                    At_flat, Bt_flat, Ct_flat)
       
       ! Write Ct to output C(k0:k1, j0:j1)
       call write_c_block(Ct, output, k0, kt_size, j0, local_cols, int(H_out, int64), int(W_out, int64), int(K, int64), N_total, N)
     end do
     
     ! Free aligned memory
+    if (allocated(At_flat)) deallocate(At_flat)
+    if (allocated(Bt_flat)) deallocate(Bt_flat)
+    if (allocated(Ct_flat)) deallocate(Ct_flat)
     call free_wrapper(bt_ptr)
     call free_wrapper(at_ptr)
     call free_wrapper(ct_ptr)
@@ -409,20 +422,15 @@ contains
   end subroutine load_a_block
 
   ! GEMM microkernel: Ct = At * Bt using AVX-512 optimized kernel
-  subroutine adaptive_gemm_microkernel(At, Bt, Ct, kt_size, nt_size, I_pad)
+  subroutine adaptive_gemm_microkernel(At, Bt, Ct, kt_size, nt_size, I_pad, At_flat, Bt_flat, Ct_flat)
     real(sp), intent(in) :: At(:,:), Bt(:,:)
     real(sp), intent(out) :: Ct(:,:)
     integer, intent(in) :: kt_size, nt_size, I_pad
+    real(sp), intent(inout) :: At_flat(:)
+    real(sp), intent(inout) :: Bt_flat(:)
+    real(sp), intent(out) :: Ct_flat(:)
     
-    ! Flatten 2D arrays to 1D for AVX-512 kernel
-    ! At is kt_size x I_pad, Bt is I_pad x nt_size, Ct is kt_size x nt_size
-    ! We need to transpose At for column-major GEMM
-    real(sp), allocatable :: At_flat(:), Bt_flat(:), Ct_flat(:)
     integer :: i, j, idx
-    
-    allocate(At_flat(kt_size * I_pad))
-    allocate(Bt_flat(I_pad * nt_size))
-    allocate(Ct_flat(kt_size * nt_size))
     
     ! Copy At to flat array (column major)
     idx = 1
@@ -456,7 +464,6 @@ contains
       end do
     end do
     
-    deallocate(At_flat, Bt_flat, Ct_flat)
   end subroutine adaptive_gemm_microkernel
 
   ! Write Ct block to output with correct accumulation
@@ -471,8 +478,8 @@ contains
     integer(i64) :: k_idx
     
     ! Output layout: [N, K, H_out, W_out]
+    ! These column ranges are partitioned per thread, so output writes are disjoint.
     
-    !$omp critical
     do jj = 1, local_cols
       j_col = j0 + jj - 1
       
@@ -493,7 +500,6 @@ contains
         output(out_idx) = output(out_idx) + Ct(kt, jj)
       end do
     end do
-    !$omp end critical
   end subroutine write_c_block
 
   ! Placeholder for autotuning (future enhancement)

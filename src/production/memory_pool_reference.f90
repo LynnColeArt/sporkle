@@ -1,6 +1,6 @@
 ! REFERENCE IMPLEMENTATION - DO NOT MODIFY WITHOUT DISCUSSION
 ! 
-! Performance achieved:
+! Performance status:
 !   - Automatic alignment for SIMD operations
 !   - Zero-copy device transfers where supported
 !   - Memory usage tracking
@@ -10,7 +10,7 @@
 !   - Platform-agnostic implementation
 !   - Clean error handling
 !
-! Last verified: 2024-12-20
+! Last verified: [deferred]
 ! Original source: src/sporkle_memory.f90
 !
 ! DO NOT MODIFY THIS FILE DIRECTLY

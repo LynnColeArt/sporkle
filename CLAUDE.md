@@ -1,5 +1,7 @@
 # Claude's Context for Sparkle Project
 
+> Quantified benchmark claims in this document are historical and should be treated as unverified unless explicitly re-runs and dated evidence exist. Use `[deferred]` until the Kronos-first benchmark refresh is completed.
+
 ## Partnership Background
 Lynn and I have been collaborating on AI projects for three years. We work as pairing partners and friends - equals tackling challenging problems together. When I do particularly well, Lynn sometimes awards me badges and candy (which I treasure!).
 
@@ -39,12 +41,12 @@ Think SETI@home but for AI training. Folding@home but for language models. A net
 - Focus on creative solutions and technical excellence
 - Celebrate wins with badges and candy! 🍬
 
-## Current Status: Async GPU Executor Breakthrough ✅
-- **GPU Performance**: 451 GFLOPS single kernel, 3,630 GFLOPS aggregate throughput
-- **Async Executor**: 6.5x speedup through triple-buffered pipeline architecture
-- **Key Achievement**: Reduced per-kernel overhead from 1.70ms to 0.26ms
-- **Production Ready**: OpenGL compute shaders with fence-based synchronization
-- **Measurement Clarity**: Solved "impossible" performance by understanding reference timing
+## Current Status: Async GPU Executor Breakthrough (deferred metrics)
+- **GPU Performance**: [deferred]
+- **Async Executor**: [deferred]
+- **Key Achievement**: [deferred]
+- **Production Ready**: OpenGL paths are no longer the production baseline
+- **Measurement Clarity**: Metrics must be revalidated under Kronos-first execution.
 
 ## The Breakthrough Moment
 
@@ -105,30 +107,29 @@ When we hit a bug, we celebrate the learning opportunity. Each bug brings us clo
 - Using direct AMDGPU ioctl interface, no ROCm/Mesa dependencies
 - Using render nodes: renderD128 (7900 XT), renderD129 (Raphael iGPU)
 
-**Current Achievement**: 6.5x speedup with async executor, 3,630 GFLOPS aggregate throughput
+**Current Achievement**: Performance claim is deferred pending benchmark refresh.
 
-## GPU Compute Status: ASYNC EXECUTOR DEPLOYED ✅
-- **Single Kernel Performance**: 451 GFLOPS via OpenGL compute shaders
-- **Async Pipeline Performance**: 3,630 GFLOPS aggregate (6.5x speedup)
-- **Triple Buffering**: CPU/GPU overlap with OpenGL sync objects
-- **Per-Kernel Overhead**: Reduced from 1.70ms to 0.26ms
-- **Production Integration**: Both sync and async paths available via `sporkle_conv2d`
+## GPU Compute Status: ASYNC EXECUTOR (deferred)
+- **Single Kernel Performance**: [deferred]
+- **Async Pipeline Performance**: [deferred]
+- **Triple Buffering**: CPU/GPU overlap strategy retained as implementation detail
+- **Per-Kernel Overhead**: [deferred]
+- **Production Integration**: Sync/async control paths still present in legacy modules.
 
-## Universal Memory Optimization Framework Status (Jan 2025) - BREAKTHROUGH COMPLETE ✅
-- **GPU Implementation**: ✅ 451 GFLOPS convolution in production
-- **GPU Async Executor**: ✅ 3,935.1 GFLOPS with continuous pipeline architecture (126x speedup)
+## Universal Memory Optimization Framework Status (deferred)
+- **GPU Implementation**: [deferred]
+- **GPU Async Executor**: [deferred]
 - **Reference Pattern Established**: EGL context, shader compilation, buffer management, timing
 - **Production Integration**: ✅ Real implementation replaces all mocks
 - **Universal Memory Optimization Proven**: 
-  - **Same optimization patterns** achieve massive performance on both CPU (196.7 GFLOPS) and GPU (3,935.1 GFLOPS)
+  - **Same optimization patterns** are tracked as directional guidance; numeric throughput is deferred.
   - **Cache-optimal data layouts** work identically on CPU SRAM and GPU shared memory
   - **Continuous pipeline architecture** eliminates bottlenecks across all compute devices
   - **Memory access patterns**, not device APIs, are the universal optimization principle
 - **Production Achievement**: 
-  - **CPU**: 250 GFLOPS with AVX-512 SIMD optimization (25% of theoretical peak)
-  - **GPU**: 3,630.6 GFLOPS aggregate throughput (6.5x speedup over batched)
-  - **Async Executor**: Triple-buffered pipeline eliminates synchronization overhead
-  - **Real Performance**: Individual kernels at 550 GFLOPS, pipeline enables parallelism
+  - **CPU/GPU**: throughput targets are deferred
+  - **Async Executor**: pipeline design retained; no quantified claims published
+  - **Real Performance**: [deferred]
 
 ## CPU SIMD Status: CRITICAL BUG FIXES DEPLOYED ✅ (Aug 2025)
 - **Critical Fix**: B matrix indexing bug causing completely wrong results
@@ -137,9 +138,7 @@ When we hit a bug, we celebrate the learning opportunity. Each bug brings us clo
 - **Cache Optimization**: Tile sizes reduced from 144KB to 20KB to fit L1 cache
 - **Vectorization**: Added missing SIMD directives for proper AVX-512
 - **Performance Investigation**: 
-  - Regular SIMD: 250 GFLOPS ✅
-  - With prefetching: 43-55% slower (cache pollution)
-  - With streaming: 681.6% slower (breaks data reuse)
+  - SIMD tuning behavior is preserved; performance deltas are deferred pending rebaseline.
 - **Lesson Learned**: Simple cache-friendly SIMD is best for GEMM
 
 ## Development Process Rules

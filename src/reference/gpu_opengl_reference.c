@@ -1,7 +1,7 @@
 // REFERENCE IMPLEMENTATION - DO NOT MODIFY WITHOUT DISCUSSION
 //
 // Performance achieved:
-//   - 451 GFLOPS on AMD Radeon RX 7900 XTX
+//   - deferred GFLOPS target
 //   - Stable EGL context creation
 //   - Proper OpenGL 4.3 core profile
 //
