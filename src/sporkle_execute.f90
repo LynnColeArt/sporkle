@@ -79,6 +79,7 @@ contains
     type(schedule_choice) :: schedule
     integer :: i, device_idx
     integer(i64) :: offset, chunk_size
+    logical :: has_gpu_target
     
     ! Set argument shapes from memory handles
     call kernel_set_argument_shapes(kernel)
@@ -98,22 +99,32 @@ contains
     end if
     
     ! Check if we can run on GPU
-    block
-      integer :: j
-      logical :: has_gpu
-      
-      has_gpu = .false.
-      do j = 1, this%mesh%num_devices
-        if (this%mesh%devices(j)%caps%kind /= KIND_CPU) then
-          has_gpu = .true.
-          exit
-        end if
-      end do
-      
-      if (has_gpu .and. .not. this%quiet_mode) then
-        print *, "   GPU execution not yet implemented - falling back to CPU"
+    if (.not. this%quiet_mode) then
+      print *, "   NOTE: GPU execution uses hard-fail policy when enabled devices are scheduled."
+    end if
+    
+    ! Production policy: execute only on CPU until the GPU Kronos-native path is explicitly re-enabled.
+    has_gpu_target = .false.
+    do i = 1, size(schedule%device_ids)
+      device_idx = schedule%device_ids(i) + 1  ! Convert to 1-based
+      if (device_idx > this%mesh%num_devices) then
+        has_gpu_target = .true.
+        exit
       end if
-    end block
+      
+      if (this%mesh%devices(device_idx)%caps%kind /= KIND_CPU) then
+        has_gpu_target = .true.
+        exit
+      end if
+    end do
+    
+    if (has_gpu_target) then
+      if (.not. this%quiet_mode) then
+        print *, "❌ Hard-fail: GPU scheduling detected while GPU execution is not active."
+        print *, "   Update device routing for Kronos-native dispatch before retrying."
+      end if
+      error stop "GPU execution path is not active in this recovery build. Enable Kronos dispatch integration."
+    end if
     
     ! For now, execute on CPU devices only
     offset = 0
@@ -125,12 +136,6 @@ contains
         if (this%mesh%devices(device_idx)%caps%kind == KIND_CPU) then
           ! Execute on CPU
           call execute_kernel_cpu(kernel, offset, chunk_size)
-        else
-          ! Skip GPU for now
-          if (.not. this%quiet_mode) then
-            print '(A,I0,A)', "   Skipping GPU device ", device_idx - 1, &
-                            " (GPU execution coming soon)"
-          end if
         end if
       end if
       
@@ -155,19 +160,9 @@ contains
     ! 3. Handle any necessary synchronization
     
     if (associated(kernel%fortran_proc)) then
-      ! Create views into the data for this chunk
-      block
-        type(kernel_argument), allocatable :: chunk_args(:)
-        integer :: i
-        
-        ! For now, just pass through the original arguments
-        ! In a real distributed implementation, we'd slice the data
-        allocate(chunk_args(size(kernel%arguments)))
-        chunk_args = kernel%arguments
-        
-        ! Call the actual Fortran procedure
-        call kernel%fortran_proc(chunk_args)
-      end block
+      ! For this recovery pass, execute the kernel with current arguments directly.
+      ! TODO: add deterministic slicing by offset/count before enabling multi-device execution.
+      call kernel%fortran_proc(kernel%arguments)
     end if
     
   end subroutine execute_kernel_cpu
