@@ -6,9 +6,7 @@
 module sporkle_conv2d_v2
   use kinds
   use sporkle_universal_device_selector
-  use sporkle_gpu_dispatch, only: execute_conv2d_gpu
   use gpu_async_executor
-  use gpu_opengl_interface, only: gpu_get_program_id
   implicit none
   
   private
@@ -130,33 +128,14 @@ contains
                                          N, C, H, W, K, kernel_size, stride, pad, H_out, W_out)
       
     case(2, 3, 4)  ! GPU (discrete or integrated)
-      if (async_requested .and. selected_device == 2 .and. async_executor_enabled) then
-        ! Async executor for discrete GPU
-        if (profiling_enabled) print '(A)', " ⚡ Executing on GPU with async pipeline (feature in development)"
-        
-        ! In the current implementation, async execution currently executes a
-        ! single calibrated path without synthetic multipliers.
-        ! 1. Initialize async executor if not done (requires separate weight buffer management)
-        ! 2. Use gpu_async_conv2d from the executor
-        ! 3. Handle async completion tracking
-        
-        elapsed_ms = execute_conv2d_gpu(input, weights, output, &
-                                       N, C, H, W, K, kernel_size, stride, pad, H_out, W_out)
-        
-        if (profiling_enabled) print '(A)', " 💡 Note: Full async integration pending (weight buffer management)"
-        
-      else
-        ! Standard GPU execution
-        if (profiling_enabled) then
-          if (async_requested .and. .not. async_executor_enabled) then
-            print '(A)', " ℹ️  Async requested but not enabled. Set SPORKLE_GPU_ASYNC=1 to enable."
-          end if
-          print '(A,A)', " 🎮 Executing on ", &
-                        trim(global_selector%devices(selected_device)%name)
-        end if
-        elapsed_ms = execute_conv2d_gpu(input, weights, output, &
-                                       N, C, H, W, K, kernel_size, stride, pad, H_out, W_out)
+      if (profiling_enabled) then
+        print '(A)', " ⚠️  GPU selection was made but Kronos-native dispatch is not wired yet in this path"
+        print '(A)', " ⚠️  Device requested: " // trim(global_selector%devices(selected_device)%name)
       end if
+      if (async_requested) then
+        print '(A)', " ℹ️  Async execution hint was ignored because Kronos-native path is not active."
+      end if
+      error stop "Kronos-native GPU conv2d execution is not active in sporkle_conv2d_v2. Use CPU or call sporkle_conv2d_unified with explicit cpu."
       
     case default
       print '(A,I0)', "❌ sporkle_conv2d_v2 received invalid device selection: ", selected_device
