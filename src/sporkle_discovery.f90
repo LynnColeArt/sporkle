@@ -375,7 +375,7 @@ contains
     if (card_index <= 7) then
       write(sysfs_path, '(A,I0,A)') "/sys/class/drm/card", card_index, "/device/name"
       handle%id = mesh%num_devices
-      handle%caps%kind = KIND_UNKNOWN
+      handle%caps%kind = KIND_APPLE
       if (read_text_file_line(trim(sysfs_path), vendor)) then
         handle%caps%pci_id = trim(adjustl(vendor))
       else
@@ -385,7 +385,7 @@ contains
       handle%caps%pci_id = "Apple GPU"
     end if
     
-    handle%caps%kind = KIND_UNKNOWN
+    handle%caps%kind = KIND_APPLE
     handle%caps%cores = 0
     handle%caps%sm_count = 0
     handle%caps%vram_mb = 0_i64

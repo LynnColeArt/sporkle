@@ -3,7 +3,7 @@ module sporkle_profile
   use iso_c_binding
   use sporkle_types
   use sporkle_memory
-  use sporkle_mesh_types, only: device_handle, mesh_topology, KIND_CPU, KIND_NVIDIA, KIND_AMD
+  use sporkle_mesh_types, only: device_handle, mesh_topology, KIND_CPU, KIND_NVIDIA, KIND_AMD, KIND_APPLE
   implicit none
   private
   
@@ -266,6 +266,10 @@ contains
     case (KIND_AMD)
       estimated_power_watts = 200.0_real64
       
+    case (KIND_APPLE)
+      ! Apple GPUs and integrated accelerator variants
+      estimated_power_watts = 80.0_real64
+
     case default
       estimated_power_watts = 50.0_real64
     end select

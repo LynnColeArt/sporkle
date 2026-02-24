@@ -11,6 +11,7 @@ module sporkle_mesh_types
     KIND_CPU = "cpu", &
     KIND_NVIDIA = "nvidia", &
     KIND_AMD = "amd", &
+    KIND_APPLE = "apple", &
     KIND_INTEL = "intel", &
     KIND_IGPU = "igpu", &
     KIND_FPGA = "fpga", &
