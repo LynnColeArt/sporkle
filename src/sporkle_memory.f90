@@ -99,6 +99,21 @@ contains
     integer(c_size_t) :: alignment = 64  ! Cache line size
     integer :: ierr
     
+    if (size <= 0) then
+      print *, "ERROR: Requested host allocation size must be positive:", size
+      handle%size = 0
+      handle%device_id = -1
+      if (present(tag)) then
+        handle%tag = tag
+      else
+        handle%tag = "unnamed"
+      end if
+      handle%flags = MEM_DEFAULT
+      if (present(flags)) handle%flags = flags
+      handle%is_allocated = .false.
+      return
+    end if
+
     handle%size = size
     handle%device_id = -1  ! Host memory
     
@@ -145,7 +160,7 @@ contains
     logical :: request_pinned
 
     if (size <= 0_i64) then
-      print *, "ERROR: Invalid device allocation size:", size
+      print *, "ERROR: Requested device allocation size must be positive:", size
       handle%is_allocated = .false.
       handle%size = 0
       handle%ptr = c_null_ptr
@@ -203,11 +218,18 @@ contains
     class(compute_device), intent(in), optional :: device
     type(sporkle_buffer) :: device_buffer
     
-    if (.not. handle%is_allocated) return
+    if (.not. handle%is_allocated) then
+      print *, "ERROR: destroy_memory called on unallocated handle:", trim(handle%tag)
+      return
+    end if
     
     if (handle%device_id == -1) then
       ! Host memory
-      call c_free(handle%ptr)
+      if (c_associated(handle%ptr)) then
+        call c_free(handle%ptr)
+      else
+        print *, "ERROR: Host memory pointer is NULL for allocated handle:", trim(handle%tag)
+      end if
     else
       ! Device memory
       if (present(device)) then
@@ -246,6 +268,10 @@ contains
     ! Validate
     if (.not. src%is_allocated .or. .not. dst%is_allocated) then
       print *, "ERROR: Attempting to copy from/to unallocated memory"
+      return
+    end if
+    if (size <= 0) then
+      print *, "ERROR: Copy size must be positive"
       return
     end if
     
@@ -291,7 +317,9 @@ contains
     
     integer(c_size_t) :: set_size
     
-    if (.not. handle%is_allocated) return
+    if (.not. handle%is_allocated) then
+      error stop "Attempt to set unallocated memory"
+    end if
     
     if (present(size)) then
       set_size = int(min(size, handle%size), c_size_t)
@@ -324,6 +352,10 @@ contains
   subroutine pool_init(pool, max_allocs)
     class(memory_pool), intent(inout) :: pool
     integer, intent(in) :: max_allocs
+
+    if (max_allocs <= 0) then
+      error stop "Memory pool max_allocs must be positive"
+    end if
     
     pool%max_allocations = max_allocs
     allocate(pool%allocations(max_allocs))
@@ -340,6 +372,15 @@ contains
     character(len=*), intent(in), optional :: tag
     type(memory_handle) :: handle
     
+    if (pool%max_allocations <= 0) then
+      print *, "ERROR: Memory pool not initialized"
+      return
+    end if
+    if (size <= 0) then
+      print *, "ERROR: Memory pool allocation size must be positive:", size
+      return
+    end if
+
     if (pool%num_allocations >= pool%max_allocations) then
       print *, "ERROR: Memory pool full"
       return
@@ -366,7 +407,12 @@ contains
     class(compute_device), intent(in), optional :: device
     
     integer :: i, j
-    
+
+    if (pool%num_allocations == 0) then
+      print *, "WARN: pool_deallocate called on empty pool"
+      return
+    end if
+
     ! Find and remove from pool
     do i = 1, pool%num_allocations
       if (c_associated(pool%allocations(i)%ptr, handle%ptr)) then
@@ -381,6 +427,8 @@ contains
         return
       end if
     end do
+
+    print *, "ERROR: Attempted to deallocate handle not tracked by pool"
     
   end subroutine pool_deallocate
   
@@ -406,14 +454,15 @@ contains
     
   end subroutine pool_report
   
-  subroutine pool_cleanup(pool)
+  subroutine pool_cleanup(pool, device)
     class(memory_pool), intent(inout) :: pool
+    class(compute_device), intent(in), optional :: device
     integer :: i
     
     ! Deallocate all remaining allocations
     do i = pool%num_allocations, 1, -1
       if (pool%allocations(i)%is_allocated) then
-        call destroy_memory(pool%allocations(i))
+        call destroy_memory(pool%allocations(i), device)
       end if
     end do
     

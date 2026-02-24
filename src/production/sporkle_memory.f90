@@ -99,6 +99,21 @@ contains
     integer(c_size_t) :: alignment = 64  ! Cache line size
     integer :: ierr
     
+    if (size <= 0) then
+      print *, "ERROR: Requested host allocation size must be positive:", size
+      handle%size = 0
+      handle%device_id = -1
+      if (present(tag)) then
+        handle%tag = tag
+      else
+        handle%tag = "unnamed"
+      end if
+      handle%flags = MEM_DEFAULT
+      if (present(flags)) handle%flags = flags
+      handle%is_allocated = .false.
+      return
+    end if
+
     handle%size = size
     handle%device_id = -1  ! Host memory
     
@@ -142,6 +157,25 @@ contains
     character(len=*), intent(in), optional :: tag
     type(memory_handle) :: handle
     
+    if (size <= 0_i64) then
+      print *, "ERROR: Requested device allocation size must be positive:", size
+      handle%size = 0
+      handle%device_id = device%device_id
+      if (present(flags)) then
+        handle%flags = flags
+      else
+        handle%flags = MEM_DEFAULT
+      end if
+      if (present(tag)) then
+        handle%tag = tag
+      else
+        handle%tag = "device_mem"
+      end if
+      handle%ptr = c_null_ptr
+      handle%is_allocated = .false.
+      return
+    end if
+
     handle%size = size
     handle%device_id = device%device_id
     
@@ -157,29 +191,33 @@ contains
       handle%tag = "device_mem"
     end if
     
-    ! Use device's allocate method if available
-    if (present(device)) then
-      block
-        type(sporkle_buffer) :: buffer
-        logical :: pinned
-        
-        pinned = .false.  ! GPU memory by default
-        buffer = device%allocate(size, pinned)
-        
-        if (c_associated(buffer%data)) then
-          handle%ptr = buffer%data
-          handle%is_allocated = .true.
-          handle%size = buffer%size_bytes
-        else
-          print *, "❌ Device memory allocation failed"
-          handle%ptr = c_null_ptr
-          handle%is_allocated = .false.
-        end if
-      end block
-    else
-      print *, "❌ No device provided for device memory allocation"
+    block
+      type(sporkle_buffer) :: buffer
+      logical :: pinned
+
+      pinned = iand(handle%flags, MEM_PINNED) /= 0
+      buffer = device%allocate(size_bytes=size, pinned=pinned)
+
+      if (c_associated(buffer%data) .and. buffer%size_bytes > 0) then
+        handle%ptr = buffer%data
+        handle%is_allocated = .true.
+        handle%size = buffer%size_bytes
+      else
+        print *, "❌ Device memory allocation failed"
+        handle%ptr = c_null_ptr
+        handle%is_allocated = .false.
+      end if
+    end block
+    if (.not. handle%is_allocated) then
+      handle%size = 0
+      return
+    end if
+
+    if (.not. c_associated(handle%ptr)) then
+      print *, "❌ Device memory returned NULL pointer"
       handle%ptr = c_null_ptr
       handle%is_allocated = .false.
+      handle%size = 0
     end if
     
   end function create_memory_device
@@ -187,19 +225,33 @@ contains
   subroutine destroy_memory(handle, device)
     type(memory_handle), intent(inout) :: handle
     class(compute_device), intent(in), optional :: device
-    
-    if (.not. handle%is_allocated) return
+    type(sporkle_buffer) :: buffer
+
+    if (.not. handle%is_allocated) then
+      print *, "ERROR: destroy_memory called on unallocated handle:", trim(handle%tag)
+      return
+    end if
     
     if (handle%device_id == -1) then
       ! Host memory
-      call c_free(handle%ptr)
+      if (c_associated(handle%ptr)) then
+        call c_free(handle%ptr)
+      else
+        print *, "ERROR: Host memory pointer is NULL for allocated handle:", trim(handle%tag)
+      end if
     else
       ! Device memory
       if (present(device)) then
-        ! For now, skip device deallocation until we update interface
-        print *, "NOTE: Device memory deallocation not yet implemented"
+        if (device%device_id /= handle%device_id) then
+          error stop "Device mismatch while deallocating memory handle"
+        end if
+        buffer%data = handle%ptr
+        buffer%size_bytes = handle%size
+        buffer%owning_device = handle%device_id
+        buffer%is_pinned = iand(handle%flags, MEM_PINNED) /= 0
+        call device%deallocate(buffer)
       else
-        print *, "WARNING: Device memory leak - no device provided for deallocation"
+        error stop "Device memory deallocation requires explicit device context"
       end if
     end if
     
@@ -225,6 +277,10 @@ contains
       print *, "ERROR: Attempting to copy from/to unallocated memory"
       return
     end if
+    if (size <= 0) then
+      print *, "ERROR: Copy size must be positive"
+      return
+    end if
     
     if (size > src%size .or. size > dst%size) then
       print *, "ERROR: Copy size exceeds buffer bounds"
@@ -239,9 +295,7 @@ contains
       success = .true.
       
     case (MEM_HOST_TO_DEVICE, MEM_DEVICE_TO_HOST, MEM_DEVICE_TO_DEVICE)
-      ! These would need device-specific implementations
-      print *, "Device memory copy not yet implemented"
-      success = .false.
+      error stop "Device memory copy not implemented"
       
     case default
       print *, "ERROR: Invalid copy direction"
@@ -269,7 +323,9 @@ contains
     
     integer(c_size_t) :: set_size
     
-    if (.not. handle%is_allocated) return
+    if (.not. handle%is_allocated) then
+      error stop "Attempt to set unallocated memory"
+    end if
     
     if (present(size)) then
       set_size = int(min(size, handle%size), c_size_t)
@@ -280,7 +336,7 @@ contains
     if (handle%device_id == -1) then
       call c_memset(handle%ptr, int(value, c_int), set_size)
     else
-      print *, "Device memory set not yet implemented"
+      error stop "Device memory set not implemented"
     end if
     
   end subroutine memory_set
@@ -302,6 +358,10 @@ contains
     class(memory_pool), intent(inout) :: pool
     integer, intent(in) :: max_allocs
     
+    if (max_allocs <= 0) then
+      error stop "Memory pool max_allocs must be positive"
+    end if
+
     pool%max_allocations = max_allocs
     allocate(pool%allocations(max_allocs))
     pool%num_allocations = 0
@@ -317,6 +377,15 @@ contains
     character(len=*), intent(in), optional :: tag
     type(memory_handle) :: handle
     
+    if (pool%max_allocations <= 0) then
+      print *, "ERROR: Memory pool not initialized"
+      return
+    end if
+    if (size <= 0) then
+      print *, "ERROR: Memory pool allocation size must be positive:", size
+      return
+    end if
+
     if (pool%num_allocations >= pool%max_allocations) then
       print *, "ERROR: Memory pool full"
       return
@@ -344,6 +413,11 @@ contains
     
     integer :: i, j
     
+    if (pool%num_allocations == 0) then
+      print *, "WARN: pool_deallocate called on empty pool"
+      return
+    end if
+
     ! Find and remove from pool
     do i = 1, pool%num_allocations
       if (c_associated(pool%allocations(i)%ptr, handle%ptr)) then
@@ -358,6 +432,8 @@ contains
         return
       end if
     end do
+
+    print *, "ERROR: Attempted to deallocate handle not tracked by pool"
     
   end subroutine pool_deallocate
   
@@ -383,14 +459,15 @@ contains
     
   end subroutine pool_report
   
-  subroutine pool_cleanup(pool)
+  subroutine pool_cleanup(pool, device)
     class(memory_pool), intent(inout) :: pool
+    class(compute_device), intent(in), optional :: device
     integer :: i
     
     ! Deallocate all remaining allocations
     do i = pool%num_allocations, 1, -1
       if (pool%allocations(i)%is_allocated) then
-        call destroy_memory(pool%allocations(i))
+        call destroy_memory(pool%allocations(i), device)
       end if
     end do
     
