@@ -2,7 +2,8 @@ module sporkle_gpu_backend
   ! GPU backend selection - VENDOR NEUTRAL ONLY
   ! ==========================================
   ! Sparkle philosophy: No proprietary SDKs!
-  ! We use OpenGL, Vulkan, and direct hardware access (PM4)
+  ! This module currently catalogs available GL/Vulkan backends for reference.
+  ! Production compute routing is concentrated in Kronos integration points.
   
   use kinds
   use iso_c_binding
