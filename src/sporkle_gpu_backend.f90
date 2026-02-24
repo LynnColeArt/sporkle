@@ -104,17 +104,17 @@ contains
     
   end function check_library
 
-  ! Detect available GPU backends
+  ! Detect available GPU backends.
+  ! Kronos-first runtime: Vulkan is preferred and treated as primary path.
   function detect_gpu_backend() result(backends)
     type(gpu_backend_info), allocatable :: backends(:)
     integer :: num_backends
     
-    ! We only support vendor-neutral backends
     num_backends = 2
     allocate(backends(num_backends))
     
-    backends(1) = check_opengl_backend()
-    backends(2) = check_vulkan_backend()
+    backends(1) = check_vulkan_backend()
+    backends(2) = check_opengl_backend()
     
   end function detect_gpu_backend
   
@@ -125,7 +125,8 @@ contains
     type(gpu_backend_info), allocatable :: available_backends(:)
     integer :: i, preferred
     
-    preferred = GPU_BACKEND_OPENGL  ! Default
+    ! Default to Vulkan so compute defaults to Kronos/Vulkan.
+    preferred = GPU_BACKEND_VULKAN
     if (present(prefer_backend)) preferred = prefer_backend
     
     ! Get available backends
