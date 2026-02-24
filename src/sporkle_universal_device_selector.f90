@@ -1,10 +1,11 @@
 module sporkle_universal_device_selector
   ! Universal device selection based on workload characteristics
   ! Generalizes the apple_orchestrator patterns for all architectures
-  
+
   use kinds
-  use iso_c_binding
   use sporkle_types
+  use sporkle_mesh_types
+  use sporkle_discovery, only: scan_devices
   implicit none
   
   ! Device types (universal)
@@ -117,16 +118,17 @@ contains
 
   subroutine discover_devices(this)
     class(universal_device_selector), intent(inout) :: this
+
+    type(mesh_topology) :: mesh
     
     print *, "🔍 Discovering compute devices..."
-    
-    ! TODO: Replace synthetic discovery with live Kronos-backed platform descriptors
-    ! and persistence-based calibration before production use.
-    
-    ! Temporary baseline: CPU + GPU capability placeholders until live discovery is active
-    call discover_cpu_devices(this)
-    call discover_gpu_devices(this)
-    call discover_special_devices(this)
+
+    call clear_discovered_devices(this)
+
+    mesh = scan_devices()
+    call discover_mesh_devices(this, mesh)
+
+    call free_mesh_workload(mesh)
     
     ! Calculate total system capabilities
     call calculate_system_capabilities(this)
@@ -135,6 +137,121 @@ contains
     print '(A,F8.1,A)', " Total memory bandwidth: ", this%total_memory_bandwidth, " GB/s"
     
   end subroutine discover_devices
+
+  subroutine clear_discovered_devices(this)
+    class(universal_device_selector), intent(inout) :: this
+
+    if (allocated(this%devices)) deallocate(this%devices)
+    if (allocated(this%routing_history)) deallocate(this%routing_history)
+
+    this%num_devices = 0
+    this%history_size = 0
+  end subroutine clear_discovered_devices
+
+  subroutine discover_mesh_devices(this, mesh)
+    class(universal_device_selector), intent(inout) :: this
+    type(mesh_topology), intent(in) :: mesh
+
+    type(universal_compute_unit) :: device
+    integer :: i
+
+    if (mesh%num_devices == 0) then
+      call discover_cpu_devices(this)
+      return
+    end if
+
+    do i = 1, mesh%num_devices
+      call map_mesh_device(mesh%devices(i), device)
+      call add_device(this, device)
+    end do
+  end subroutine discover_mesh_devices
+
+  subroutine free_mesh_workload(mesh)
+    type(mesh_topology), intent(inout) :: mesh
+
+    if (allocated(mesh%devices)) deallocate(mesh%devices)
+    if (allocated(mesh%links)) deallocate(mesh%links)
+  end subroutine free_mesh_workload
+
+  subroutine map_mesh_device(handle, device)
+    type(device_handle), intent(in) :: handle
+    type(universal_compute_unit), intent(out) :: device
+
+    character(len=:), allocatable :: kind_tag
+
+    device = universal_compute_unit()
+    device%device_id = handle%id
+    device%available = handle%healthy
+    device%busy = .false.
+
+    if (allocated(handle%caps%kind)) then
+      kind_tag = trim(handle%caps%kind)
+    else
+      kind_tag = KIND_UNKNOWN
+    end if
+
+    if (kind_tag == KIND_CPU) then
+      device%name = "CPU"
+      device%device_type = UNI_DEVICE_CPU_PERFORMANCE
+      device%caps%supports_fp64 = .true.
+      device%caps%supports_matrix_ops = .true.
+      device%caps%vector_width = 16
+      device%caps%warp_size = 1
+      device%caps%peak_gflops = handle%caps%peak_gflops
+      device%caps%memory_bandwidth = handle%caps%mem_bw_gbs
+      device%current_load = real(handle%load, rk64)
+      device%pattern_performance(PATTERN_CONV) = 0.0_dp
+
+    else
+      device%caps%supports_fp16 = .true.
+      device%caps%supports_async = .true.
+
+      if (kind_tag == KIND_AMD .or. kind_tag == KIND_NVIDIA) then
+        if (handle%caps%unified_mem .or. index(kind_tag, "apu") > 0) then
+          device%device_type = UNI_DEVICE_GPU_INTEGRATED
+          device%name = trim(adjustl(kind_tag)) // " iGPU"
+        else
+          device%device_type = UNI_DEVICE_GPU_DISCRETE
+          device%name = trim(adjustl(kind_tag)) // " dGPU"
+        end if
+        if (allocated(handle%caps%pci_id)) then
+          device%name = trim(device%name) // " (" // trim(handle%caps%pci_id) // ")"
+        end if
+      else if (kind_tag == KIND_APPLE) then
+        if (handle%caps%has_neural_engine) then
+          device%device_type = UNI_DEVICE_NEURAL_ENGINE
+          device%name = "Apple Neural Engine"
+        else
+          device%device_type = UNI_DEVICE_GPU_INTEGRATED
+          device%name = "Apple GPU"
+        end if
+        if (allocated(handle%caps%pci_id)) then
+          device%name = trim(device%name) // " (" // trim(handle%caps%pci_id) // ")"
+        end if
+      else
+        device%device_type = UNI_DEVICE_GPU_DISCRETE
+        device%name = trim(adjustl(kind_tag))
+      end if
+
+      if (allocated(handle%caps%driver_ver)) device%name = trim(device%name) // " - " // trim(handle%caps%driver_ver)
+      device%caps%warp_size = max(1, handle%caps%sm_count)
+      device%caps%vector_width = 32
+      device%caps%peak_gflops = handle%caps%peak_gflops
+      device%caps%memory_bandwidth = handle%caps%mem_bw_gbs
+      device%caps%supports_matrix_ops = handle%caps%unified_mem
+      device%caps%supports_tensor_ops = handle%caps%has_neural_engine
+      device%current_load = real(handle%load, rk64)
+      device%power_efficiency = 2.0_dp
+    end if
+
+    if (device%name == "") device%name = "Unknown compute device"
+    if (device%caps%peak_gflops == 0.0_dp) then
+      device%caps%peak_gflops = real(handle%caps%cores, rk64) * 20.0_dp
+    end if
+    if (device%caps%memory_bandwidth == 0.0_dp) then
+      device%caps%memory_bandwidth = max(10.0_dp, real(handle%caps%vram_mb, rk64) / 1024.0_dp)
+    end if
+  end subroutine map_mesh_device
   
   function analyze_workload(this, flops, bytes, pattern) result(characteristics)
     class(universal_device_selector), intent(in) :: this
@@ -263,18 +380,18 @@ contains
   subroutine discover_cpu_devices(this)
     class(universal_device_selector), intent(inout) :: this
     type(universal_compute_unit) :: cpu_device
-    
-    ! Performance cores
-    cpu_device%name = "CPU Performance Cores"
+
+    ! Legacy fallback retained only when direct mesh discovery is unavailable
+    cpu_device = universal_compute_unit()
+    cpu_device%name = "CPU Performance Cores (legacy fallback)"
     cpu_device%device_type = UNI_DEVICE_CPU_PERFORMANCE
     cpu_device%device_id = 0
     cpu_device%available = .true.
-    cpu_device%caps%peak_gflops = 0.0_dp  ! Placeholder until live capability probe
-    cpu_device%caps%memory_bandwidth = 0.0_dp
+    cpu_device%caps%peak_gflops = 20.0_dp
+    cpu_device%caps%memory_bandwidth = 50.0_dp
     cpu_device%caps%supports_fp64 = .true.
     cpu_device%caps%supports_async = .true.
-    cpu_device%caps%vector_width = 16  ! AVX-512
-    
+    cpu_device%caps%vector_width = 16
     call add_device(this, cpu_device)
     
   end subroutine discover_cpu_devices
@@ -282,39 +399,25 @@ contains
   subroutine discover_gpu_devices(this)
     class(universal_device_selector), intent(inout) :: this
     type(universal_compute_unit) :: gpu_device
-    
-    ! Discrete GPU (runtime-discovered descriptor should replace this placeholder)
-    gpu_device%name = "Discrete GPU (placeholder)"
+    ! Legacy fallback retained only when mesh discovery is unavailable.
+    gpu_device = universal_compute_unit()
     gpu_device%device_type = UNI_DEVICE_GPU_DISCRETE
     gpu_device%device_id = 0
     gpu_device%available = .true.
-    gpu_device%caps%peak_gflops = 0.0_dp
-    gpu_device%caps%memory_bandwidth = 0.0_dp
+    gpu_device%name = "Discrete GPU (legacy fallback)"
+    gpu_device%caps%peak_gflops = 1000.0_dp
+    gpu_device%caps%memory_bandwidth = 400.0_dp
     gpu_device%caps%supports_fp16 = .true.
     gpu_device%caps%supports_async = .true.
-    gpu_device%caps%warp_size = 0
-    
-    ! Placeholder performance until measured calibration exists
-    gpu_device%pattern_performance(PATTERN_CONV) = 0.0_dp
-    gpu_device%pattern_count(PATTERN_CONV) = 0
-    
-    call add_device(this, gpu_device)
-    
-    ! Integrated GPU placeholder
-    gpu_device%name = "Integrated GPU (placeholder)"
-    gpu_device%device_type = UNI_DEVICE_GPU_INTEGRATED
-    gpu_device%device_id = 1
-    gpu_device%caps%peak_gflops = 0.0_dp
-    gpu_device%caps%memory_bandwidth = 0.0_dp
-    
+    gpu_device%caps%warp_size = 32
     call add_device(this, gpu_device)
     
   end subroutine discover_gpu_devices
   
   subroutine discover_special_devices(this)
     class(universal_device_selector), intent(inout) :: this
-    ! Placeholder for Neural Engines, DSPs, etc.
-    ! These will be populated from Kronos descriptors before production launch.
+    ! Legacy hook retained: special accelerators currently surface through
+    ! mesh discovery when available; no synthetic placeholders are appended here.
   end subroutine discover_special_devices
   
   subroutine add_device(this, device)

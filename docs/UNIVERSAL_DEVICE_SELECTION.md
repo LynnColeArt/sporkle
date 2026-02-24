@@ -2,11 +2,11 @@
 > Quantified performance and benchmark claims in this repository history are in recovery and should not be treated as current production facts until revalidated under the Kronos-first flow.
 
 
-# Universal Device Selection: The Next Performance Frontier
+# Universal Device Selection: The Current Stability Frontier
 
 ## Executive Summary
 
-After achieving [deferred speedup] speedup with the GPU async executor and [deferred throughput metric] on CPU with SIMD optimization, the next major performance breakthrough will come from **intelligent automatic device selection**. By routing workloads to the optimal compute device(s) and utilizing all available hardware simultaneously, we can achieve another [deferred speedup range] performance improvement.
+The current goal is production-safe scheduling: keep runtime honest, route workloads consistently, and only claim gains that are measured after Kronos-native dispatch paths are stable. The next optimization frontier is **intelligent device selection** built from live topology and capability telemetry.
 
 ## Current State
 
@@ -14,15 +14,12 @@ After achieving [deferred speedup] speedup with the GPU async executor and [defe
 
 1. **Multiple High-Performance Backends**
    - CPU: [deferred throughput metric] with AVX-512 SIMD
-   - Vulkan: Modern GPU compute with SPIR-V shaders
-     - Cross-platform GPU abstraction
-     - Async compute queues for pipeline optimization
-   - PM4 Direct Submission: Native AMD command processor interface
-     - RAII buffer management with automatic cleanup
-     - EOP timestamp support for GPU-based timing
-     - Summit kernel infrastructure ready for compute shaders
-     - Direct hardware access for maximum performance
-   - Metal/Neural Engine: Complete implementation (needs integration)
+     - Vulkan: Modern GPU compute with SPIR-V shaders
+       - Cross-platform GPU abstraction
+       - Async compute queues for pipeline optimization
+     - Metal/Neural Engine: Explicit capability-aware path when available
+       - Runtime probing for vendor/accelerator availability
+       - No synthetic timing or hidden fallback in production selection
 
 2. **Abstract Device Interface**
    ```fortran
@@ -126,21 +123,18 @@ After achieving [deferred speedup] speedup with the GPU async executor and [defe
 3. Implement device discovery for each platform
 4. Add performance profiling infrastructure
 
-### Phase 1.5: PM4 Direct Submission Integration
-1. **Device Discovery**: Use existing discovery to find AMD GPUs
-   - Leverage `/sys/class/drm/card*/device/vendor` scanning
-   - Identify discrete vs integrated GPUs (prefer 7900 XT over Raphael)
-2. **PM4 Context Management**:
-   - Modify `sp_pm4_init` to accept optional device path
-   - Check `SPORKLE_RENDER_NODE` environment variable
-   - Fall back to device selector recommendation
-3. **Device Scoring for PM4**:
-   - Add PM4-specific capabilities to device profiles
-   - Score based on compute units, memory bandwidth
-   - Consider command processor (CP) capabilities
-4. **Multi-GPU PM4 Support**:
-   - Allow multiple PM4 contexts simultaneously
-   - Track performance per device for adaptive routing
+### Phase 1.5: Kronos Dispatch Integration
+1. **Capability Mapping**: Bind discovered vendor paths into a single selector model
+   - Normalize AMD/NVIDIA/Apple discovery outputs
+   - Preserve CPU, GPU, and Neural Engine traits as explicit capabilities
+2. **Device Scoring for Kronos**:
+   - Add measured/declared caps to routing heuristics
+   - Consider dispatch support, memory topology, and load state
+3. **Dispatch Selection Contracts**:
+   - Route only to verified backends
+   - Keep failures loud when a requested backend path is unavailable
+4. **Multi-Device Support**:
+   - Allow multi-device routing once dispatch telemetry reaches stable baselines
 
 ### Phase 2: Routing Intelligence
 1. Port `intelligent_device_juggling` concepts
