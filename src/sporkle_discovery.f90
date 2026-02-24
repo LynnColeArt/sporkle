@@ -125,7 +125,16 @@ contains
         print '(A,I0)', "  Cores/SMs: ", dev%caps%cores
         print '(A,I0,A)', "  Memory: ", dev%caps%vram_mb, " MB"
         print '(A,F0.1,A)', "  Estimated peak (unvalidated): ", dev%caps%peak_gflops, " GFLOPS"
-        print '(A,F0.1,A)', "  Memory Bandwidth: ", dev%caps%mem_bw_gbs, " GB/s"
+        if (dev%caps%kind == KIND_CPU) then
+          print '(A,F0.1,A)', "  Memory Bandwidth: ", dev%caps%mem_bw_gbs, " GB/s"
+        else if (dev%caps%mem_bw_gbs <= 0.0_rk64) then
+          print *, "  Memory Bandwidth: unmeasured"
+        else
+          print '(A,F0.1,A)', "  Memory Bandwidth: ", dev%caps%mem_bw_gbs, " GB/s"
+        end if
+        if ((dev%caps%kind /= KIND_CPU) .and. dev%caps%peak_gflops <= 0.0_rk64) then
+          print *, "  Estimated peak: unmeasured (runtime discovery only)"
+        end if
         print '(A,L1)', "  Unified Memory: ", dev%caps%unified_mem
         if (dev%caps%kind == KIND_APPLE) then
           print '(A,L1)', "  Has Metal: ", dev%caps%has_metal
