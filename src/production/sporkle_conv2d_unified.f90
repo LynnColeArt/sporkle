@@ -39,22 +39,20 @@ contains
     case("cpu")
       time_ms = execute_cpu_conv2d()
     case("gpu", "kronos")
-      print *, "⛔ GPU execution is no longer routed through PM4 placeholder paths."
-      print *, "   This build intentionally fails GPU request until Kronos-native path is wired in."
-      print *, "   Use device_type='cpu' or API-level auto-routing for explicit CPU fallback."
-      time_ms = -1.0_sp
+      print *, "❌ GPU execution is not supported in this recovery path."
+      print *, "   Use device_type='cpu' or unset device_id for explicit CPU routing."
+      print *, "   Kronos-native dispatch must be active for GPU execution."
+      error stop "Kronos-native Conv2D GPU dispatch is not yet wired in this API path."
     case("auto")
-      ! Simple heuristic: keep auto on CPU until Kronos GPU dispatch is production-stable.
       if (N * H_out * W_out * K > 1000000) then
-        print *, "⚠️  Auto-routing large workload to CPU because GPU runtime is in migration."
-        time_ms = execute_cpu_conv2d()
-      else
-        time_ms = execute_cpu_conv2d()
+        print *, "⚠️  Auto-routing to CPU; GPU runtime remains recovery-disabled by policy."
       end if
+      time_ms = execute_cpu_conv2d()
     case default
       print *, "❌ Unknown device type: ", trim(device_choice)
       print *, "   Supported: cpu, kronos, auto"
-      time_ms = -1.0_sp
+      print *, "   Unknown backends are treated as hard-fail to prevent silent fallback."
+      error stop "sporkle_conv2d_unified received unsupported device type."
     end select
     
   contains

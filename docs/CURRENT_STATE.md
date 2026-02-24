@@ -23,7 +23,8 @@ Sporkle has demonstrated performance in historical and archived OpenGL flows, pl
 
 ### 2. Production GPU Integration (Kronos-Orchestrated)
 - **Reference Implementation**: historical artifacts are retained for comparison only.
-- **For user-facing production**: `src/production/sporkle_conv2d.f90` remains the orchestration front door.
+- **For user-facing production**: `src/production/sporkle_conv2d_unified.f90` routes explicit GPU requests to hard-fail by design until Kronos dispatch wiring is completed.
+- **Recovery mode**: `src/production/sporkle_conv2d.f90` remains CPU-only to preserve deterministic behavior.
 - **Test status**: benchmark numbers are intentionally omitted until rerun on the active Kronos runtime.
 - Benchmarks and quantified claims will be reintroduced after the runtime and validation pipeline are stable again.
 
@@ -39,7 +40,7 @@ Sporkle has demonstrated performance in historical and archived OpenGL flows, pl
 ## 🔧 Current Technical Status
 
 ### Production Ready Components
-- [implemented] **GPU Execution**: Kronos routing through AMD/NVIDIA backend in active production path.
+- [experimental] **GPU Execution**: Kronos routing remains under wiring work; explicit GPU requests fail fast by policy.
 - [implemented] **Framework Integration**: Production orchestration modules compile and execute.
 - [implemented] **Build System**: Backend selection matrix and integration points are present.
 - [experimental] **Device Detection**: Capability assessment for supported runtimes.

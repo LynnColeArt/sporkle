@@ -80,6 +80,8 @@ contains
     integer :: i, device_idx
     integer(i64) :: offset, chunk_size
     logical :: has_gpu_target
+    integer :: reason_device
+    character(len=256) :: reject_reason
     
     ! Set argument shapes from memory handles
     call kernel_set_argument_shapes(kernel)
@@ -105,26 +107,45 @@ contains
     
     ! Production policy: execute only on CPU until the GPU Kronos-native path is explicitly re-enabled.
     has_gpu_target = .false.
+    reason_device = -1
+    reject_reason = ""
     do i = 1, size(schedule%device_ids)
       if (schedule%device_ids(i) < 0) cycle
       device_idx = schedule%device_ids(i) + 1  ! Convert to 1-based
-      if (device_idx > this%mesh%num_devices) then
+      if (device_idx < 1 .or. device_idx > this%mesh%num_devices) then
         has_gpu_target = .true.
+        reason_device = schedule%device_ids(i)
+        reject_reason = "invalid mesh device index in schedule"
         exit
       end if
       
       if (this%mesh%devices(device_idx)%caps%kind /= KIND_CPU) then
         has_gpu_target = .true.
+        reason_device = schedule%device_ids(i)
+        reject_reason = "non-CPU device scheduled for compute"
+        exit
+      end if
+
+      if (.not. this%mesh%devices(device_idx)%healthy) then
+        has_gpu_target = .true.
+        reason_device = schedule%device_ids(i)
+        reject_reason = "device is marked unhealthy in the schedule"
         exit
       end if
     end do
     
     if (has_gpu_target) then
       if (.not. this%quiet_mode) then
-        print *, "❌ Hard-fail: GPU scheduling detected while GPU execution is not active."
-        print *, "   Update device routing for Kronos-native dispatch before retrying."
+        print *, "❌ Hard-fail: unsupported device was selected by scheduler."
+        print *, "   Reason: ", trim(reject_reason)
+        if (reason_device >= 0) then
+          print '(A,I0)', "   Rejecting schedule slot: ", reason_device
+        end if
+        print *, "   Kronos-native dispatch is required for non-CPU compute."
+        print *, "   Current recovery mode executes CPU-only."
       end if
-      error stop "GPU execution path is not active in this recovery build. Enable Kronos dispatch integration."
+
+      error stop "Execution blocked: non-CPU device scheduled while Kronos-native dispatch is required."
     end if
     
     ! For now, execute on CPU devices only
