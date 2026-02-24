@@ -42,6 +42,8 @@ contains
     allocate(device_scores(mesh%num_devices))
     allocate(choice%device_ids(num_healthy))
     allocate(choice%shards(num_healthy))
+    choice%device_ids = -1
+    choice%shards = 0
     
     ! Calculate device scores (higher = better)
     total_compute_power = 0.0_rk64
@@ -79,6 +81,16 @@ contains
       ! Ensure all work is assigned (handle rounding)
       choice%shards(num_healthy) = choice%shards(num_healthy) + &
                                   (work_size - sum(choice%shards))
+    else
+      ! Fallback: if all computed scores are zero or unavailable, route to first healthy device.
+      do i = 1, mesh%num_devices
+        if (mesh%devices(i)%healthy) then
+          choice%device_ids(1) = mesh%devices(i)%id
+          choice%shards(1) = work_size
+          num_healthy = 1
+          exit
+        end if
+      end do
     end if
     
     ! Estimate runtime
@@ -115,6 +127,7 @@ contains
     
     ! Find slowest device (determines overall runtime)
     do i = 1, size(choice%device_ids)
+      if (choice%device_ids(i) < 0) cycle
       dev_idx = mesh%find_device(choice%device_ids(i))
       if (dev_idx > 0) then
         associate(dev => mesh%devices(dev_idx))
@@ -162,6 +175,7 @@ contains
       
       print *, "Work distribution:"
       do i = 1, size(choice%device_ids)
+        if (choice%device_ids(i) < 0) cycle
         dev_idx = mesh%find_device(choice%device_ids(i))
         if (dev_idx > 0) then
           associate(dev => mesh%devices(dev_idx))

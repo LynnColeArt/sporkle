@@ -106,6 +106,7 @@ contains
     ! Production policy: execute only on CPU until the GPU Kronos-native path is explicitly re-enabled.
     has_gpu_target = .false.
     do i = 1, size(schedule%device_ids)
+      if (schedule%device_ids(i) < 0) cycle
       device_idx = schedule%device_ids(i) + 1  ! Convert to 1-based
       if (device_idx > this%mesh%num_devices) then
         has_gpu_target = .true.
@@ -129,6 +130,7 @@ contains
     ! For now, execute on CPU devices only
     offset = 0
     do i = 1, size(schedule%device_ids)
+      if (schedule%device_ids(i) < 0) cycle
       device_idx = schedule%device_ids(i) + 1  ! Convert to 1-based
       chunk_size = schedule%shards(i)
       
