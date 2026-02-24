@@ -4,7 +4,7 @@
 
 ## Abstract
 
-We present Sporkle, a novel heterogeneous computing framework that achieves vendor-independent GPU execution through direct kernel driver interfaces. Unlike existing solutions that require proprietary SDKs (CUDA, ROCm, OneAPI), Sporkle demonstrates that production-quality GPU computing can be achieved through direct ioctl communication with kernel drivers. We validate this approach with a working implementation of AMD GPU support via the AMDGPU kernel interface, achieving successful command buffer submission and execution entirely from Fortran without any vendor runtime dependencies.
+We present Sporkle, a heterogeneous computing framework with a production OpenGL path and a transitioning kernel-side backend plan. Unlike existing solutions that require proprietary SDKs (CUDA, ROCm, OneAPI), Sporkle demonstrates that strong GPU execution is available through an OpenGL-first path, with direct AMDGPU driver interaction code in active transition and partial validation.
 
 ## 🧠 The Sporkle Heuristic
 
@@ -157,30 +157,30 @@ Exposes intuitive interfaces for common parallel patterns including map, reduce,
 Sporkle supports multiple GPU backends for maximum flexibility:
 
 #### Current GPU Backends:
-- **PM4 Direct Submission** (AMD GPUs) - Native command processor interface
-  - Direct hardware access without graphics API overhead
-  - RAII buffer management with automatic cleanup
-  - EOP timestamps for GPU-based timing
-  - Ready for Summit-class performance
+- **PM4 Direct Submission** (AMD GPUs) - Direct kernel-side path (in transition)
+  - Works as partial scaffolding for direct driver interaction
+  - Production-ready command and memory lifecycle is still being completed
+  - Async/fence correctness and full compute-kernel integration are pending
+  - Useful for future performance milestones after completion
   
-- **Vulkan** (Cross-platform) - Modern GPU compute
-  - SPIR-V shader compilation
-  - Works on AMD, NVIDIA, Intel GPUs
-  - Async compute queues
+- **Vulkan** (Cross-platform) - Backend in transition
+  - SPIR-V-related plumbing exists, but execution path is not fully productionized
+  - Cross-vendor capability is expected, not yet validated in shipping docs
+  - Async queue support is transitional and not end-to-end proven
 
-- **OpenGL** (Being removed - see issue #39)
-  - Legacy backend being phased out
-  - Use Vulkan or PM4 instead
+- **OpenGL**
+  - Current production execution path for conv2d in this repo
+  - Primary stable backend until PM4/Vulkan transitions complete
 
 #### Platform Support Status:
-- **Linux + AMD**: Full support via PM4 direct submission
-- **Linux + NVIDIA**: Vulkan support (native submission planned)
-- **macOS**: Metal + Neural Engine support complete
-- **Windows**: Vulkan support
+- **Linux + AMD**: OpenGL path production; PM4 path partial/in-progress
+- **Linux + NVIDIA**: OpenGL path where available; Vulkan path still incomplete
+- **macOS**: Not production-validated in this repo currently
+- **Windows**: Not production-validated in this repo currently
 
 ### 3.2 Direct Kernel Driver Implementation
 
-Our PM4 implementation demonstrates vendor-independent GPU execution through direct kernel driver communication:
+Our PM4 scaffolding demonstrates partial vendor-independent GPU interaction through direct kernel driver communication:
 
 ```fortran
 ! Direct AMDGPU kernel driver interface
@@ -196,7 +196,7 @@ cs_in%chunks = int(loc(chunk_array), c_int64_t)
 ret = ioctl(fd, DRM_IOCTL_AMDGPU_CS, loc(cs_union))
 ```
 
-This implementation successfully submits and executes GPU command buffers (validated with NOP packets) without any vendor SDK dependencies. The critical breakthrough was discovering the double indirection pattern required by the kernel interface.
+This implementation includes validated direct submission steps (including NOP-style packet paths) and low-level plumbing, but full compute-kernel end-to-end execution is still transitioning.
 
 ### 3.2 Memory Management
 
@@ -334,7 +334,7 @@ We employ a rigorous benchmarking methodology distinguishing between:
 
 ## 5. Related Work
 
-Previous heterogeneous computing frameworks including CUDA, OpenCL, and SYCL require vendor-specific runtime libraries. Raja and Kokkos provide abstraction layers but still depend on underlying vendor toolchains. Sporkle differentiates itself through complete SDK independence, as demonstrated by our working AMD GPU implementation that communicates directly with the AMDGPU kernel driver. This approach eliminates the need for ROCm, Mesa, libdrm, or any other vendor runtime components.
+Previous heterogeneous computing frameworks including CUDA, OpenCL, and SYCL require vendor-specific runtime libraries. Raja and Kokkos provide abstraction layers but still depend on underlying vendor toolchains. Sporkle differentiates itself with an OpenGL-first path and partial direct-driver integration for AMDGPU; this enables lower-level control in selective paths, while full SDK-free stack completion across kernels is still ongoing.
 
 ## 6. Future Work
 
@@ -466,10 +466,10 @@ make -f Makefile.smart VERBOSE=1
 - **Automatic Device Selection**: Heuristic-based selection with performance learning ✅
 - **Intelligent Device Juggling**: Seamless CPU/GPU execution with async pipeline ✅
 - **CPU Backend**: 90-160 GFLOPS with adaptive K×N tiling and AVX-512 ✅
-- **GPU Backend (Sync)**: 400+ GFLOPS with dynamic shader compilation ✅
-- **GPU Backend (Async)**: 3,630 GFLOPS with triple buffering pipeline ✅
-- **Direct AMDGPU Support**: Kernel driver interface proven with command submission ✅
-- **OpenGL Compute**: Full production implementation with EGL headless context ✅
+- **GPU Backend (Sync)**: 400+ GFLOPS with dynamic shader compilation (OpenGL path, stable in current transition set) ✅
+- **GPU Backend (Async)**: 3,630 GFLOPS with triple buffering pipeline (experimental; executor/queue details still in transition) ⚠️
+- **Direct AMDGPU Support**: Kernel driver interface scaffolding exists; full compute integration is not yet complete ⚠️
+- **OpenGL Compute**: Production implementation with EGL headless context ✅
 - **Async Executor**: 6.5x speedup via intelligent pipeline architecture ✅
 - **Memory Management**: Unified memory model with proper synchronization ✅
 - **Production API**: Clean Fortran interface via `sporkle_conv2d_juggling` module ✅

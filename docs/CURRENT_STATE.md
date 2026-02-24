@@ -1,22 +1,29 @@
 # Sporkle Current State - August 2025 (Updated with SIMD Breakthrough)
 
-## 🚀 Revolutionary Breakthrough: Universal Memory Optimization Framework
+## 🚨 Status Correction: Transitional State (Production + In-Progress Paths)
 
-Sparkle has achieved a fundamental breakthrough in heterogeneous computing: **the first framework to prove that identical memory optimization patterns achieve high performance across all compute architectures**. We've successfully demonstrated 414+ GFLOPS GPU performance and implemented intelligent device juggling that optimizes system-wide performance through smart scheduling decisions.
+Core compute is currently reliable in the OpenGL production path; several advertised extensions remain in transition:
+- PM4 direct submission and direct Vulkan backends are partially implemented and not yet production-complete.
+- Async path and full firmware-backed PM4 integration remain active work.
+- Performance claims below are path-specific where indicated.
 
-## 🎯 Major Achievements (Production Ready)
+## 🚀 Heterogeneous Memory Optimization Framework Progress
+
+Sporkle has demonstrated strong performance on specific OpenGL and CPU paths, including 414+ GFLOPS GPU throughput in the production OpenGL flow and a SIMD CPU breakthrough.
+
+## 🎯 Major Achievements (Partially Production-Validated)
 
 ### 1. Universal Memory Optimization Proven ✅ 🎉
-**Breakthrough Discovery**: Same patterns that optimize CPU L1 cache also optimize GPU shared memory and AI accelerator SRAM.
+**Current Scope**: Same optimization ideas are being reused across paths, but cross-device parity is still being validated in production integration.
 
 **Validated Performance**:
-- **GPU**: 414+ GFLOPS convolution (AMD RX 7900 XT) - **PRODUCTION READY**
+- **GPU**: 414+ GFLOPS convolution (AMD RX 7900 XT) - **VALIDATED IN OPENGL PATH**
 - **CPU**: 196.7 GFLOPS with AVX-512 SIMD optimization (AMD Ryzen 7 7700X) - **BREAKTHROUGH ACHIEVED**
 - **Intelligent Juggling**: Smart system-wide optimization achieving optimal device selection
 - **Memory Wall Breakthrough**: 2-3x speedup through hot cache exploitation
 - **Apple Metal**: Previously achieved 90% theoretical peak using same principles
 
-### 2. Production GPU Integration Complete ✅ 🎉
+### 2. Production GPU Integration (OpenGL Path) ✅ 🎉
 **Major Milestone**: Working 414+ GFLOPS GPU implementation successfully extracted from test harnesses into production modules with intelligent device juggling.
 
 **Production Components**:
@@ -49,10 +56,10 @@ GPU conv2d: 2.98 ms, 414+ GFLOPS  # Production performance achieved
 
 ### 4. Vendor-Independent Architecture ✅
 **Direct Kernel Driver Implementation**:
-- **AMD GPU**: Complete AMDGPU ioctl interface without ROCm/Mesa dependencies
-- **Memory Management**: Direct GPU buffer allocation and virtual address mapping
-- **Command Submission**: PM4 packet generation and kernel driver communication
-- **Cross-Platform**: Linux proven, designed for broader platform support
+- **AMD GPU**: Direct ioctl communication scaffolding exists for direct driver interaction.
+- **Memory Management**: Production memory-management is validated for OpenGL; direct PM4/AmdGPU memory paths remain in transition.
+- **Command Submission**: PM4 packet plumbing exists, but production completion is pending.
+- **Cross-Platform**: Linux validated for current OpenGL path; broader backend support is being reworked.
 
 ## 🔧 Current Technical Status
 
