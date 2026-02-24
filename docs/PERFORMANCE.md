@@ -6,23 +6,22 @@
 
 ## Current Performance (CPU)
 
-As of 2025-08-10, Sparkle achieves the following performance on a 16-core CPU (using 14 threads for safety):
+CPU and GPU figures are currently in recovery; this doc preserves the optimization patterns, not validated headline numbers.
 
 ### Memory Bandwidth Operations
-- **Vector Addition**: [deferred bandwidth] ([deferred speedup] parallel speedup)
-- **SAXPY**: [deferred throughput metric] ([deferred speedup] parallel speedup)
-- **Theoretical DDR4 Max**: ~[deferred bandwidth]
-- **Efficiency**: 64% of theoretical bandwidth
+- **Vector Addition**: [deferred bandwidth] (placeholder metric)
+- **SAXPY**: [deferred throughput metric] (placeholder metric)
+- **Theoretical DDR4 Max**: [deferred bandwidth]
 
 ### Compute-Intensive Operations
-- **Complex (sqrt)**: [deferred throughput metric] ([deferred speedup] parallel speedup)
-- **Normalize**: [deferred throughput metric] ([deferred speedup] parallel speedup)
+- **Complex (sqrt)**: [deferred throughput metric] (placeholder metric)
+- **Normalize**: [deferred throughput metric] (placeholder metric)
 - **Peak**: [deferred throughput metric] with 14 cores
 
 ### Cache-Aware Algorithms
 - **Naive reduction**: [deferred latency]
 - **Cache-aware reduction**: [deferred latency]
-- **Speedup**: [deferred speedup] faster!
+- **Relative improvement**: [deferred speedup] (placeholder)
 
 ## Memory Wall Breakthrough
 

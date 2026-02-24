@@ -4,7 +4,8 @@
 
 # 🚀 Proof-of-Concept Milestone: Direct AMDGPU in Fortran
 
-**Thesis:** A single, architecture-agnostic kernel design—our convolution-as-GEMM math core—can achieve near-theoretical performance across CPU, Metal, and AMDGPU backends **without vendor SDKs**, by talking directly to kernel driver interfaces.
+**Thesis:** Historical direct-kernel exploration for AMDGPU command submission from Fortran.
+This path is retained for architectural reference and is not the active production route.
 
 ---
 
@@ -15,7 +16,7 @@
    * Full AMDGPU driver interaction through `/dev/dri` with no ROCm, Mesa, or libdrm.
    * Clean Fortran → `ISO_C_BINDING` → ioctl bridge with correct struct packing.
 
-2. **Full GPU Command Submission Path**
+2. **Full GPU Command Submission Path** *(historical)*
 
    * Platform-aware build detects AMD GPUs.
    * Context creation and robust lifecycle management.
@@ -23,7 +24,7 @@
    * **Fixed the double-indirection trap**: `cs.in.chunks` now points to an **array of pointers** to `drm_amdgpu_cs_chunk` structures.
    * Command buffers (IBs) submitted directly to hardware rings.
 
-3. **Successful Execution & Verification**
+3. **Execution & Verification** *(historical records)*
 
    * NOP packet test completes without error.
    * Fence/idle checks confirm buffer completion.
@@ -33,9 +34,9 @@
 
 ## Why It Matters
 
-* **Performance:** Zero abstraction tax—no vendor runtime scheduler or orchestration overhead.
-* **Portability:** The same orchestration layer already drives CPU SIMD and Metal at \~90% theoretical peak; AMDGPU joins as a first-class peer.
-* **Universality:** Validates that the core math kernel's design generalizes across fundamentally different backends, including **direct** GPU command streams.
+* **Performance:** Direct submission reduced layers in exploratory experiments; operational impact is deferred.
+* **Portability:** The orchestration notes informed multi-backend design, while direct AMDGPU remains historical.
+* **Universality:** The exercise validated several abstraction boundaries across command-stream interfaces.
 
 ---
 
@@ -85,31 +86,32 @@ The implementation details (ioctl, PM4 packets, VA mapping) are hidden behind a 
 
 ## Next Steps
 
-* Integrate the production convolution-as-GEMM kernel into the AMDGPU path.
+* Integrate the production convolution-as-GEMM kernel via the Kronos dispatch path.
 * Benchmark head-to-head vs. vendor BLAS on identical hardware.
 * Resolve the minor context-destruction edge case.
-* Extend backend orchestration to NVIDIA via direct ioctl, completing coverage of all major platforms.
+* Extend Kronos-backed orchestration to NVIDIA once runtime capabilities are available.
 
 ---
 
 ## Impact
 
-Direct, vendor-agnostic GPU driver programming—from **Fortran**—is not only possible, but practical for high-performance math libraries. Unifying backend execution under a single math-core design unlocks:
+Direct, driver-level experiments from **Fortran** informed the current multi-runtime design.
+The architectural takeaway is a common math-core interface with runtime-specific dispatch bindings:
 
 * HPC portability without lock-in
 * Cloud cost optimization via backend choice
-* A simpler, more maintainable path to near-peak performance on every platform we target
+* A simpler, more maintainable path to unified dispatch and capability discovery
 
 ---
 
 ## The Human Element
 
-This milestone represents more than technical achievement. It's proof that:
+This milestone represents more than technical progress:
 
 * **Collaboration works**: Lynn's vision + Mini's expertise + collaborative debugging = breakthrough
 * **Persistence pays**: From mysterious EFAULT to working submission took patience and systematic debugging
 * **Knowledge sharing matters**: Mini's insights about double indirection saved us days of frustration
-* **Fortran lives**: A 65-year-old language driving modern GPUs directly? That's beautiful!
+* **Fortran remains**: A long-lived language can still drive modern systems with careful FFI boundaries.
 
 ---
 
@@ -169,7 +171,7 @@ When implementing direct ioctl for new devices:
 ---
 
 *Document created: 2025-08-15*  
-*Milestone achieved: Direct AMDGPU command submission from Fortran*  
-*Next milestone: Running convolution-as-GEMM at 90% peak on AMDGPU*
+*Milestone achieved: Direct AMDGPU command submission was reached as archival verification*  
+*Next milestone: Run convolution-as-GEMM through Kronos across AMD and NVIDIA runtimes*
 
 🎉 Here's to breaking vendor lock-in, one ioctl at a time! 🎉

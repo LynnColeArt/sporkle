@@ -52,13 +52,13 @@ program_id = get_cached_program_v2(cache, shader_source, cache_key, compile_real
 
 ### What We Built
 - `gpu_async_executor.f90` - Triple-buffered async execution
-- [deferred speedup] pipeline speedup demonstrated
+- [deferred speedup] pipeline throughput target
 - Fence-based synchronization
 
 ### Current Status
 - ✅ Integrated with sporkle_conv2d_juggling
 - ✅ Enabled by default
-- ✅ Production ready
+- ⚠️ Production readiness is staged behind revalidated benchmarks
 
 ## 4. Dynamic Shader System ✅ Built, ⚠️ Not Integrated
 
@@ -78,23 +78,22 @@ program_id = get_cached_program_v2(cache, shader_source, cache_key, compile_real
 3. Add performance feedback loop
 4. Test variant selection logic
 
-## 5. Direct AMDGPU PM4 Interface ✅ Built, ⚠️ Not Integrated
+## 5. Direct AMDGPU Interface (PM4 lineage) ✅ Built, ⚠️ Archived
 
 ### What We Built
-- `sporkle_amdgpu_direct.f90` - Direct kernel driver interface
-- PM4 packet generation
+- `sporkle_amdgpu_direct.f90` - Direct kernel driver interface used for research and archaeology
+- PM4 packet-generation experiments
 - Memory management via GEM
 
 ### Current Status
-- ✅ Basic infrastructure working
-- ⚠️ Complex to integrate safely
-- ⚠️ OpenGL path provides good performance already
+- ✅ Kernel driver access and PM4 experiments remain useful as historical reference
+- ⚠️ Not in active production path after Kronos-first pivot
+- ⚠️ Core PM4 stack is archived; no hardening/benchmark claims are active
 
 ### Integration Needed
-1. Extensive testing on various RDNA GPUs
-2. Shader binary compilation toolchain
-3. Synchronization with OpenGL contexts
-4. Production hardening
+1. Keep PM4 references as historical notes only
+2. Document what, if anything, can be safely reused for diagnostics
+3. Prioritize Kronos-native AMD/NVIDIA path verification
 
 ## 6. Thread Safety Enhancements ✅ Built, ⚠️ Not Integrated
 
@@ -121,7 +120,7 @@ program_id = get_cached_program_v2(cache, shader_source, cache_key, compile_real
 
 - **Fully Integrated**: 2 components (Auto-selection, Async executor)
 - **Partially Integrated**: 1 component (Persistent kernels)
-- **Built but Not Integrated**: 3 components (Dynamic shaders, PM4, Thread safety)
+- **Built but Not Integrated**: 2 active components (Dynamic shaders, Thread safety)
 - **Designed but Not Built**: 0 components
 
 ## Priority Order for Integration
@@ -129,13 +128,13 @@ program_id = get_cached_program_v2(cache, shader_source, cache_key, compile_real
 1. **Persistent Kernel Cache** - High impact, low risk
 2. **Dynamic Shader System** - High impact, medium complexity
 3. **Thread Safety** - Medium impact, low complexity
-4. **PM4 Direct Submission** - High complexity, uncertain benefit
+4. **Kronos-native NVIDIA path** - High priority once AMD and Apple paths are stable
 
 ## Notes
 
 - Each unintegrated component represents working code that could provide performance benefits
 - Integration should be done incrementally with thorough testing
-- Some components (like PM4) might remain experimental
+- PM4 components are archived and non-production
 - The persistent kernel cache is the closest to being production-ready
 
 ---

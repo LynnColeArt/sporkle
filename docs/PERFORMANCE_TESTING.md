@@ -6,11 +6,12 @@
 
 ## Overview
 
-The Sparkle performance regression testing framework ensures our optimizations remain intact across code changes. It automatically detects when performance drops below established thresholds and prevents accidental regressions from reaching production.
+The Sparkle performance regression testing framework defines where benchmarking checks are expected in this repository.
+In the current recovery posture, pass/fail gates are deferred until the benchmark corpus is revalidated under the Kronos-first runtime.
 
 ## Performance Baselines
 
-Our current performance achievements that must be maintained:
+Historical benchmark template (placeholders):
 
 | Component | Performance | Threshold (80%) | Hardware |
 |-----------|-------------|-----------------|----------|
@@ -40,7 +41,7 @@ make report
 
 ### Expected Output
 
-✅ **All Tests Pass:**
+✅ **All Checks Pass (illustrative template):**
 ```
 🔍 PERFORMANCE REGRESSION TEST SUITE
 ===================================
@@ -48,27 +49,27 @@ make report
 Checking that our optimizations haven't regressed...
 
 1. Testing CPU SIMD Performance...
-   ✅ CPU SIMD: [deferred throughput metric] (threshold: 157.0)
+   ✅ CPU SIMD: [deferred throughput metric] (threshold: [deferred threshold])
 2. Testing GPU Single Kernel Performance...
-   ✅ GPU Single: [deferred throughput metric] (threshold: 356.0)
+   ✅ GPU Single: [deferred throughput metric] (threshold: [deferred threshold])
 3. Testing GPU Async Pipeline Performance...
    ✅ GPU Async: [deferred throughput metric] (threshold: [deferred throughput metric])
    ✅ Speedup: [deferred speedup] (threshold: [deferred speedup])
 4. Testing Timing Accuracy (Mini's hardening)...
    ✅ Timing accuracy: [deferred latency] for [deferred latency] sleep
 5. Testing FLOP Counting Safety (Mini's hardening)...
-   ✅ 64-bit FLOP counting: 151 billion FLOPs
+   ✅ 64-bit FLOP counting: [deferred check count] FLOPs
 
 ===================================
-✅ ALL PERFORMANCE TESTS PASSED!
-Our optimizations are intact! 🎉
+✅ PERFORMANCE CHECKS COMPLETE
+Threshold enforcement is currently deferred while benchmarks are re-baselined.
 ```
 
 ❌ **Performance Regression Detected:**
 ```
-❌ GPU Single: [deferred throughput metric] (BELOW threshold: 356.0)
-❌ FAILED 1 TESTS!
-Performance has regressed - investigate immediately!
+❌ GPU Single: [deferred throughput metric] (below threshold: [deferred threshold])
+❌ FAILED 1 CHECKS!
+Treat this as a signal to investigate measurement drift, then regenerate the recovery thresholds.
 ```
 
 ## Test Components
@@ -105,11 +106,9 @@ Bash script that:
 
 ### GitHub Actions CI/CD
 
-The workflow (`.github/workflows/performance-tests.yml`) runs:
-- On every pull request
-- On pushes to main branch
-- Nightly at 2 AM UTC
-- Posts results as PR comments
+The workflow (`.github/workflows/performance-tests.yml`) currently documents intended coverage:
+- Intended run points: pull requests, pushes, and scheduled checks
+- Behavior during recovery is documented as "deferred enforcement"
 
 ### Git Pre-commit Hook
 
@@ -119,16 +118,13 @@ cp hooks/pre-commit-performance .git/hooks/pre-commit
 chmod +x .git/hooks/pre-commit
 ```
 
-This prevents commits if performance regresses. Override with:
-```bash
-git commit --no-verify  # Use sparingly!
-```
+This hook is historical guidance and is not required in the current recovery posture.
 
 ## Customization
 
 ### Adjusting Thresholds
 
-Edit thresholds in `tests/performance_regression_test.f90`:
+Re-baseline thresholds in `tests/performance_regression_test.f90` after each stable benchmark refresh:
 ```fortran
 real(real64), parameter :: CPU_SIMD_THRESHOLD = [deferred throughput metric]_real64      ! 80% of deferred benchmark result
 real(real64), parameter :: GPU_SINGLE_THRESHOLD = [deferred throughput metric]_real64    ! 80% of deferred benchmark result
@@ -154,7 +150,7 @@ real(real64), parameter :: GPU_ASYNC_THRESHOLD = [deferred throughput metric]_re
 
 **"Tests pass locally but fail in CI"**
 - CI environment may have different hardware
-- Check GitHub Actions logs for actual performance numbers
+   - Check GitHub Actions logs for measured performance numbers from the active run
 - Consider separate CI thresholds if needed
 
 **"64-bit FLOP counting test fails"**
@@ -170,11 +166,10 @@ VERBOSE=1 ./run_performance_tests.sh
 
 ## Best Practices
 
-1. **Run tests before committing** performance-critical changes
-2. **Update baselines** when legitimate improvements are made
-3. **Investigate immediately** when regressions are detected
+1. **Run tests before committing** for performance-critical changes
+2. **Collect fresh baselines** before reactivating gates
+3. **Investigate quickly** when checks drift beyond expected hardware variance
 4. **Document** any intentional performance trade-offs
-5. **Monitor trends** - gradual degradation is still degradation
 
 ## Performance History
 
@@ -198,4 +193,4 @@ Planned improvements:
 
 ---
 
-Remember: **Every GFLOP counts!** Our users depend on consistent performance. This testing framework is our guardian against the forces of entropy that would slowly degrade our carefully crafted optimizations. 🛡️
+Remember: **Every GFLOP count is measured during the stabilization window.** These checks are intended to prevent silent drift once baseline gates are re-enabled under the Kronos-first flow. 🛡️

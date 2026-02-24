@@ -6,7 +6,8 @@
 
 ## Overview
 
-Sporkle now includes intelligent automatic device selection that chooses the optimal compute device (CPU or GPU) based on workload characteristics. This feature eliminates the need for manual device selection and ensures optimal performance across different workload sizes.
+Sporkle now includes automatic device selection that chooses the compute device (CPU or Kronos-discovered GPU paths) based on workload characteristics and routing policy.
+The intent is to reduce manual routing, while keeping selection behavior aligned with validated runtimes.
 
 ## How It Works
 
@@ -27,7 +28,7 @@ Sporkle now includes intelligent automatic device selection that chooses the opt
 
 ## Performance Results
 
-### Example: Simple Test
+### Example: Example Selection Trace
 ```
 Tiny workload (1×3×32×32):
 - Device: CPU
@@ -81,16 +82,12 @@ call set_profiling_mode(.false.) ! Silent operation
 
 ### Device Types Supported
 - CPU (Performance cores with AVX-512)
-- GPU (Vulkan - cross-platform compute)
-  - SPIR-V shader compilation
-  - Async compute queues
-  - Modern GPU abstraction
-- GPU (PM4 Direct Submission - native AMD)
-  - RAII buffer management
-  - EOP timestamps for GPU timing
-  - Direct hardware access for maximum performance
-  - Ready for Summit kernel integration
-- Future: iGPU selection, Neural Engines, Matrix Units
+- GPU (Kronos-discovered AMD/NVIDIA dispatch)
+  - SPIR-V pipeline integration
+  - Async compute queues where available
+  - Unified runtime capability model
+- Apple Neural Engine path is planned in the Apple runtime module
+- Future: matrix units, iGPU-specific routing, multi-device partitioning
 
 ### Selection Criteria
 - Arithmetic intensity (compute vs memory bound)
@@ -100,17 +97,17 @@ call set_profiling_mode(.false.) ! Silent operation
 
 ## Benefits
 
-1. **Optimal Performance**: Always uses the best device for each workload
+1. **Policy-Aligned Routing**: Uses validated device capabilities and current policy
 2. **Zero Configuration**: Works out of the box
-3. **Adaptive**: Learns from actual performance
+3. **Adaptive**: Learns from measured telemetry where available
 4. **Future-Proof**: Easy to add new device types
 
 ## Implementation Details
 
 The selector integrates with the existing device juggling system:
 - Maintains compatibility with manual device selection
-- Uses async GPU executor for maximum performance
-- Falls back gracefully if devices are unavailable
+- Uses async GPU executor for Kronos-native paths when active
+- Returns explicit errors when explicit routing requirements cannot be satisfied
 
 ### Thresholds
 - Small workload: <100 MFLOPS → CPU

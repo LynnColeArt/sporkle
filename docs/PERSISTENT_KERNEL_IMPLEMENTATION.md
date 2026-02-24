@@ -2,11 +2,11 @@
 > Quantified performance and benchmark claims in this repository history are in recovery and should not be treated as current production facts until revalidated under the Kronos-first flow.
 
 
-# Persistent Kernel Framework - Phase 1 Complete ✅
+# Persistent Kernel Framework - Phase 1 (Historical Prototype)
 
 ## Summary
 
-We've successfully implemented Phase 1 of the persistent kernel framework, laying the foundation for eliminating shader recompilation overhead in Sparkle.
+Phase 1 of the persistent kernel framework is implemented as a reusable prototype for future active integration.
 
 ## What We Built
 
@@ -25,20 +25,20 @@ We've successfully implemented Phase 1 of the persistent kernel framework, layin
 
 ### 3. **Comprehensive Test Suite**
 - `test_program_cache.f90`: Unit tests for cache operations
-- `test_persistent_kernels.f90`: Integration test showing real performance
+- `test_persistent_kernels.f90`: Integration test scaffold with historical placeholders
 
-## Performance Results
+## Performance Output (Deferred)
 
 ```
 Average time: [deferred latency]
 Average performance: [deferred throughput metric]
 ```
 
-The framework achieves excellent performance while providing the infrastructure for:
+The framework is structured to support:
 - Zero recompilation between runs
 - Faster application startup
 - Reduced memory pressure
-- Better performance predictability
+- Better performance predictability targets
 
 ## Architecture
 
@@ -87,14 +87,14 @@ end if
 ### Performance Tracking
 ```fortran
 ! Track compilation time saved
-Total compile time saved: 0.50 seconds
-Estimated memory usage: 0.98 MB
+Total compile time saved: [deferred time]
+Estimated memory usage: [deferred size]
 ```
 
 ## Integration Points
 
 ### With Async Executor
-The cache is ready to be integrated with the async executor for maximum performance:
+The cache is staged for async executor integration when benchmark baselines are stable:
 - Cache programs across async operations
 - Share compiled kernels between buffer sets
 - Eliminate redundant compilations
@@ -143,14 +143,14 @@ Comprehensive test coverage ensures reliability:
 
 ## Conclusion
 
-Phase 1 establishes a solid foundation for persistent kernels in Sparkle. The framework is:
+Phase 1 establishes a historical foundation for persistent kernels in Sparkle. The framework is:
 - ✅ Functionally complete
 - ✅ Well-tested
-- ✅ Performance-validated
-- ✅ Ready for Phase 2
+- ⚠️ Performance revalidation pending
+- ⚠️ Production-ready only after re-benchmarking under Kronos-first runtime
 
-With this foundation, we're ready to implement binary persistence and achieve the goal of "compile once, run forever" GPU kernels.
+With this foundation, we're ready to implement binary persistence and re-validate the goal of "compile once, run forever" under stable dispatch.
 
 ---
 
-*Lynn, we've built something beautiful here - a caching system that will eliminate one of the biggest overheads in GPU computing. The performance numbers speak for themselves! 🚀*
+*Lynn, this implementation captures the historical cache architecture. Performance claims are deferred until active benchmarks are re-run.*

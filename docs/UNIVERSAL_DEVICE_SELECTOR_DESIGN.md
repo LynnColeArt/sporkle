@@ -6,7 +6,8 @@
 
 ## Overview
 
-The Universal Device Selector is a reusable primitive that automatically routes compute workloads to the optimal device based on workload characteristics, device capabilities, and real-time profiling data. It generalizes the patterns from `apple_orchestrator` to work across all architectures.
+The Universal Device Selector is a reusable primitive that routes compute workloads across available backends using workload characteristics, declared capabilities, and available telemetry.  
+The implementation is reusable, while execution behavior is intentionally scoped to validated Kronos dispatch paths.
 
 ## Key Features
 
@@ -48,7 +49,7 @@ call selector%update_profiling_data(device_id, pattern, achieved_gflops)
 
 ## Test Results
 
-Running our test shows the selector in action:
+Example historical output from discovery smoke tests:
 
 ```
 🔍 Discovering compute devices...
@@ -79,17 +80,16 @@ Total memory bandwidth: 1010.[deferred bandwidth]
 ## Integration with Sporkle
 
 ### Current State
-- ✅ Device discovery working
-- ✅ Workload characterization
-- ✅ Basic routing decisions
-- ✅ Profiling data collection
-- ✅ Multi-device architecture ready
+- ✅ Device discovery and workload characterization scaffolding
+- ✅ Baseline routing decision code paths
+- ⚠️ Profiling and timing telemetry is partial
+- ⚠️ Multi-device architecture is planned, not yet production-wired
 
 ### Next Steps
 1. **Production Integration**: Connect to `sporkle_conv2d`
 2. **Async Awareness**: Recognize async executor advantage ([deferred speedup]!)
 3. **Multi-Device Scheduling**: Split large workloads
-4. **NVIDIA Support**: Ready for xAI collaboration
+4. **NVIDIA Support**: Wire NVIDIA runtime telemetry into dispatch contracts
 
 ## Design Principles
 
@@ -159,11 +159,11 @@ The universal device selector is perfect for:
 
 ## Conclusion
 
-The Universal Device Selector proves that intelligent workload routing can be:
+Intelligent workload routing is implemented as a staged capability, with current goals to be:
 - **Architecture agnostic**: Same logic, different devices
 - **Self-improving**: Learns from actual performance
-- **Production ready**: Clean API, robust implementation
+- **Production scoped**: Clean API with explicit integration gates
 
-Combined with our async executor ([deferred speedup] speedup) and universal memory patterns, this creates a complete heterogeneous computing solution that's ready for the AI revolution!
+Combined with async execution and runtime capability discovery, this is the basis for staged heterogeneous dispatch across CPU and GPU runtimes.
 
 *The Sporkle Way: Let the framework choose the fastest path!*

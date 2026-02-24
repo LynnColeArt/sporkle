@@ -6,7 +6,8 @@
 
 ## Overview
 
-We've successfully connected the AMDGPU direct kernel driver interface to the Sparkle device abstraction framework. This provides low-level GPU control when needed, bypassing userspace drivers like ROCm or Mesa.
+**Status:** historical reference only (PM4/direct driver path is archived).
+The AMDGPU direct driver interface was used for kernel-path experiments and is now outside the active Kronos-first production route.
 
 ## Architecture
 
@@ -43,16 +44,14 @@ We've successfully connected the AMDGPU direct kernel driver interface to the Sp
 
 ### ✅ Completed
 - Created `amdgpu_device_mod` module that extends `compute_device`
-- Implemented all required abstract methods
+- Implemented required abstract methods during historical exploration
 - Connected to existing AMDGPU direct implementation
-- Successfully opens GPU device and creates context
-- Proper module integration with build system
-- Test program compiles and runs
+- Test program compiles and runs in historical mode
 
 ### ⚠️ Limitations
-- Buffer allocation fails without proper permissions (expected)
-- PM4 shader execution not yet implemented
-- No fence-based synchronization yet
+- Buffer allocation depends on host permissions and device state
+- PM4 shader execution remains unimplemented in active paths
+- Fence-based synchronization was incomplete for production handoff
 - Buffer tracking simplified (max 100 buffers)
 
 ## Key Design Decisions
@@ -86,30 +85,22 @@ end if
 
 ## Integration Points
 
-The AMDGPU direct device can be used in several ways:
+The AMDGPU direct device is useful for:
 
-1. **Standalone**: Direct low-level GPU control for testing/debugging
-2. **Fallback**: When OpenGL/Vulkan unavailable
-3. **Hybrid**: Use for memory management, OpenGL for compute
-4. **Performance**: Zero-overhead path to GPU
+1. **Standalone**: Direct low-level investigation and troubleshooting
+2. **Benchmarking references** for low-level behavior
+3. **Experimental**: Cross-check dispatch assumptions against Kronos logs
 
 ## Future Work
 
-1. **PM4 Compute Dispatch**: Implement actual shader execution via PM4 packets
-2. **Fence Synchronization**: Proper GPU command completion tracking
-3. **Multi-GPU**: Support both iGPU (card0) and dGPU (card1) simultaneously
-4. **Memory Domains**: Support GTT, VRAM, and system memory placement
-5. **Error Recovery**: Graceful handling of GPU hangs/resets
+1. **PM4 Compute Dispatch**: Maintain this as a documented reference only
+2. **Fence Synchronization**: Preserve notes for future diagnostic tooling
+3. **Multi-GPU**: Support both iGPU (card0) and dGPU (card1) simultaneously in Kronos runtime
+4. **Memory Domains**: Prioritize Kronos runtime pathway compatibility
 
 ## Performance Potential
 
-With direct submission, we eliminate:
-- OpenGL/Vulkan driver overhead
-- Mesa shader compilation
-- Userspace command validation
-- Extra memory copies
-
-This could push us from [deferred throughput metric] → [deferred throughput metric] by removing software overhead.
+Performance uplift in this document is historical and not active evidence.
 
 ## Testing
 
@@ -121,4 +112,4 @@ make test_amdgpu_direct_integration
 ./build/test_amdgpu_direct_integration
 ```
 
-Current output shows successful device open but buffer allocation fails due to permissions - this is expected behavior proving the kernel interface is working correctly.
+Current output shows the historical device interface behavior; archive artifacts are for reference only.

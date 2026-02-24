@@ -14,7 +14,7 @@
    ├─ docs/adr/              ✅ Architecture decision records
    ├─ src/
    │  ├─ core/               ✅ Core types and constants
-   │  ├─ pm4/                ✅ PM4 packet builders
+   │  ├─ pm4/                ✅ Historical PM4 archive (non-production)
    │  ├─ compute/            ✅ Submit API and selftest
    │  ├─ toolchain/          ✅ Created (empty)
    │  └─ cli/                ✅ CLI entry point
@@ -29,9 +29,9 @@
    - Using libdrm's working values
 
 3. **Created selftest framework** ✅
-   - `src/compute/selftest.c` with Stage A (DEADBEEF) and Stage B (SAXPY)
-   - `src/cli/sporkle.c` with `pm4 --selftest` command
-   - Clear success criteria for "compute online"
+  - `src/compute/selftest.c` with Stage A (DEADBEEF) and Stage B (SAXPY)
+  - `src/cli/sporkle.c` with `pm4 --selftest` command
+  - Clear success criteria for "compute online"
 
 4. **Moved test files** ✅
    - All `test_*.f90` files moved to `tests/`
@@ -45,25 +45,19 @@
 ## Next Steps
 
 ### Immediate Tasks
-1. **Fix submit.c compilation** 🔧
-   - Need to ensure all functions from pm4_submit_impl.c are in submit.c
-   - Add missing includes and dependencies
+1. **Kronos-first integration**
+   - Run `make` and integration tests for current Kronos path
+   - Verify dispatch wiring from production-facing interface
+   - Validate failure behavior for unavailable backends
 
-2. **Build and test** 🔧
-   - Run `make` in src/ directory
-   - Test `sporkle pm4 --selftest`
-   - Debug any issues
-
-3. **Delete duplicate helpers** 📝
+2. **Delete duplicate helpers** 📝
    - Remove old submit functions
    - Update all references to use new API
 
-### PM4 Debug Priority
-Based on UMR findings, we still need to fix wave execution:
-- No waves launching despite fence signaling
-- Investigate MEC initialization
-- Check shader endianness
-- Verify compute mode setup
+### PM4 Path Status
+- PM4 code is archived and kept for historical context
+- No active debug queue for PM4 execution is currently maintained
+- Focus is shifted to Kronos dispatch and production-capable backends
 
 ## Key Insights from Reorganization
 
