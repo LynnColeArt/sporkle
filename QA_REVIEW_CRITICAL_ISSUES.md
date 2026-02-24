@@ -1,10 +1,12 @@
 # 🚨 QA Review: Critical Production Issues Found
 
+> Historical review snapshot; action items here are staged planning inputs, not current production proof points.
+
 *QA Beanie with Propellers spinning at maximum RPM* 🧢
 
 ## Executive Summary
 
-This codebase is **NOT production-ready**. While the architecture is sound and performance numbers are impressive, there are critical issues that must be addressed before deployment.
+This codebase snapshot is **NOT production-ready**. While the architecture is sound and promising, there are critical issues that must be addressed before deployment.
 
 ## 🔴 CRITICAL ISSUES (Must Fix)
 

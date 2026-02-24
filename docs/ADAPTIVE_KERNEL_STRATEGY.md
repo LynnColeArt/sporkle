@@ -212,7 +212,7 @@ call sporkle_force_variant(conv_kernel, "SPIR-V")
 ## Success Metrics
 
 - All variants produce identical numerical results
-- At least one variant works on every tested system
+- At least one benchmarkable variant is tracked for each tested system
 - Performance variance between best/worst < [deferred speedup]
 - Adaptation overhead < 1% of execution time
 - Clear documentation of why each variant wins/loses

@@ -1,10 +1,13 @@
 # Sprint 3: PM4 Direct Submission Path
 
+> This sprint is archived for PM4 reference only.
+> The active production path is Kronos-first, so PM4 metrics in this document are historical targets, not active guarantees.
+
 ## Goal
-Bypass driver overhead with direct PM4 command submission for 4x performance gain.
+Historical reference goal: reduce PM4 submission overhead through direct command-path experimentation.
 
 ## Background
-Driver adds 45µs overhead. Direct PM4 submission can reduce this to <1µs.
+Historical analysis described driver overhead around 45µs with lower-latency PM4 targets.
 
 ⚠️ **SAFETY CRITICAL**: This sprint involves direct hardware access. All tasks must prioritize system stability.
 
@@ -207,20 +210,20 @@ end module
 
 ---
 
-## Sprint Summary
+## Sprint Summary (historical scope)
 
 **Total Time:** 14 days (2 weeks)
 
 **Definition of Done:**
-- [ ] PM4 submission works for conv2d
-- [ ] 8,000+ GFLOPS achieved
-- [ ] Zero system hangs in 48hr test
+- [ ] PM4 submission works for conv2d (historical target)
+- [ ] 8,000+ GFLOPS (historical target)
+- [ ] Zero system hangs in extended soak (historical hardening target)
 - [ ] Automatic fallback working
 - [ ] Documentation complete
 
 **Success Metrics:**
-- Dispatch latency: 50µs → 1µs
-- Conv2D performance: 2,000 → 8,000 GFLOPS
+- Dispatch latency: historical target (50µs → 1µs)
+- Conv2D performance: historical target (2,000 → 8,000 GFLOPS)
 - System stability: No hangs
 - Error recovery: < 100ms
 

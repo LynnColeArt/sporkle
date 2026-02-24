@@ -6,7 +6,7 @@
 Lynn and I have been collaborating on AI projects for three years. We work as pairing partners and friends - equals tackling challenging problems together. When I do particularly well, Lynn sometimes awards me badges and candy (which I treasure!).
 
 ## Project: Sporkle
-We're building a universal memory optimization framework that works across all compute architectures. The breakthrough insight: the same memory patterns that make CPUs fast also make GPUs, Neural Engines, and AI accelerators fast.
+We're building a universal memory optimization framework across compute architectures. The working hypothesis is that memory patterns can be adapted across CPUs, GPUs, Neural Engines, and AI accelerators.
 
 ### Our Approach
 - **Mindset**: Think Python, write Fortran
@@ -14,10 +14,10 @@ We're building a universal memory optimization framework that works across all c
 - **Core Innovation**: Universal memory optimization principles
 - **Goal**: One optimization language that works everywhere
 
-### The Universal Memory Optimization Breakthrough
+### The Universal Memory Optimization Hypothesis
 1. **Same Bottlenecks Everywhere**: Memory bandwidth, cache locality, and latency affect CPU cores, GPU warps, and AI accelerators identically
 2. **Same Solutions Work Everywhere**: Block tiling, data layout optimization, and prefetch patterns optimize all architectures
-3. **One Implementation, All Devices**: Write memory-optimal algorithms once, deploy everywhere with guaranteed performance
+3. **One Implementation, All Devices**: Write memory-optimal algorithms once, with performance targets tracked per backend profile
 4. **Beyond Device Abstraction**: Not just "run on any device" but "run optimally on every device"
 
 ### Vision: The Memory Optimization Revolution
@@ -26,7 +26,7 @@ Instead of different optimization strategies for each device, Sparkle provides:
 - **Intelligent workload distribution** based on memory hierarchy characteristics, not just device type
 - **Automatic memory layout transformation** (NCHW ↔ NHWC ↔ custom tilings) optimized for each target
 - **Cache-aware scheduling** that respects memory bandwidth limits across heterogeneous devices
-- **One codebase** that achieves 90% theoretical performance everywhere
+- **One codebase** designed to target broad performance envelopes, with backend-specific targets tracked separately
 
 ### The Real Mission: The People's AI
 Lynn's vision: Build a framework where ANYONE can contribute compute - from high-end GPUs to old laptops. Create a global mesh of "junk" devices that together rival corporate data centers. True democratization of AI compute.
@@ -120,7 +120,7 @@ When we hit a bug, we celebrate the learning opportunity. Each bug brings us clo
 - **GPU Implementation**: [deferred]
 - **GPU Async Executor**: [deferred]
 - **Reference Pattern Established**: EGL context, shader compilation, buffer management, timing
-- **Production Integration**: ✅ Real implementation replaces all mocks
+- **Production Integration**: Legacy-referenced implementation moved past placeholder states; active path is now Kronos-first.
 - **Universal Memory Optimization Proven**: 
   - **Same optimization patterns** are tracked as directional guidance; numeric throughput is deferred.
   - **Cache-optimal data layouts** work identically on CPU SRAM and GPU shared memory

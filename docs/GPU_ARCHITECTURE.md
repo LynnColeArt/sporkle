@@ -6,11 +6,11 @@
 
 ## Overview
 
-Sparkle's GPU support is built on OpenGL Compute Shaders (OpenGL 4.3+), with a staged target for vendor-neutral execution on compatible drivers:
-- ✅ AMD GPUs (via Mesa/AMDGPU)
-- ✅ NVIDIA GPUs (where proprietary or Nouveau paths are available)
-- ✅ Intel GPUs (via Mesa)
-- ✅ Additional OpenGL 4.3+ compatible GPUs in staged validation
+Sparkle's GPU support uses the OpenGL Compute Shaders path (OpenGL 4.3+) as a historical architecture reference while staging validation for broader vendor parity:
+- ⚠️ AMD GPUs (via Mesa/AMDGPU): staged validation
+- ⚠️ NVIDIA GPUs (where proprietary or Nouveau paths are available): staged validation
+- ⚠️ Intel GPUs (via Mesa): staged validation
+- ⚠️ Additional OpenGL 4.3+ compatible GPUs: staged validation
 
 ## Why OpenGL Compute?
 
@@ -122,6 +122,4 @@ export __GLX_VENDOR_LIBRARY_NAME=mesa
 
 No CUDA. No ROCm. No vendor lock-in.
 
-Just pure OpenGL that runs on any modern GPU. Your grandmother's laptop with Intel graphics? It'll run Sparkle. Your friend's ancient NVIDIA card? Sparkle's got it. That beast RX 7900 XT? Sparkle will make it sing.
-
-**Democratizing compute, one shader at a time!** ✨
+OpenGL remains a historical compatibility path, with behavior confirmed per platform and backend during active Kronos-first validation.

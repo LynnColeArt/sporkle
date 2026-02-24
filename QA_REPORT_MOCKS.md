@@ -1,5 +1,7 @@
 # QA Report: Mock Implementations and Production Issues
 
+> Historical audit snapshot from legacy path; runtime claims in this file are archived and must be revalidated under Kronos recovery.
+
 ## CRITICAL FINDINGS
 
 ### 1. Mock GPU Implementation in Production Code
@@ -33,7 +35,7 @@ Multiple TODOs for buffer free functions:
 
 1. **Mock GPU Implementation** - The entire GPU path is fake!
 2. **No Device Memory** - Can't allocate GPU memory
-3. **No Buffer Cleanup** - Memory leaks guaranteed
+3. **No Buffer Cleanup** - Memory leaks were observed in this historical path
 4. **Placeholder Shaders** - No actual compute kernels
 5. **No Hardware Detection** - Assumes specific CPU
 
@@ -45,4 +47,4 @@ Multiple TODOs for buffer free functions:
 4. Replace placeholder shaders with real implementations
 5. Implement hardware detection
 
-This codebase is NOT production-ready. Major functionality is missing or mocked.
+This historical audit snapshot is NOT production-ready evidence. Use it for migration context only; major functionality was missing or mocked in the audited path.

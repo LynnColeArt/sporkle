@@ -1,7 +1,8 @@
 # Quality Assurance Report: Neo Geo Implementation
 
 ## Executive Summary
-Deep QA analysis of PM4 direct submission and fence primitives implementation.
+Deep QA analysis of archived PM4 direct submission and fence primitives.
+The PM4 path is retained for historical reference while active production migration remains Kronos-first.
 
 ## 1. PM4 Implementation Quality
 
@@ -22,6 +23,8 @@ Deep QA analysis of PM4 direct submission and fence primitives implementation.
 - **Current**: 2,000 GFLOPS (5% efficiency)
 - **Analysis**: 20x speedup is theoretical maximum
 - **Realistic**: 10,000-12,000 GFLOPS (25-30% efficiency)
+  
+> These figures are historical and are not active production telemetry.
 
 ### Code Quality
 ```fortran
@@ -83,7 +86,7 @@ Test 7: Fence wait performance
 ### Async Executor
 - ✅ Already uses fences
 - ✅ Triple buffering implemented
-- ✅ 3,630 GFLOPS achieved
+- 3,630 GFLOPS recorded in historical reference test runs
 - ✅ Good reference for juggler update
 
 ### Juggler Update Path
@@ -101,7 +104,7 @@ end if
 ## 4. Risk Assessment
 
 ### Low Risk
-- Fence primitives (proven stable)
+- Fence primitives (historical reference; stability to be revalidated)
 - PM4 packet building (no hardware touch)
 - Buffer management improvements
 
@@ -154,16 +157,16 @@ end if
 
 ## 7. Conclusion
 
-The Neo Geo implementation passes quality checks with flying colors:
+The Neo Geo findings remain useful for reference, with active caveats for production usage:
 
-- **Fence primitives**: Production-ready, 60x overhead reduction
-- **PM4 packets**: Correctly implemented, conceptually sound
+- **Fence primitives**: Useful reference with staged hardening opportunities
+- **PM4 packets**: Structurally coherent, not active production evidence
 - **Safety**: Multiple layers of protection
-- **Performance**: On track for 2x immediate improvement
+- **Performance**: Historical targets only, not production commitments
 
-### Final Verdict: ✅ APPROVED FOR NEXT PHASE
+### Final Verdict: ✅ ARCHIVED REFERENCE PATH
 
-The fence implementation is solid and ready for integration. The PM4 work provides a clear path to future optimizations while maintaining safety.
+The fence implementation informed hardening decisions, while PM4 remains archived and out of active integration planning.
 
 **Quality Score: 92/100**
 
@@ -172,4 +175,4 @@ Minor deductions for:
 - Some edge cases need more testing
 - Integration complexity underestimated
 
-But overall, this is excellent work that moves us significantly closer to the junk drawer revolution! 🚀
+The report captures historical findings and supports prioritization of Kronos-first migration tasks.

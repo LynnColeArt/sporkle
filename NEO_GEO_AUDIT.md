@@ -1,5 +1,7 @@
 # Neo Geo Performance Audit - AMD Stack
 
+> Historical optimization notes; behavior here reflects legacy PM4/OpenGL comparison paths and should be revalidated under the active Kronos-first runtime.
+
 ## Core Philosophy
 Like the Neo Geo's direct hardware access, we eliminate unnecessary abstractions while keeping core algorithms platform-agnostic.
 
@@ -48,7 +50,7 @@ sporkle_conv2d → PM4 packets → Ring buffer → Hardware
 
 ### 1. Universal Memory Patterns
 ```fortran
-! This pattern works on ALL hardware
+! This pattern is intended as reusable intent across hardware classes; compatibility is still staged and runtime-specific
 type :: compute_buffer
   integer :: size
   integer :: stride  

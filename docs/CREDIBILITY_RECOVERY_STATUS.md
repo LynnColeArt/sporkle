@@ -51,14 +51,36 @@ During recovery:
   - Relaxed cross-vendor language to staged capability intent.
 - `docs/ADAPTIVE_KERNEL_STRATEGY.md`
   - Reframed cross-vendor statements as staged validation targets.
+- `docs/UNIVERSAL_DEVICE_SELECTOR_DESIGN.md`
+  - Marked device coverage statements as staging intent rather than active parity guarantees.
 - `docs/GPU_ASYNC_REALITY_CHECK.md`
   - Softened concluding production statements and marked as staged validation only.
 - `docs/GPU_ASYNC_BREAKTHROUGH.md`
   - Converted concrete utilization/speedup percentages to deferred placeholders.
+- `docs/DYNAMIC_SHADER_GENERATION_PROPOSAL.md`
+  - Reframed production-deployment risk language into staged performance targets.
+- `docs/PENDING_INTEGRATIONS.md`
+  - Replaced final production guarantee phrasing with staged validation phrasing.
+- `docs/SHADER_ATTRIBUTION.md`
+  - Softened attribution wording to remove implied correctness guarantees.
+- `SPRINT_2_ZERO_COPY.md`
+  - Marked PM4-adjacent sprint goals as historical and non-production.
+- `SPRINT_3_PM4_DIRECT.md`
+  - Marked PM4 performance targets as historical references, not active guarantees.
 - `docs/PERSISTENT_KERNEL_DESIGN.md`
   - Reworded staged performance/error-handling claims away from production-ready assertions.
 - `docs/GPU_CACHE_COMPRESSION.md`
   - Removed raw "faster" net-effect assertions in favor of staged comparison language.
+- `QA_REPORT_NEO_GEO.md`
+- `QA_REMEDIATION_REPORT.md`
+- `QA_FINDINGS_SUMMARY.md`
+  - Reframed PM4 QA narratives as archival references and removed active production-readiness phrasing.
+- `QA_REPORT_MOCKS.md`
+  - Reframed memory-leak/performance claims as historical blockers and added revalidation framing.
+- `QA_REVIEW_CRITICAL_ISSUES.md`
+  - Marked review as historical and removed active certainty language.
+- `CRITICAL_PRODUCTION_BLOCKERS.md`
+  - Marked as historical blocker snapshot rather than live production status.
 
 ## Outstanding risks to monitor
 

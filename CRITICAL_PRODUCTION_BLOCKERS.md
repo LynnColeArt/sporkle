@@ -1,5 +1,7 @@
 # Critical Production Blockers
 
+> Historical blocker audit snapshot; re-run against the current Kronos-first runtime before using these as active evidence.
+
 ## 1. Mock GPU Implementation (FIXED)
 - **File:** `src/sporkle_gpu_opengl.f90` 
 - **Status:** ✅ REMOVED
@@ -55,6 +57,6 @@
 6. ❌ Fix fake GPU pointers
 7. ❌ Implement hardware detection
 
-## STATUS: NOT PRODUCTION READY
+## STATUS: NOT PRODUCTION READY (historical)
 
-The GPU path is completely non-functional due to placeholders and mocks.
+The GPU path was previously non-functional due to placeholders and mocks; this file remains a historical blocker catalog and should not be treated as current project status.

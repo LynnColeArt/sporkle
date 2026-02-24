@@ -1,7 +1,7 @@
-# QA Findings Summary: Real Implementations Exist!
+# QA Findings Summary: Historical PM4 Findings
 
-## Good News
-The mocks and placeholders in production code are NOT because functionality is missing - we have REAL implementations:
+## Good News (Historical Context)
+The historical PM4 work documented in this file showed real implementations for certain legacy paths.
 
 ### Real GPU Implementations Found:
 1. **PM4 Direct Submission** (`sporkle_pm4_compute.f90`)
@@ -21,12 +21,13 @@ The mocks and placeholders in production code are NOT because functionality is m
    - ✅ `amdgpu_map_va` - GPU virtual address mapping
    - ✅ Direct ioctl kernel interface
 
-## The Problem
-The production code hasn't been updated to use these real implementations. It still has placeholders because it was written before the PM4 path was complete.
+## The Problem (Legacy Status)
+This report predates the Kronos-first production migration.
+Legacy production files were not wired to direct-driver implementations, and placeholders remained in those historical paths.
 
 ## Fixes Applied:
-1. ✅ Removed mock GPU OpenGL implementation
-2. ✅ Fixed hardcoded shader address in `pm4_safe_submit.f90` to use `pm4_compile_shader`
+1. ✅ Removed mock GPU OpenGL implementation (historical hardening milestone)
+2. ✅ Fixed hardcoded shader address in `pm4_safe_submit.f90` to use `pm4_compile_shader` (historical hardening milestone)
 
 ## Still TODO:
 1. Wire other production files to use real PM4/AMDGPU implementations
@@ -35,4 +36,4 @@ The production code hasn't been updated to use these real implementations. It st
 4. Replace fake GPU pointers with real VA addresses
 
 ## Conclusion
-We're much closer to production-ready than the placeholders suggest. The real GPU infrastructure exists - it just needs to be connected!
+The historical PM4 findings were useful for de-risking archival paths, but PM4 is not the active production target.

@@ -20,7 +20,7 @@ The Persistent Kernel Framework aims to eliminate redundant shader compilation a
 - **Compilation Time**: ~50-[deferred latency] per shader (one-time cost per run)
 - **Program Switching**: ~[deferred latency] overhead when changing kernels
 - **Memory Pressure**: Each program uses ~100KB GPU memory
-- **Startup Time**: Could be reduced by 90% with cached binaries
+- **Startup Time**: [staged target] reduction after cached binaries
 
 ## Design Goals
 
@@ -211,7 +211,7 @@ shader_cache/
 
 ## Success Metrics
 
-- ✅ Zero shader recompilation across runs
+- ✅ Zero shader recompilation target across runs
 - ✅ Sub-[deferred latency] startup time
 - ✅ Seamless integration with existing code
 - ✅ Staged performance impact target ([deferred speedup range]) under active kernel replay

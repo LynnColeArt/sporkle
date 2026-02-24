@@ -209,7 +209,7 @@ end if
 
 ### Phase 4: Production Deployment (Months 7-8)
 - Robust error handling
-- Performance guarantees
+- Performance targets
 - Automated testing
 - Documentation
 
@@ -260,7 +260,7 @@ end program
 **Mitigation**: Comprehensive validation and sandboxing
 
 **Risk**: Performance regression
-**Mitigation**: Always maintain baseline performance guarantees
+**Mitigation**: Keep a staged baseline performance target and avoid regressions before rollout
 
 **Risk**: Hardware damage from experimental code
 **Mitigation**: Conservative limits, timeout mechanisms

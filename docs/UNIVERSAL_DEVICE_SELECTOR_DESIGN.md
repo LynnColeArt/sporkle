@@ -94,7 +94,7 @@ Total memory bandwidth: 1010.[deferred bandwidth]
 ## Design Principles
 
 ### 1. **Universal Patterns**
-Same device selection logic works for:
+Same device selection logic is intended to cover:
 - Linux + AMD GPUs
 - macOS + Apple Silicon
 - Future: NVIDIA, Intel, TPUs

@@ -1,7 +1,10 @@
 # Sprint 2: Zero-Copy Buffer Management
 
+> This sprint documentation is historical and archived while the project follows the Kronos-first production path.
+> Numeric targets are retained as historical reference and are not active production guarantees.
+
 ## Goal
-Eliminate memory copies between CPU and GPU for 1.5x additional performance gain.
+Historically, this sprint targeted reduced CPU↔GPU copy overhead and memory churn using zero-copy buffers.
 
 ## Background
 Currently copying data to staging buffers. With persistent mapped buffers, CPU can write directly to GPU memory.
@@ -185,17 +188,17 @@ call benchmark_zero_copy_performance()
 **Total Time:** 8 days
 
 **Definition of Done:**
-- [ ] Zero memcpy in conv2d hot path
-- [ ] 1.5x performance improvement
-- [ ] Works on AMD, Intel, NVIDIA
+- [ ] Zero memcpy in conv2d hot path (historical target)
+- [ ] 1.5x performance gain (historical target)
+- [ ] Works on AMD, Intel, NVIDIA (historical target)
 - [ ] No stability regressions
 - [ ] Documentation complete
 
-**Success Metrics:**
+**Success Metrics (historical target):**
 - Memory bandwidth: 50% reduction
-- Small buffer latency: 10µs → 2µs  
+- Small buffer latency: 10µs → 2µs
 - Cache misses: 80% reduction
-- Total speedup: 3x (combined with fences)
+- Total speedup: 3x with fences (historical estimate)
 
 **Risk Mitigation:**
 - Non-coherent memory: Add explicit flushes
@@ -206,4 +209,4 @@ call benchmark_zero_copy_performance()
 **Next Sprint Preview:** PM4 Direct Submission
 - Build on fence + zero-copy foundation
 - Bypass driver completely
-- Expected 4x additional speedup
+- Expected 4x additional speedup (historical estimate)
