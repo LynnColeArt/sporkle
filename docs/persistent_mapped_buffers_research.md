@@ -170,14 +170,14 @@ Use: Upload-only buffers (input data, uniforms)
 ## Expected Performance Gains
 
 ### Memory Bandwidth Savings
-- Upload: 7.5 GB/s eliminated (1920×1080×4×60fps)
-- Download: 7.5 GB/s eliminated
-- Total: 15 GB/s bandwidth recovered
+- Upload: [deferred bandwidth] eliminated (1920×1080×4×60fps)
+- Download: [deferred bandwidth] eliminated
+- Total: [deferred bandwidth] bandwidth recovered
 
 ### Latency Reduction
-- glBufferData: ~0.5-2ms eliminated
-- glGetBufferSubData: ~0.5-2ms eliminated
-- Total: 1-4ms per frame saved
+- glBufferData: ~0.5-[deferred latency] eliminated
+- glGetBufferSubData: ~0.5-[deferred latency] eliminated
+- Total: 1-[deferred latency] per frame saved
 
 ### Real-World Impact
 - 30% reduction in frame time

@@ -2,10 +2,10 @@
 > Quantified performance and benchmark claims in this repository history are in recovery and should not be treated as current production facts until revalidated under the Kronos-first flow.
 
 
-# AMD 10x Performance Optimization Plan
+# AMD [deferred speedup] Performance Optimization Plan
 
-## Current Performance: 3,630 GFLOPS (13.4% of theoretical)
-## Target Performance: 36,000+ GFLOPS (>100% via better algorithms)
+## Current Performance: [deferred throughput metric] (13.4% of theoretical)
+## Target Performance: [deferred throughput metric] (>100% via better algorithms)
 
 ## The 5 Critical Fixes
 
@@ -70,8 +70,8 @@ workgroup_size = [16, 16, 4] ! 1024 threads
 ## Memory Bandwidth Analysis
 
 **7900 XT Specs:**
-- Memory bandwidth: 960 GB/s
-- Compute: 61.4 TFLOPS (FP32)
+- Memory bandwidth: [deferred bandwidth]
+- Compute: [deferred throughput metric] (FP32)
 - Compute/Bandwidth ratio: 64 FLOPS/byte
 
 **Conv2d Requirements (3x3 kernel):**
@@ -82,13 +82,13 @@ workgroup_size = [16, 16, 4] ! 1024 threads
 
 For typical conv (C=256, K=256):
 - ~768 bytes per output pixel
-- Need 768 GB/s for 1 TFLOP
+- Need [deferred bandwidth] for 1 TFLOP
 - **We're memory bandwidth limited!**
 
 ## The Real Solution: Winograd/FFT Convolution
 
 Traditional conv2d: 2*K*K*C FLOPs per output
-Winograd F(2,3): 2.25x fewer multiplies
+Winograd F(2,3): [deferred speedup] fewer multiplies
 FFT convolution: O(log N) for large kernels
 
 **This is how we exceed theoretical FLOPS:**
@@ -105,12 +105,12 @@ FFT convolution: O(log N) for large kernels
 
 ## Expected Results
 
-- Step 1: 3,630 → 7,000 GFLOPS (2x)
-- Step 2: 7,000 → 15,000 GFLOPS (2x)
-- Step 3: 15,000 → 25,000 GFLOPS (1.7x)
-- Step 4: 25,000 → 40,000+ GFLOPS (1.6x)
+- Step 1: 3,630 → [deferred throughput metric] ([deferred speedup])
+- Step 2: 7,000 → [deferred throughput metric] ([deferred speedup])
+- Step 3: 15,000 → [deferred throughput metric] ([deferred speedup])
+- Step 4: 25,000 → [deferred throughput metric] ([deferred speedup])
 
-**Total: 11x improvement to 40,000 GFLOPS!**
+**Total: [deferred speedup] improvement to [deferred throughput metric]!**
 
 ## The Dirty Secret
 

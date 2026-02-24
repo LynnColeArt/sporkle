@@ -12,7 +12,7 @@ Working implementations live in test files while production modules contain mock
 
 ### 1. GPU Dispatch (CRITICAL)
 **Working Code Location**: `examples/test_conv_cpu_vs_gpu.f90`
-- Performance: 451 GFLOPS achieved
+- Performance: [deferred throughput metric] achieved
 - Uses: Direct OpenGL/EGL, proper buffer management, GPU timing
 
 **Mock Location**: `src/sporkle_gpu_dispatch.f90`
@@ -49,7 +49,7 @@ Working implementations live in test files while production modules contain mock
 
 ### 4. Production Convolution Interface
 **Location**: `src/production/sporkle_conv2d.f90`
-- CPU: Uses naive implementation (2 GFLOPS)
+- CPU: Uses naive implementation ([deferred throughput metric])
 - GPU: Just says "Not implemented" and stops
 
 **Action Required**:
@@ -93,7 +93,7 @@ Working implementations live in test files while production modules contain mock
 
 ### 8. Working GPU Examples We Can Mine
 Found working OpenGL code in:
-- `examples/test_conv_cpu_vs_gpu.c/.f90` - 451 GFLOPS convolution ✅
+- `examples/test_conv_cpu_vs_gpu.c/.f90` - [deferred throughput metric] convolution ✅
 - `examples/test_gpu_minimal2.c` - Basic EGL setup
 - `examples/test_glsl_debug.f90` - GLSL shader compilation
 - `examples/test_simple_glsl_c.c` - Simple compute dispatch
@@ -153,7 +153,7 @@ For each item:
 After cleanup, these should work:
 ```fortran
 use sporkle_conv2d
-call conv2d_gpu(...)  ! Should run at 450+ GFLOPS
+call conv2d_gpu(...)  ! Should run at [deferred throughput metric]
 
 use sporkle_gpu_dispatch  
 call gpu_execute(...)  ! Should actually run on GPU

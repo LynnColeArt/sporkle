@@ -6,7 +6,7 @@
 
 ## Summary
 
-The GPU async executor with triple buffering has been integrated into the production device juggling system. This provides a **6.5x speedup** over synchronous execution, achieving **3,630 GFLOPS aggregate throughput**.
+The GPU async executor with triple buffering has been integrated into the production device juggling system. This provides a **[deferred speedup] speedup** over synchronous execution, achieving **[deferred throughput metric] aggregate throughput**.
 
 ## Architecture
 
@@ -34,9 +34,9 @@ The GPU async executor with triple buffering has been integrated into the produc
 
 | Mode | Performance | Notes |
 |------|-------------|-------|
-| CPU | 90-160 GFLOPS | Adaptive tiling with AVX-512 |
-| GPU Sync | 400+ GFLOPS | Single kernel execution |
-| GPU Async | 3,630 GFLOPS | 6.5x speedup with pipeline |
+| CPU | 90-[deferred throughput metric] | Adaptive tiling with AVX-512 |
+| GPU Sync | [deferred throughput metric] | Single kernel execution |
+| GPU Async | [deferred throughput metric] | [deferred speedup] speedup with pipeline |
 
 ## Usage
 
@@ -49,12 +49,12 @@ time_ms = conv2d_auto_juggling(input, weights, output, ...)
 ### Disable Async
 ```fortran
 use sporkle_conv2d_juggling
-call disable_async_gpu()  ! Falls back to 400 GFLOPS sync
+call disable_async_gpu()  ! Falls back to [deferred throughput metric] sync
 ```
 
 ### Re-enable Async
 ```fortran
-call enable_async_gpu()  ! Back to 3,630 GFLOPS
+call enable_async_gpu()  ! Back to [deferred throughput metric]
 ```
 
 ## Implementation Details

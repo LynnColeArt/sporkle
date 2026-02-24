@@ -14,10 +14,10 @@ Our current performance achievements that must be maintained:
 
 | Component | Performance | Threshold (80%) | Hardware |
 |-----------|-------------|-----------------|----------|
-| CPU SIMD | 196.7 GFLOPS | 157 GFLOPS | AMD Ryzen 7900X (AVX-512) |
-| GPU Single | 445.7 GFLOPS | 356 GFLOPS | AMD RX 7900 XT |
-| GPU Async | 3,630 GFLOPS | 2,900 GFLOPS | AMD RX 7900 XT |
-| Async Speedup | 6.5x | 5.0x | Triple buffering |
+| CPU SIMD | [deferred throughput metric] | [deferred throughput metric] | AMD Ryzen 7900X (AVX-512) |
+| GPU Single | [deferred throughput metric] | [deferred throughput metric] | AMD RX 7900 XT |
+| GPU Async | [deferred throughput metric] | [deferred throughput metric] | AMD RX 7900 XT |
+| Async Speedup | [deferred speedup] | [deferred speedup] | Triple buffering |
 
 ## Quick Start
 
@@ -48,14 +48,14 @@ make report
 Checking that our optimizations haven't regressed...
 
 1. Testing CPU SIMD Performance...
-   ✅ CPU SIMD: 198.3 GFLOPS (threshold: 157.0)
+   ✅ CPU SIMD: [deferred throughput metric] (threshold: 157.0)
 2. Testing GPU Single Kernel Performance...
-   ✅ GPU Single: 447.2 GFLOPS (threshold: 356.0)
+   ✅ GPU Single: [deferred throughput metric] (threshold: 356.0)
 3. Testing GPU Async Pipeline Performance...
-   ✅ GPU Async: 3645.8 GFLOPS (threshold: 2900.0)
-   ✅ Speedup: 6.3x (threshold: 5.0x)
+   ✅ GPU Async: [deferred throughput metric] (threshold: [deferred throughput metric])
+   ✅ Speedup: [deferred speedup] (threshold: [deferred speedup])
 4. Testing Timing Accuracy (Mini's hardening)...
-   ✅ Timing accuracy: 100.2 ms for 100ms sleep
+   ✅ Timing accuracy: [deferred latency] for [deferred latency] sleep
 5. Testing FLOP Counting Safety (Mini's hardening)...
    ✅ 64-bit FLOP counting: 151 billion FLOPs
 
@@ -66,7 +66,7 @@ Our optimizations are intact! 🎉
 
 ❌ **Performance Regression Detected:**
 ```
-❌ GPU Single: 285.4 GFLOPS (BELOW threshold: 356.0)
+❌ GPU Single: [deferred throughput metric] (BELOW threshold: 356.0)
 ❌ FAILED 1 TESTS!
 Performance has regressed - investigate immediately!
 ```
@@ -130,9 +130,9 @@ git commit --no-verify  # Use sparingly!
 
 Edit thresholds in `tests/performance_regression_test.f90`:
 ```fortran
-real(real64), parameter :: CPU_SIMD_THRESHOLD = 157.0_real64      ! 80% of 196.7
-real(real64), parameter :: GPU_SINGLE_THRESHOLD = 356.0_real64    ! 80% of 445.7
-real(real64), parameter :: GPU_ASYNC_THRESHOLD = 2900.0_real64    ! 80% of 3630
+real(real64), parameter :: CPU_SIMD_THRESHOLD = [deferred throughput metric]_real64      ! 80% of deferred benchmark result
+real(real64), parameter :: GPU_SINGLE_THRESHOLD = [deferred throughput metric]_real64    ! 80% of deferred benchmark result
+real(real64), parameter :: GPU_ASYNC_THRESHOLD = [deferred throughput metric]_real64    ! 80% of deferred benchmark result
 ```
 
 ### Adding New Tests

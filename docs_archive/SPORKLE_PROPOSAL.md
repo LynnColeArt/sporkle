@@ -39,9 +39,9 @@ Sporkle is a revolutionary heterogeneous compute framework that achieves vendor-
 ### Performance Results
 
 **Achieved Performance**:
-- CPU: Up to 43.5 GFLOPS (matrix multiplication)
-- CPU: 31.6 GB/s memory bandwidth (parallel execution)
-- CPU: 294x speedup with cache-aware algorithms
+- CPU: Up to [deferred throughput metric] (matrix multiplication)
+- CPU: [deferred bandwidth] memory bandwidth (parallel execution)
+- CPU: [deferred speedup] speedup with cache-aware algorithms
 - Metal: ~90% of theoretical peak performance
 - AMD GPU: Command submission operational, compute kernels in integration
 
@@ -169,9 +169,9 @@ call run_inference(model, data, gpu)
 ## Validation
 
 ### Performance Benchmarks
-- CPU GEMM: 43.5 GFLOPS (proven)
-- Memory bandwidth: 31.6 GB/s (proven)
-- Cache optimization: 294x speedup (proven)
+- CPU GEMM: [deferred throughput metric] (proven)
+- Memory bandwidth: [deferred bandwidth] (proven)
+- Cache optimization: [deferred speedup] speedup (proven)
 - Metal backend: ~90% theoretical peak (proven)
 - GPU compute: Pending kernel integration
 

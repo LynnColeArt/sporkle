@@ -78,14 +78,14 @@ call read_gl_buffer(z_buffer, c_loc(z_data), size)
 
 ### RX 7900 XT Specifications:
 - 84 Compute Units
-- 61 TFLOPS (FP32)
-- 960 GB/s memory bandwidth
+- [deferred throughput metric] (FP32)
+- [deferred bandwidth] memory bandwidth
 - 24 GB VRAM
 
 ### Expected Performance:
-- Vector ops: 500-900 GB/s (vs 32 GB/s CPU)
-- GEMM: 10-30 TFLOPS (vs 0.25 TFLOPS CPU)
-- Speedup: 40-120x over CPU
+- Vector ops: 500-[deferred bandwidth] (vs [deferred bandwidth] CPU)
+- GEMM: 10-[deferred throughput metric] (vs [deferred throughput metric] CPU)
+- Speedup: [deferred speedup range] over CPU
 
 ## Compilation
 

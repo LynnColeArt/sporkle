@@ -52,7 +52,7 @@ program_id = get_cached_program_v2(cache, shader_source, cache_key, compile_real
 
 ### What We Built
 - `gpu_async_executor.f90` - Triple-buffered async execution
-- 6.5x pipeline speedup demonstrated
+- [deferred speedup] pipeline speedup demonstrated
 - Fence-based synchronization
 
 ### Current Status

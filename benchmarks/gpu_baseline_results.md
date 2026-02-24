@@ -21,9 +21,9 @@
 - **Padding**: 3
 
 ### GPU Performance Results
-- **Execution Time**: 0.478 ms per iteration
+- **Execution Time**: [deferred latency] per iteration
 - **GFLOPS**: 493.28
-- **Memory Bandwidth**: 8.05 GB/s
+- **Memory Bandwidth**: [deferred bandwidth]
 - **Arithmetic Intensity**: 61.29 FLOPS/byte
 - **Total FLOPs**: 236,027,904
 

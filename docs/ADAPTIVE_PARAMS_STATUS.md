@@ -79,9 +79,9 @@ Every benchmarking method now has detailed comments explaining:
 When you run the benchmark:
 ```
 BUFFER Method:
-  Setup time:       0.001 ms
-  Dispatch time:    0.001 ms
-  Total time:       0.002 ms
+  Setup time:       [deferred latency]
+  Dispatch time:    [deferred latency]
+  Total time:       [deferred latency]
 
 Recommended method: BUFFER
 ```

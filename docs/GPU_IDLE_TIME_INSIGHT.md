@@ -6,11 +6,11 @@
 
 ## The Breakthrough Insight
 
-We've been optimizing the 0.56ms of GPU compute time, but missing that the GPU sits idle for 99% of the execution:
+We've been optimizing the [deferred latency] of GPU compute time, but missing that the GPU sits idle for 99% of the execution:
 
 ```
 Timeline:
-[CPU prep: 10ms] → [Upload: 2ms] → [GPU: 0.56ms] → [Download: 2ms] → [CPU post: 10ms]
+[CPU prep: [deferred latency]] → [Upload: [deferred latency]] → [GPU: [deferred latency]] → [Download: [deferred latency]] → [CPU post: [deferred latency]]
                  GPU IDLE         GPU IDLE      ^^^^       GPU IDLE        GPU IDLE
                                                ACTIVE
 ```
@@ -40,8 +40,8 @@ PCIe: [Up 1]  [Up 2]  [Up 3]  [Dn 1]  [Dn 2]...
 
 ## Performance Potential
 
-- Current: 460 GFLOPS at 2.3% utilization
-- Target: 2000+ GFLOPS at 90% utilization
+- Current: [deferred throughput metric] at 2.3% utilization
+- Target: [deferred throughput metric] at 90% utilization
 - Method: Not faster compute, but never idle
 
 **The GPU is a river, not a bucket. Keep it flowing!**

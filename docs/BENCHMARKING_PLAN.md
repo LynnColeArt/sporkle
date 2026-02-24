@@ -134,18 +134,18 @@ end module
 ## Expected Results
 
 ### Memory Bandwidth
-- **CPU**: 50-100 GB/s (DDR5)
-- **GPU**: 300-900 GB/s (GDDR6)
+- **CPU**: 50-[deferred bandwidth] (DDR5)
+- **GPU**: 300-[deferred bandwidth] (GDDR6)
 - **Efficiency**: 60-80% of theoretical
 
 ### Compute
-- **CPU**: 100-500 GFLOPS
-- **GPU**: 5-50 TFLOPS
+- **CPU**: 100-[deferred throughput metric]
+- **GPU**: 5-[deferred throughput metric]
 - **Fortran overhead**: <10% vs native
 
 ### Convolution
-- **Speedup**: 10-100x over CPU
-- **vs cuDNN**: Within 2x (acceptable)
+- **Speedup**: [deferred speedup range] over CPU
+- **vs cuDNN**: Within [deferred speedup] (acceptable)
 
 ## Benchmark Schedule
 
@@ -168,8 +168,8 @@ end module
 ## Success Criteria
 
 1. **Fortran DSL overhead**: <10% vs hand-written GLSL
-2. **vs CPU**: >10x speedup on parallel workloads
-3. **vs vendor libraries**: Within 2-3x
+2. **vs CPU**: >[deferred speedup] speedup on parallel workloads
+3. **vs vendor libraries**: Within [deferred speedup range]
 4. **Ease of use**: Scientist-friendly API
 
 ## Benchmarking Commands

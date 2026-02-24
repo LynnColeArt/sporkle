@@ -52,28 +52,28 @@ Running our test shows the selector in action:
 
 ```
 🔍 Discovering compute devices...
-✓ Discovered CPU Performance Cores (196.7 GFLOPS)
-✓ Discovered AMD Radeon RX 7900 XT (451.0 GFLOPS)
-✓ Discovered AMD Raphael iGPU (50.0 GFLOPS)
-Total compute power: 697.7 GFLOPS
-Total memory bandwidth: 1010.0 GB/s
+✓ Discovered CPU Performance Cores ([deferred throughput metric])
+✓ Discovered AMD Radeon RX 7900 XT ([deferred throughput metric])
+✓ Discovered AMD Raphael iGPU ([deferred throughput metric])
+Total compute power: [deferred throughput metric]
+Total memory bandwidth: 1010.[deferred bandwidth]
 ```
 
 ### Decision Examples
 
 1. **Small GEMM** (100×100)
    - Arithmetic intensity: 16.7
-   - Decision: GPU (451 GFLOPS)
+   - Decision: GPU ([deferred throughput metric])
    - Reasoning: Compute-bound, GPU has highest peak
 
 2. **ResNet-50 Conv Layer**
    - Arithmetic intensity: 18.4
-   - Decision: GPU (451 GFLOPS)
-   - After profiling: Could use 3,630 GFLOPS async!
+   - Decision: GPU ([deferred throughput metric])
+   - After profiling: Could use [deferred throughput metric] async!
 
 3. **Large Vector Addition**
    - Arithmetic intensity: 0.1
-   - Decision: GPU (80 GFLOPS, bandwidth limited)
+   - Decision: GPU ([deferred throughput metric], bandwidth limited)
    - Reasoning: Memory-bound, needs high bandwidth
 
 ## Integration with Sporkle
@@ -87,7 +87,7 @@ Total memory bandwidth: 1010.0 GB/s
 
 ### Next Steps
 1. **Production Integration**: Connect to `sporkle_conv2d`
-2. **Async Awareness**: Recognize async executor advantage (6.5x!)
+2. **Async Awareness**: Recognize async executor advantage ([deferred speedup]!)
 3. **Multi-Device Scheduling**: Split large workloads
 4. **NVIDIA Support**: Ready for xAI collaboration
 
@@ -113,9 +113,9 @@ Can be used by:
 ## Performance Impact
 
 Expected improvements:
-- **2-3x** from optimal device selection
-- **Additional 6.5x** when async executor is selected
-- **Total: 13-20x** over naive single-device execution
+- **[deferred speedup range]** from optimal device selection
+- **Additional [deferred speedup]** when async executor is selected
+- **Total: [deferred speedup range]** over naive single-device execution
 
 ## Code Example
 
@@ -132,9 +132,9 @@ select case(decision%primary_device)
     call cpu_conv2d(...)
   case(2)  ! GPU
     if (async_available) then
-      call gpu_async_conv2d(...)  ! 3,630 GFLOPS!
+      call gpu_async_conv2d(...)  ! [deferred throughput metric]!
     else
-      call gpu_conv2d(...)        ! 451 GFLOPS
+      call gpu_conv2d(...)        ! [deferred throughput metric]
     end if
 end select
 
@@ -164,6 +164,6 @@ The Universal Device Selector proves that intelligent workload routing can be:
 - **Self-improving**: Learns from actual performance
 - **Production ready**: Clean API, robust implementation
 
-Combined with our async executor (6.5x speedup) and universal memory patterns, this creates a complete heterogeneous computing solution that's ready for the AI revolution!
+Combined with our async executor ([deferred speedup] speedup) and universal memory patterns, this creates a complete heterogeneous computing solution that's ready for the AI revolution!
 
 *The Sporkle Way: Let the framework choose the fastest path!*

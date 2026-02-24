@@ -2,10 +2,10 @@
 > Quantified performance and benchmark claims in this repository history are in recovery and should not be treated as current production facts until revalidated under the Kronos-first flow.
 
 
-# AMD 10x Performance Optimization Plan (REVISED with Mini's Feedback)
+# AMD [deferred speedup] Performance Optimization Plan (REVISED with Mini's Feedback)
 
-## Current Performance: 3,630 GFLOPS (13.4% of theoretical)
-## Target Performance: 20,000+ GFLOPS (75% efficiency via direct conv)
+## Current Performance: [deferred throughput metric] (13.4% of theoretical)
+## Target Performance: [deferred throughput metric] (75% efficiency via direct conv)
 
 ## Mini's Critical Corrections Applied
 
@@ -65,13 +65,13 @@ shared float tile[32][33];  // Or [34][33] for extra safety
 
 ## Revised Performance Roadmap
 
-### Phase 1: Fix Fundamentals (3,630 → 8,000 GFLOPS)
+### Phase 1: Fix Fundamentals (3,630 → [deferred throughput metric])
 1. Switch to 256-thread workgroups
 2. Use wave32 on RDNA3
 3. Fix GPU timing measurement
 4. Vec4 memory access
 
-### Phase 2: LDS Tiling (8,000 → 16,000 GFLOPS)
+### Phase 2: LDS Tiling (8,000 → [deferred throughput metric])
 ```glsl
 shared float input_tile[34][33];   // 32×32 + padding
 shared float weight_tile[64][9];   // Ko=64, 3×3 kernel
@@ -80,13 +80,13 @@ shared float weight_tile[64][9];   // Ko=64, 3×3 kernel
 float acc[4][4];
 ```
 
-### Phase 3: Full Optimization (16,000 → 20,000+ GFLOPS)
+### Phase 3: Full Optimization (16,000 → [deferred throughput metric])
 - Ko-blocking (process 64 output channels at once)
-- 12-16x inner loop unroll
+- [deferred speedup range] inner loop unroll
 - Non-coherent buffer management
 - Optimal register allocation (≤64)
 
-### Phase 4: Algorithm Innovation (20,000 → 30,000 GFLOPS)
+### Phase 4: Algorithm Innovation (20,000 → [deferred throughput metric])
 - Winograd F(2,3) for 3×3 kernels
 - FFT for larger kernels
 - But only AFTER direct conv hits 75% efficiency!
@@ -168,10 +168,10 @@ void main() {
 
 ## The Truth About Performance
 
-- **Current**: 3,630 GFLOPS (with CPU timing overhead)
-- **Real GPU**: Probably already 8,000+ GFLOPS
-- **Optimized Direct**: 20,000 GFLOPS (75% efficiency)
-- **With Winograd**: 25,000-30,000 GFLOPS
+- **Current**: [deferred throughput metric] (with CPU timing overhead)
+- **Real GPU**: Probably already [deferred throughput metric]
+- **Optimized Direct**: [deferred throughput metric] (75% efficiency)
+- **With Winograd**: 25,000-[deferred throughput metric]
 
 We don't need to exceed theoretical peak - we need to properly utilize what we have!
 

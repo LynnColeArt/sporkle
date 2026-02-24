@@ -54,7 +54,7 @@ This Fortran code is:
 Initial benchmarks show:
 - CPU baseline: 1.33 Gops/ms
 - GPU (Fortran shader): 0.081 Gops/ms
-- Current overhead: ~16x slower
+- Current overhead: ~[deferred speedup] slower
 
 This is expected for small workloads due to:
 - Shader compilation overhead

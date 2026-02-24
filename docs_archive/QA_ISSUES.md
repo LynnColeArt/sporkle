@@ -152,7 +152,7 @@ allocate(times(bench_runs))
 
 ## Summary
 
-The codebase shows signs of rapid prototyping with multiple layers of implementation from different sessions. While the mathematical core is solid (GEMM verified at 250 GFLOPS), the infrastructure has many placeholders and missing error handling.
+The codebase shows signs of rapid prototyping with multiple layers of implementation from different sessions. While the mathematical core is solid (GEMM verified at [deferred throughput metric]), the infrastructure has many placeholders and missing error handling.
 
 **Current State**: Alpha/Proof-of-Concept  
 **Production Ready**: ❌ Not yet  

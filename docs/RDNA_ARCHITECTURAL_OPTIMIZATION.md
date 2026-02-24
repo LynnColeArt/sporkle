@@ -6,19 +6,19 @@
 
 ## Executive Summary
 
-We've discovered that the same architectural principle that led to our 196.7 GFLOPS CPU SIMD breakthrough applies directly to GPU optimization: **match the hardware's native execution width**. Just as AVX-512 processes 16 floats per instruction, RDNA GPUs execute 32 threads per wavefront (Wave32), and optimal performance comes from aligning our workloads to these fundamental hardware units.
+We've discovered that the same architectural principle that led to our [deferred throughput metric] CPU SIMD breakthrough applies directly to GPU optimization: **match the hardware's native execution width**. Just as AVX-512 processes 16 floats per instruction, RDNA GPUs execute 32 threads per wavefront (Wave32), and optimal performance comes from aligning our workloads to these fundamental hardware units.
 
 ## The Universal Principle
 
 ### CPU SIMD Success
 - **Hardware Unit**: AVX-512 = 16 floats/instruction
 - **Optimization**: Align data and operations to 16-element boundaries
-- **Result**: 196.7 GFLOPS (72.9x improvement over baseline)
+- **Result**: [deferred throughput metric] ([deferred speedup] improvement over baseline)
 
 ### GPU Wave Execution
 - **Hardware Unit**: RDNA Wave32 = 32 threads/wavefront
 - **Optimization**: Align workgroups to multiples of 32 threads
-- **Result**: 414+ GFLOPS with proper wave alignment
+- **Result**: [deferred throughput metric] with proper wave alignment
 
 ## Architectural Evolution: GCN to RDNA
 
@@ -56,7 +56,7 @@ layout(local_size_x = 16, local_size_y = 16, local_size_z = 1) in;
 // 256 threads = 8 waves on RDNA (Wave32) - suboptimal!
 ```
 
-### RDNA-Optimized (Matches 414 GFLOPS Reference)
+### RDNA-Optimized (Matches [deferred throughput metric] Reference)
 ```glsl
 layout(local_size_x = 64, local_size_y = 1, local_size_z = 1) in;
 // 64 threads = 2 waves on RDNA (Wave32) - optimal!
@@ -84,7 +84,7 @@ sum2 += input_buf.data[in_idx2] * weight_buf.data[weight_idx2];
 ### Expected Improvements
 1. **Wave Alignment**: 10-20% from proper wave32 workgroups
 2. **Cache Optimization**: 15-25% from better data locality
-3. **Dual-Issue**: Up to 2x on RDNA3 for FMA-heavy workloads
+3. **Dual-Issue**: Up to [deferred speedup] on RDNA3 for FMA-heavy workloads
 
 ## Universal Memory Optimization Pattern
 

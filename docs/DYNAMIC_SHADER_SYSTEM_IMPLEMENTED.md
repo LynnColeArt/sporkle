@@ -33,16 +33,16 @@ For RDNA GPUs, we automatically generate:
 - **Basic Wave32-aligned** (64 threads = 2 waves)
 - **Larger workgroup** (256 threads = 8 waves) 
 - **LDS-optimized** (using local data share)
-- **Dual-issue optimized** (RDNA3 2x FMA throughput)
+- **Dual-issue optimized** (RDNA3 [deferred speedup] FMA throughput)
 
 ### 3. Performance Learning
 The system tracks performance of each variant:
 ```
 Variant Performance:
-  rdna_basic_64      - Runs: 2,  Avg Time: 3.19 ms, GFLOPS: 2.02
-  rdna_large_256     - Runs: 2,  Avg Time: 2.75 ms, GFLOPS: 2.34
-  rdna_lds_64        - Runs: 2,  Avg Time: 2.95 ms, GFLOPS: 2.18
-  rdna3_dual_issue   - Runs: 14, Avg Time: 2.51 ms, GFLOPS: 2.56 <- BEST
+  rdna_basic_64      - Runs: 2,  Avg Time: [deferred latency], GFLOPS: 2.02
+  rdna_large_256     - Runs: 2,  Avg Time: [deferred latency], GFLOPS: 2.34
+  rdna_lds_64        - Runs: 2,  Avg Time: [deferred latency], GFLOPS: 2.18
+  rdna3_dual_issue   - Runs: 14, Avg Time: [deferred latency], GFLOPS: 2.56 <- BEST
 ```
 
 ### 4. Automatic Adaptation
@@ -80,8 +80,8 @@ end select
 ## Performance Impact
 
 The system demonstrates clear performance differences between variants:
-- **RDNA3 dual-issue**: 2.51 ms (best)
-- **Basic Wave32**: 3.19 ms (27% slower)
+- **RDNA3 dual-issue**: [deferred latency] (best)
+- **Basic Wave32**: [deferred latency] (27% slower)
 - **Suboptimal workgroup size** can leave 20-30% performance on the table
 
 ## Integration Path

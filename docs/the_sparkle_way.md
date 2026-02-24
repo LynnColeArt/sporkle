@@ -80,7 +80,7 @@ type(device_handle) :: my_gpu
 - But never at the cost of performance
 
 ### 10. **The People's Infrastructure**
-This isn't about building the fastest framework. It's about building the most accessible one. Speed comes from scale - a million devices at 1 GFLOPS beats one device at 1 TFLOPS.
+This isn't about building the fastest framework. It's about building the most accessible one. Speed comes from scale - a million devices at [deferred throughput metric] beats one device at [deferred throughput metric].
 
 ## What The Sporkle Way Is NOT
 

@@ -166,7 +166,7 @@ The selection algorithm considers:
 
 Variants are re-evaluated when:
 - First run on a new system
-- Workload size changes significantly (>2x)
+- Workload size changes significantly (>[deferred speedup])
 - Driver update detected
 - Every N hours of runtime (configurable)
 - Manual trigger for benchmarking
@@ -193,9 +193,9 @@ call sporkle_execute(device, conv_kernel, input, output)
 call sporkle_print_variant_stats(conv_kernel)
 ! Output:
 ! Convolution kernel variants (size=1048576):
-!   GLSL:     12.3ms (selected) ✓
-!   SPIR-V:   14.1ms
-!   Direct:   11.9ms (error: driver too old)
+!   GLSL:     [deferred latency] (selected) ✓
+!   SPIR-V:   [deferred latency]
+!   Direct:   [deferred latency] (error: driver too old)
 
 ! Force specific variant for testing
 call sporkle_force_variant(conv_kernel, "SPIR-V")
@@ -213,7 +213,7 @@ call sporkle_force_variant(conv_kernel, "SPIR-V")
 
 - All variants produce identical numerical results
 - At least one variant works on every tested system
-- Performance variance between best/worst < 2x
+- Performance variance between best/worst < [deferred speedup]
 - Adaptation overhead < 1% of execution time
 - Clear documentation of why each variant wins/loses
 

@@ -19,13 +19,13 @@ Sporkle now includes automatic compression for cached GPU shader binaries, reduc
 ## Performance Impact
 
 ### Compression Ratios
-- **Shader binaries**: 2-4x compression typical
-- **Compute kernels**: 3-5x compression typical  
-- **Complex shaders**: 2-3x compression typical
+- **Shader binaries**: [deferred speedup range] compression typical
+- **Compute kernels**: [deferred speedup range] compression typical  
+- **Complex shaders**: [deferred speedup range] compression typical
 
 ### Timing
-- **Compression overhead**: <5ms for typical shaders
-- **Decompression overhead**: <1ms (faster than disk I/O saved)
+- **Compression overhead**: <[deferred latency] for typical shaders
+- **Decompression overhead**: <[deferred latency] (faster than disk I/O saved)
 - **Net result**: Often faster due to reduced disk I/O
 
 ## Usage
@@ -75,7 +75,7 @@ For a typical ML workload with 50 shader variants:
 - Uncompressed: 25 MB
 - Compressed: 8.5 MB  
 - Space saved: 66%
-- Load time impact: <1ms per shader
+- Load time impact: <[deferred latency] per shader
 
 ## Building with Compression
 

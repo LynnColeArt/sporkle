@@ -61,8 +61,8 @@ Each reference implementation must start with:
 ! REFERENCE IMPLEMENTATION - DO NOT MODIFY WITHOUT DISCUSSION
 ! 
 ! Performance achieved:
-!   - 250 GFLOPS on AMD Ryzen 7900X (16 cores)
-!   - 180 GFLOPS on Intel Xeon E5-2680 (12 cores)
+!   - [deferred throughput metric] on AMD Ryzen 7900X (16 cores)
+!   - [deferred throughput metric] on Intel Xeon E5-2680 (12 cores)
 !
 ! Key optimizations:
 !   - Cache-oblivious tiling
@@ -87,7 +87,7 @@ Each reference implementation must start with:
 ### Migration Plan
 
 1. Move `sporkle_memory.f90` → `src/reference/memory_pool_reference.f90` ✓
-2. Find the 250 GFLOPS convolution → `src/reference/conv2d_reference.f90`
+2. Find the [deferred throughput metric] convolution → `src/reference/conv2d_reference.f90`
 3. Move working GPU shader → `src/reference/conv2d_glsl_reference.glsl`
 4. Create production interfaces in `src/production/`
 5. Update all tests to use production interfaces

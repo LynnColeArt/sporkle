@@ -20,9 +20,9 @@ See DEVELOPMENT_PATTERNS.md for details.
 ## Current References
 
 ### 1. CPU Convolution
-- **Status**: ⚠️ DEGRADED - Current best is only 2 GFLOPS with OpenMP
+- **Status**: ⚠️ DEGRADED - Current best is only [deferred throughput metric] with OpenMP
 - **Expected Performance**: ~90% of theoretical peak on Ryzen 7900X
-- **Current Performance**: 2.0 GFLOPS (test_conv_cpu_vs_gpu.f90)
+- **Current Performance**: [deferred throughput metric] (test_conv_cpu_vs_gpu.f90)
 - **Location**: `examples/test_conv_cpu_vs_gpu.f90` (but this is NOT the reference)
 - **Missing Features**: 
   - Proper im2col transformation
@@ -32,7 +32,7 @@ See DEVELOPMENT_PATTERNS.md for details.
 
 ### 2. GPU Convolution (Simple)
 - **Status**: ✅ ESTABLISHED
-- **Performance**: 493 GFLOPS on RX 7900 XTX
+- **Performance**: [deferred throughput metric] on RX 7900 XTX
 - **Location**: `examples/test_conv_cpu_vs_gpu.c` (the GLSL shader)
 - **Key Features**:
   - Direct convolution with boundary checks

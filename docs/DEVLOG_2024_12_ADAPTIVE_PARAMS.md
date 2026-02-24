@@ -51,9 +51,9 @@ Implemented adaptive parameter passing for the Fortran GPU DSL, allowing automat
 
 ## Performance Insights
 Initial benchmarking shows:
-- UNIFORM method: ~1ms setup, 0ms dispatch
-- BUFFER method: ~2ms setup, 0ms dispatch  
-- INLINE method: ~3ms setup, 1ms dispatch
+- UNIFORM method: ~[deferred latency] setup, [deferred latency] dispatch
+- BUFFER method: ~[deferred latency] setup, [deferred latency] dispatch  
+- INLINE method: ~[deferred latency] setup, [deferred latency] dispatch
 
 (Note: These are mock timings from the benchmark framework)
 
@@ -94,7 +94,7 @@ void main() {
 2. Handle name collision for index variables
 3. Complete im2col kernel port with parameters
 4. Integrate with convolution benchmark
-5. Achieve performance targets (14 TFLOPS)
+5. Achieve performance targets ([deferred throughput metric])
 
 ## Reflections
 This work pushes Fortran into new territory - using it as a DSL for GPU programming with automatic optimization. The adaptive approach ensures we get optimal performance without manual tuning, true to our Pythonic philosophy.

@@ -14,8 +14,8 @@ We implemented the **Reference Pattern** to prevent the constant loss of optimiz
 src/
   reference/      # Sacred, optimized implementations
     README.md     # Rules and documentation
-    conv2d_glsl_reference.glsl    # 493 GFLOPS GPU implementation
-    conv2d_cpu_reference.f90      # Placeholder for 250 GFLOPS CPU (lost)
+    conv2d_glsl_reference.glsl    # [deferred throughput metric] GPU implementation
+    conv2d_cpu_reference.f90      # Placeholder for [deferred throughput metric] CPU (lost)
     memory_pool_reference.f90     # Working memory management
     
   experimental/   # Playground for new ideas
@@ -42,8 +42,8 @@ src/
 
 ### Current Status
 
-- ✅ GPU convolution reference: 493 GFLOPS (preserved)
-- ❌ CPU convolution reference: Lost (was 250 GFLOPS, now 2 GFLOPS)
+- ✅ GPU convolution reference: [deferred throughput metric] (preserved)
+- ❌ CPU convolution reference: Lost (was [deferred throughput metric], now [deferred throughput metric])
 - ✅ Memory management reference: Preserved
 - 📝 CPU convolution: Documented what we need to rebuild
 

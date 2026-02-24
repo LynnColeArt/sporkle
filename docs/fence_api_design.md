@@ -5,7 +5,7 @@
 # Fence API Design Document
 
 ## Overview
-Replace heavyweight glFinish() with lightweight fence synchronization primitives for 2x performance improvement.
+Replace heavyweight glFinish() with lightweight fence synchronization primitives for [deferred speedup] performance improvement.
 
 ## Background
 
@@ -112,7 +112,7 @@ end module
 call glFinish()  ! Wait for everything
 
 ! New (fast)
-call gpu_fence_wait(buffer%fence, timeout_ns=1000000)  ! Wait 1ms max
+call gpu_fence_wait(buffer%fence, timeout_ns=1000000)  ! Wait [deferred latency] max
 ```
 
 ### 2. Async Executor
@@ -149,8 +149,8 @@ gpu_time = get_gpu_timestamp()
 ## Timeout Strategy
 
 1. **Immediate (0ns)**: Just check status
-2. **Short (1ms)**: Normal operations  
-3. **Medium (100ms)**: Heavy workloads
+2. **Short ([deferred latency])**: Normal operations  
+3. **Medium ([deferred latency])**: Heavy workloads
 4. **Long (1s)**: Debug/recovery
 5. **Infinite**: Never timeout (dangerous)
 
@@ -216,7 +216,7 @@ end if
 
 ## Success Criteria
 
-- ✅ 2x reduction in sync overhead
+- ✅ [deferred speedup] reduction in sync overhead
 - ✅ <1µs fence operations
 - ✅ Zero CPU spinning
 - ✅ Works on 90% of GPUs

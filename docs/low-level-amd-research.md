@@ -471,7 +471,7 @@ https://sbexr.rabexc.org/latest/sources/d7/7e5829342c7e4f.html
 
 drivers/gpu/drm/amd/amdgpu/gfx_v8_0.c - linux-imx - Git at Google
 https://coral.googlesource.com/linux-imx/+/refs/tags/4-2/drivers/gpu/drm/amd/amdgpu/gfx_v8_0.c?
-autodive=0%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F
+autodive=[deferred percent]2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F
 
 git.apps.os.sepia.ceph.com Git - git.apps.os.sepia.ceph.com Git - Ceph
 https://git.ceph.com/?p=ceph-client.git;a=blob;f=drivers/gpu/drm/amd/amdkfd/

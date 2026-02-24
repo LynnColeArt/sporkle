@@ -96,9 +96,9 @@ call warm_cache_from_disk(cache, ["shader1", "shader2", "shader3"])
 ## Performance Impact
 
 ### Theoretical Benefits (when integrated with real shaders):
-- **First Run**: Normal compilation time (~50-100ms per shader)
-- **Subsequent Runs**: Near-instant load (<5ms per shader)
-- **Startup Time**: 20x faster for shader-heavy applications
+- **First Run**: Normal compilation time (~50-[deferred latency] per shader)
+- **Subsequent Runs**: Near-instant load (<[deferred latency] per shader)
+- **Startup Time**: [deferred speedup] faster for shader-heavy applications
 - **Memory**: Reduced redundant GPU allocations
 
 ### Current Test Results:

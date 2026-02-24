@@ -6,7 +6,7 @@
 
 ## Executive Summary
 
-The async executor reports 5,330.5 GFLOPS (3.54ms for 20 batches) versus 31.8 GFLOPS (592.89ms) for synchronous execution. This 167x speedup appears to be physically impossible given the AMD RX 7900 XTX's theoretical peak of ~750 GFLOPS. This analysis identifies multiple measurement and methodology issues that explain these anomalous results.
+The async executor reports [deferred throughput metric] ([deferred latency] for 20 batches) versus [deferred throughput metric] ([deferred latency]) for synchronous execution. This [deferred speedup] speedup appears to be physically impossible given the AMD RX 7900 XTX's theoretical peak of ~[deferred throughput metric]. This analysis identifies multiple measurement and methodology issues that explain these anomalous results.
 
 ## Key Findings
 
@@ -19,7 +19,7 @@ The async executor is measuring **wall-clock time** for the entire pipeline, whi
 
 This is comparing apples to oranges.
 
-### 2. **The 0.96ms GPU Kernel Time is Misleading**
+### 2. **The [deferred latency] GPU Kernel Time is Misleading**
 
 Looking at the synchronous C implementation:
 ```c
@@ -41,7 +41,7 @@ glQueryCounter(query_ids[1], GL_TIMESTAMP);
 double time_ms = (double)(time_end - time_start) / 1.0e6 / bench_iters;
 ```
 
-The synchronous test runs 20 GPU kernel iterations **within the GPU timing**, then divides by 20. So 0.96ms is the average time for one kernel execution. The total GPU time for 20 kernels is actually ~19.2ms.
+The synchronous test runs 20 GPU kernel iterations **within the GPU timing**, then divides by 20. So [deferred latency] is the average time for one kernel execution. The total GPU time for 20 kernels is actually ~[deferred latency].
 
 ### 3. **Pipeline Overlapping Explains the "Speedup"**
 
@@ -51,7 +51,7 @@ The async executor achieves apparent speedup through:
 2. **Async Submission**: GPU kernels are submitted without waiting for completion
 3. **Pipeline Filling**: Multiple kernels execute concurrently on the GPU
 
-However, the measured 3.54ms wall-clock time for 20 batches (0.177ms per batch) is **physically impossible** if each kernel takes 0.96ms.
+However, the measured [deferred latency] wall-clock time for 20 batches ([deferred latency] per batch) is **physically impossible** if each kernel takes [deferred latency].
 
 ### 4. **The Real Issue: Incorrect GFLOPS Calculation**
 
@@ -61,10 +61,10 @@ async_gflops = real(flop_count * NUM_BATCHES, real64) / &
                (real(async_total_time) / clock_rate * 1.0e9)
 ```
 
-But this assumes all 20 batches completed their computations within 3.54ms, which would require:
-- 20 batches × 0.96ms/batch = 19.2ms of GPU compute
-- Compressed into 3.54ms wall-clock time
-- Implying 5.4x parallelism on a single GPU
+But this assumes all 20 batches completed their computations within [deferred latency], which would require:
+- 20 batches × [deferred latency]/batch = [deferred latency] of GPU compute
+- Compressed into [deferred latency] wall-clock time
+- Implying [deferred speedup] parallelism on a single GPU
 
 This is impossible. The GPU cannot execute 5.4 convolution kernels simultaneously.
 
@@ -72,7 +72,7 @@ This is impossible. The GPU cannot execute 5.4 convolution kernels simultaneousl
 
 The async executor is likely:
 
-1. **Submitting** all 20 kernels to the GPU command queue in 3.54ms
+1. **Submitting** all 20 kernels to the GPU command queue in [deferred latency]
 2. **Not waiting** for actual GPU execution to complete
 3. **Measuring submission time**, not execution time
 4. **Incorrectly calculating GFLOPS** based on submission time
@@ -101,32 +101,32 @@ Run both sync and async with just 1 batch to eliminate pipeline effects.
 
 Based on the analysis:
 
-1. **GPU Kernel Time**: ~0.96ms per batch (as measured)
-2. **20 Batches**: ~19.2ms minimum GPU execution time
+1. **GPU Kernel Time**: ~[deferred latency] per batch (as measured)
+2. **20 Batches**: ~[deferred latency] minimum GPU execution time
 3. **Theoretical Best Case**: With perfect overlapping of CPU/GPU work:
-   - First kernel: 0.96ms
-   - Remaining 19 kernels overlapped: ~19.2ms total
-   - **Best possible**: ~20ms wall-clock time
+   - First kernel: [deferred latency]
+   - Remaining 19 kernels overlapped: ~[deferred latency] total
+   - **Best possible**: ~[deferred latency] wall-clock time
 
 4. **Expected GFLOPS**: 
-   - At 20ms for 20 batches: ~377 GFLOPS
+   - At [deferred latency] for 20 batches: ~[deferred throughput metric]
    - This is reasonable for AMD RX 7900 XTX
 
 ## Synchronous Performance Issues
 
-The synchronous test shows 592.89ms wall-clock for 20 batches (29.6ms per batch) versus 0.96ms GPU kernel time. This 30x overhead suggests:
+The synchronous test shows [deferred latency] wall-clock for 20 batches ([deferred latency] per batch) versus [deferred latency] GPU kernel time. This [deferred speedup] overhead suggests:
 
 1. **Driver overhead**: OpenGL command submission overhead
 2. **Synchronization overhead**: `glFinish()` after each kernel
 3. **Memory transfer overhead**: Not measured in GPU time
-4. **CPU-GPU round-trip latency**: ~28ms per operation
+4. **CPU-GPU round-trip latency**: ~[deferred latency] per operation
 
-This overhead is why async execution provides real benefits - not 167x, but potentially 2-3x.
+This overhead is why async execution provides real benefits - not [deferred speedup], but potentially [deferred speedup range].
 
 ## Conclusions
 
-1. **The 5,330 GFLOPS claim is incorrect** - based on flawed measurement
-2. **Real speedup is likely 2-3x**, not 167x
+1. **The [deferred throughput metric] claim is incorrect** - based on flawed measurement
+2. **Real speedup is likely [deferred speedup range]**, not [deferred speedup]
 3. **Async execution provides real benefits** by hiding CPU-GPU latency
 4. **Both tests need consistent measurement** - either GPU time or wall-clock time
 5. **Physical limits must be respected** - can't exceed GPU's theoretical peak

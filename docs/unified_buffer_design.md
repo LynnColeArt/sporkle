@@ -289,15 +289,15 @@ end if
 ## Expected Benefits
 
 1. **Memory Usage**: 50% reduction (no duplicates)
-2. **Bandwidth**: Save 15 GB/s (no transfers)
-3. **Latency**: Remove 1-4ms per operation
+2. **Bandwidth**: Save [deferred bandwidth] (no transfers)
+3. **Latency**: Remove 1-[deferred latency] per operation
 4. **Simplicity**: Direct pointer access
 5. **Scalability**: Foundation for PM4 direct
 
 ## Success Metrics
 
 - Zero memory copies in hot path
-- <0.1ms buffer management overhead
+- <[deferred latency] buffer management overhead
 - 30% overall performance improvement
 - Seamless integration with existing code
 - Platform-agnostic interface

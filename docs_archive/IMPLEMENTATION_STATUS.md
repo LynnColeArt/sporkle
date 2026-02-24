@@ -12,7 +12,7 @@
 - **Evidence**: 
   - Compiled and running
   - Vector add kernel executing on GPU
-  - 287x faster than mock for complex ops
+  - [deferred speedup] faster than mock for complex ops
 ```bash
 ./build/test_metal_vs_mock  # RUNS!
 ```
@@ -22,7 +22,7 @@
 - **Status**: WORKING
 - **Evidence**:
   - 99% cache hit rate
-  - 3.6x faster than direct allocation
+  - [deferred speedup] faster than direct allocation
   - Unified memory zero-copy working
 ```bash
 ./build/test_metal_memory_pool  # RUNS!
@@ -33,10 +33,10 @@
 - **File**: `src/coreml_bridge_simple.m`
 - **Status**: WORKING (via MPS)
 - **Evidence**:
-  - 1.4 TFLOPS achieved
+  - [deferred throughput metric] achieved
   - First Fortran on ANE ever!
 ```bash
-./test_ane  # RUNS! Shows 1400 GFLOPS
+./test_ane  # RUNS! Performance figures pending revalidation
 ```
 
 ### 4. Metal Performance Shaders (MPS)
@@ -93,9 +93,9 @@
 
 | Component | Status | Evidence |
 |-----------|--------|----------|
-| Metal GPU | ✅ WORKING | 287x speedup measured |
-| Memory Pool | ✅ WORKING | 3.6x faster, 99% cache hits |
-| Neural Engine | ✅ WORKING | 1.4 TFLOPS achieved |
+| Metal GPU | ✅ WORKING | [deferred speedup] speedup measured |
+| Memory Pool | ✅ WORKING | [deferred speedup] faster, 99% cache hits |
+| Neural Engine | ✅ WORKING | [deferred throughput metric] achieved |
 | MPS Integration | ✅ WORKING | GEMM running |
 | AMX Access | 🔨 DESIGNED | Code complete, not integrated |
 | Orchestrator | 🔨 DESIGNED | Logic complete, not integrated |
@@ -119,9 +119,9 @@ make test_metal
 ./test_ane  # Historic first!
 
 # Performance achieved
-# - GPU: 4.5 TFLOPS ✓
-# - ANE: 1.4 TFLOPS (seen) of 38 TOPS (theoretical) ✓
-# - Memory: 3.6x faster ✓
+# - GPU: [deferred throughput metric] ✓
+# - ANE: [deferred throughput metric] (seen) of [deferred throughput metric] (theoretical) ✓
+# - Memory: [deferred speedup] faster ✓
 ```
 
 ## NEXT STEPS TO COMPLETE

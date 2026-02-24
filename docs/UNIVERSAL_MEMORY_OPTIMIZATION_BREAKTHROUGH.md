@@ -8,14 +8,14 @@
 
 **Date**: August 16, 2025  
 **Achievement**: First framework to prove identical memory optimization patterns achieve high performance across all compute architectures  
-**Performance**: 414+ GFLOPS GPU + 2.7 GFLOPS CPU using the same optimization principles  
+**Performance**: [deferred throughput metric] GPU + [deferred throughput metric] CPU using the same optimization principles  
 
 ## Executive Summary
 
 Sparkle has achieved a fundamental breakthrough in heterogeneous computing: **the first demonstration that universal memory optimization patterns can achieve high performance across radically different compute architectures**. By applying the same optimization principles to both CPU and GPU, we've created a framework that:
 
-- Achieves **414+ GFLOPS on AMD RX 7900 XTX GPU** using OpenGL compute shaders
-- Achieves **2.7 GFLOPS on AMD Ryzen 7900X CPU** using the same optimization patterns  
+- Achieves **[deferred throughput metric] on AMD RX 7900 XTX GPU** using OpenGL compute shaders
+- Achieves **[deferred throughput metric] on AMD Ryzen 7900X CPU** using the same optimization patterns  
 - Implements **intelligent device juggling** that makes optimal scheduling decisions
 - Provides **universal memory optimization patterns** that work across architectures
 
@@ -26,7 +26,7 @@ This breakthrough represents a paradigm shift from device-specific optimization 
 ### Pattern 1: Memory Bandwidth Optimization
 **Principle**: Maximize memory throughput through cache-aware algorithms
 
-**GPU Implementation (414+ GFLOPS achieved)**:
+**GPU Implementation ([deferred throughput metric] achieved)**:
 ```glsl
 // Cache-optimal memory access with vectorized loads
 layout(local_size_x = 64) in;
@@ -35,7 +35,7 @@ int in_idx = ((n * C + c) * H + h_in) * W + w_in;
 sum += input_buf.data[in_idx] * weight_buf.data[weight_idx];
 ```
 
-**CPU Implementation (2.7 GFLOPS achieved)**:
+**CPU Implementation ([deferred throughput metric] achieved)**:
 ```fortran
 ! Cache-oblivious blocked GEMM with optimal tiling
 !$OMP PARALLEL DO PRIVATE(ii,jj,kk_tile,i,j,kk,temp_sum) SCHEDULE(DYNAMIC,1)
@@ -77,8 +77,8 @@ call gemm_universal_memory(weights, input_matrix, output, &
 ```
 
 **Performance Impact**:
-- **GPU**: Achieved 414+ GFLOPS (60% of theoretical 690 GFLOPS)
-- **CPU**: Achieved 2.7 GFLOPS (improved from 1.9 GFLOPS naive)
+- **GPU**: Achieved [deferred throughput metric] (60% of theoretical [deferred throughput metric])
+- **CPU**: Achieved [deferred throughput metric] (improved from [deferred throughput metric] naive)
 - **Arithmetic Intensity**: 21.0 FLOPS/byte (optimal for convolution)
 
 ### Pattern 3: Compute/Memory Overlap
@@ -96,8 +96,8 @@ Both achieve optimal utilization of available compute resources while maximizing
 **Layer 1: Device Discovery & Profiling**
 ```fortran
 ! Profile all available compute devices
-call profile_cpu_device(strategy%cpu_profile)    ! 600 GFLOPS theoretical, 2.7 actual
-call profile_gpu_device(strategy%gpu_profile)    ! 65 TFLOPS theoretical, 414+ actual
+call profile_cpu_device(strategy%cpu_profile)    ! [deferred throughput metric] theoretical, 2.7 actual
+call profile_gpu_device(strategy%gpu_profile)    ! [deferred throughput metric] theoretical, 414+ actual
 ```
 
 **Layer 2: Intelligent Workload Distribution**
@@ -132,20 +132,20 @@ end if
 
 | Device | Architecture | Performance | Efficiency | Optimization Patterns |
 |--------|--------------|-------------|------------|---------------------|
-| AMD RX 7900 XTX | RDNA 3 GPU | **414+ GFLOPS** | 60% theoretical | Cache-optimal tiling, vectorized access |
-| AMD Ryzen 7900X | x86-64 CPU | **2.7 GFLOPS** | 0.45% theoretical | OpenMP SIMD, blocked GEMM, cache tiling |
+| AMD RX 7900 XTX | RDNA 3 GPU | **[deferred throughput metric]** | 60% theoretical | Cache-optimal tiling, vectorized access |
+| AMD Ryzen 7900X | x86-64 CPU | **[deferred throughput metric]** | 0.45% theoretical | OpenMP SIMD, blocked GEMM, cache tiling |
 
 ### Intelligent Scheduling Results
 
 ```
 🧠 Layer 2: Intelligent Workload Distribution
 ===========================================
-  Workload: 1.2 GFLOPS
+  Workload: [deferred throughput metric]
   Type: conv2d
    Strategy: GPU only (better for this size)
-  Predicted: 2.98 ms (414.0 GFLOPS)
+  Predicted: [deferred latency] ([deferred throughput metric])
    🎮 Executing on GPU (intelligent choice)
-  📈 Actual: 32.74 ms (37.7 GFLOPS)
+  📈 Actual: [deferred latency] ([deferred throughput metric])
 ```
 
 The system correctly chooses optimal devices and learns from actual performance.
@@ -158,7 +158,7 @@ The system correctly chooses optimal devices and learns from actual performance.
 Key functions:
 - `detect_memory_params()`: Auto-detect cache hierarchy and memory characteristics
 - `cache_optimal_tile_size()`: Calculate optimal tile sizes using cache-oblivious principles  
-- `gemm_universal_memory()`: High-performance GEMM using proven 50+ GFLOPS techniques
+- `gemm_universal_memory()`: High-performance GEMM using proven [deferred throughput metric] techniques
 - `fused_conv2d_cpu()`: Complete convolution pipeline with universal patterns
 
 ### Intelligent Device Juggling Module
@@ -189,8 +189,8 @@ case("reference")
 - **Result**: Completely different codebases, difficult to maintain
 
 ### After: Universal Memory Optimization
-- **GPU**: Apply universal memory patterns via OpenGL compute shaders (414+ GFLOPS)
-- **CPU**: Apply same universal memory patterns via OpenMP SIMD (2.7 GFLOPS)
+- **GPU**: Apply universal memory patterns via OpenGL compute shaders ([deferred throughput metric])
+- **CPU**: Apply same universal memory patterns via OpenMP SIMD ([deferred throughput metric])
 - **Result**: Same optimization principles, unified codebase, proven performance
 
 **The Breakthrough**: We've proven that **memory optimization patterns are universal**. The same techniques that make GPUs fast (cache-optimal tiling, vectorized access, arithmetic intensity amplification) also make CPUs fast when applied correctly.
@@ -204,14 +204,14 @@ case("reference")
 
 ### Continuous Integration
 All tests pass with the universal framework maintaining:
-- **Performance**: 414+ GFLOPS GPU, 2.7 GFLOPS CPU
+- **Performance**: [deferred throughput metric] GPU, [deferred throughput metric] CPU
 - **Correctness**: CPU and GPU results match (when using correct implementations)
 - **Intelligence**: Optimal device selection for different workload sizes
 
 ## Future Directions
 
 ### Near-Term Optimizations
-1. **CPU Performance**: Target 50+ GFLOPS using optimized BLAS libraries
+1. **CPU Performance**: Target [deferred throughput metric] using optimized BLAS libraries
 2. **Hybrid Execution**: Implement true parallel CPU+GPU execution for large workloads
 3. **Memory Transfer**: Optimize data movement between devices
 

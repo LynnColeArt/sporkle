@@ -10,7 +10,7 @@
 
 ## Background
 
-Pod Claude's previous investigation identified a consistent 2,600 GFLOPS performance ceiling despite extensive optimization efforts. All OpenGL memory allocation strategies (staging buffers, persistent mapping, device-local hints) failed to break through this barrier. The question was: **Is this a fundamental hardware limit, or an API-specific bottleneck?**
+Pod Claude's previous investigation identified a consistent [deferred throughput metric] performance ceiling despite extensive optimization efforts. All OpenGL memory allocation strategies (staging buffers, persistent mapping, device-local hints) failed to break through this barrier. The question was: **Is this a fundamental hardware limit, or an API-specific bottleneck?**
 
 ## Key Discovery: OpenGL Driver Memory Trap
 
@@ -19,9 +19,9 @@ Today's testing definitively proved the ceiling is **API-specific, not hardware-
 
 **OpenGL Behavior:**
 - Consistently ignores all device-local allocation hints
-- Keeps compute buffers in system RAM (~6 GB/s bandwidth)
+- Keeps compute buffers in system RAM (~[deferred bandwidth] bandwidth)
 - Forces PCIe transfers for every shader execution
-- Hard ceiling at 2,600-2,700 GFLOPS regardless of optimization
+- Hard ceiling at 2,600-[deferred throughput metric] regardless of optimization
 
 **Vulkan Test Results:**
 - Successfully allocates true device-local memory (VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT)
@@ -39,15 +39,15 @@ The OpenGL driver on our system actively fights performance optimization by:
 ## Performance Implications
 
 ### Current State (OpenGL)
-- **Performance**: 2,600 GFLOPS  
-- **Efficiency**: 6.5% of GPU theoretical peak (40 TFLOPS)
-- **Memory bandwidth**: ~6 GB/s effective (system RAM limited)
+- **Performance**: [deferred throughput metric]  
+- **Efficiency**: 6.5% of GPU theoretical peak ([deferred throughput metric])
+- **Memory bandwidth**: ~[deferred bandwidth] effective (system RAM limited)
 - **Scaling**: Poor on larger workloads (0.31× vs 4× ideal)
 
 ### Theoretical State (True VRAM)
-- **Performance**: 10,000-15,000 GFLOPS (4-6× improvement)
+- **Performance**: 10,000-[deferred throughput metric] (4-6× improvement)
 - **Efficiency**: 25-35% of GPU theoretical peak
-- **Memory bandwidth**: 400-800 GB/s (approaching VRAM peak)
+- **Memory bandwidth**: 400-[deferred bandwidth] (approaching VRAM peak)
 - **Scaling**: Linear with workload size
 
 ## Strategic Dilemma
@@ -77,7 +77,7 @@ The OpenGL driver on our system actively fights performance optimization by:
 - **Scope**: High risk, requires extensive validation
 
 #### Option 4: Accept Current Performance
-- **Pros**: 2,600 GFLOPS is genuinely good, focus on other optimizations, stable codebase
+- **Pros**: [deferred throughput metric] is genuinely good, focus on other optimizations, stable codebase
 - **Cons**: Leaves 4-6× performance on the table, API dependency remains
 
 ## Mini's Driver Stack Insight
@@ -93,7 +93,7 @@ However, this becomes a **separate major project** requiring dedicated resources
 ## Practical Considerations
 
 ### Current Achievements Worth Celebrating
-1. **3,630 GFLOPS aggregate throughput** with async executor
+1. **[deferred throughput metric] aggregate throughput** with async executor
 2. **6.5× speedup** over single-dispatch baseline
 3. **Async pipeline architecture** that eliminates CPU/GPU sync overhead
 4. **Production-ready implementation** with safety guards and error handling

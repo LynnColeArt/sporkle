@@ -30,8 +30,8 @@ We've successfully implemented Phase 1 of the persistent kernel framework, layin
 ## Performance Results
 
 ```
-Average time: 0.74 ms
-Average performance: 625.5 GFLOPS
+Average time: [deferred latency]
+Average performance: [deferred throughput metric]
 ```
 
 The framework achieves excellent performance while providing the infrastructure for:

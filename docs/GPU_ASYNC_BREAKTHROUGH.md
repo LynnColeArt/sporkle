@@ -12,11 +12,11 @@ We've proven that simple double buffering can improve GPU performance by 7-8%, b
 
 ### Synchronous Baseline (Current Approach)
 ```
-Total wall time: 939.00 ms
-GPU compute time: 788.97 ms  
-CPU prep time: 100.01 ms
-CPU post time: 50.01 ms
-GPU idle time: 150.03 ms
+Total wall time: [deferred latency]
+GPU compute time: [deferred latency]  
+CPU prep time: [deferred latency]
+CPU post time: [deferred latency]
+GPU idle time: [deferred latency]
 GPU utilization: 84.0%
 Peak GFLOPS (GPU only): 29.9
 Effective GFLOPS: 25.1 (including idle time)
@@ -24,10 +24,10 @@ Effective GFLOPS: 25.1 (including idle time)
 
 ### Simple Async (Double Buffering)
 ```
-Total wall time: 869.84 ms (7% faster!)
-GPU compute time: 719.82 ms
-CPU work (overlapped): ~100.00 ms
-GPU idle time: 150.02 ms  
+Total wall time: [deferred latency] (7% faster!)
+GPU compute time: [deferred latency]
+CPU work (overlapped): ~[deferred latency]
+GPU idle time: [deferred latency]  
 GPU utilization: 82.8%
 Peak GFLOPS (GPU only): 32.8
 Effective GFLOPS: 27.1 (8% improvement)
@@ -83,13 +83,13 @@ GPU:         [Process 0][Process 1][Process 2][Process 3]...
 ## Performance Projections
 
 Based on our POC results:
-- **Current**: 460 GFLOPS at 84% utilization (ResNet workload)
-- **With full async**: 460 GFLOPS × (99% / 84%) = 543 GFLOPS
-- **With batching**: Could reach 600+ GFLOPS
+- **Current**: [deferred throughput metric] at 84% utilization (ResNet workload)
+- **With full async**: [deferred throughput metric] × (99% / 84%) = [deferred throughput metric]
+- **With batching**: Could reach [deferred throughput metric]
 
 For smaller kernels (where idle time dominates):
-- **Current**: ~50 GFLOPS at 10% utilization  
-- **With full async**: ~450 GFLOPS at 90% utilization
+- **Current**: ~[deferred throughput metric] at 10% utilization  
+- **With full async**: ~[deferred throughput metric] at 90% utilization
 
 ## Code Architecture
 
@@ -132,7 +132,7 @@ function is_gpu_work_complete(state, batch_id) result(complete)
 end function
 ```
 
-## Production Implementation Results: 6.5x Real Speedup Achieved! 🚀
+## Production Implementation Results: [deferred speedup] Real Speedup Achieved! 🚀
 
 ### Complete Implementation Status
 1. ✅ **Simple double buffering**: 7-8% improvement (POC)
@@ -144,15 +144,15 @@ end function
 ### Final Performance Results
 
 **Proof of Concept (Initial Validation)**:
-- Synchronous: 939ms baseline
-- Double buffering: 870ms (7.3% improvement)
+- Synchronous: [deferred latency] baseline
+- Double buffering: [deferred latency] (7.3% improvement)
 - Validated: GPU idle time reduction works
 
 **Production Implementation**:
-- **Synchronous (Batched)**: 555.2 GFLOPS (34ms total, returns 1.70ms average)
-- **Async Pipeline**: 3,630.6 GFLOPS (5.2ms for 20 kernels)
-- **Real Speedup**: 6.5x performance improvement (34ms → 5.2ms)
-- **Per-Kernel Overhead**: Reduced from 1.70ms to 0.26ms
+- **Synchronous (Batched)**: [deferred throughput metric] ([deferred latency] total, returns [deferred latency] average)
+- **Async Pipeline**: [deferred throughput metric] ([deferred latency] for 20 kernels)
+- **Real Speedup**: [deferred speedup] performance improvement ([deferred latency] → [deferred latency])
+- **Per-Kernel Overhead**: Reduced from [deferred latency] to [deferred latency]
 
 **Critical Discovery**: The reference implementation runs 20 iterations internally and returns the average time. We were comparing 20 individual async kernels against 1/20th of a batched run!
 
@@ -180,4 +180,4 @@ To:
 
 ## Implementation Complete
 
-The GPU async executor (`src/gpu_async_executor.f90`) is production-ready and demonstrates the massive performance potential of continuous GPU pipelines. This foundation enables 600+ GFLOPS sustained performance and validates the path to universal memory optimization across all compute devices.
+The GPU async executor (`src/gpu_async_executor.f90`) is production-ready and demonstrates the massive performance potential of continuous GPU pipelines. This foundation enables [deferred throughput metric] sustained performance and validates the path to universal memory optimization across all compute devices.

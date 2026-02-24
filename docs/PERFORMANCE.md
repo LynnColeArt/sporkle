@@ -9,20 +9,20 @@
 As of 2025-08-10, Sparkle achieves the following performance on a 16-core CPU (using 14 threads for safety):
 
 ### Memory Bandwidth Operations
-- **Vector Addition**: 31.6 GB/s (4.6x parallel speedup)
-- **SAXPY**: 8.2 GFLOPS (1.4x parallel speedup)
-- **Theoretical DDR4 Max**: ~50 GB/s
+- **Vector Addition**: [deferred bandwidth] ([deferred speedup] parallel speedup)
+- **SAXPY**: [deferred throughput metric] ([deferred speedup] parallel speedup)
+- **Theoretical DDR4 Max**: ~[deferred bandwidth]
 - **Efficiency**: 64% of theoretical bandwidth
 
 ### Compute-Intensive Operations
-- **Complex (sqrt)**: 11.5 GFLOPS (2.8x parallel speedup)
-- **Normalize**: 16.9 GFLOPS (1.3x parallel speedup)
-- **Peak**: 17 GFLOPS with 14 cores
+- **Complex (sqrt)**: [deferred throughput metric] ([deferred speedup] parallel speedup)
+- **Normalize**: [deferred throughput metric] ([deferred speedup] parallel speedup)
+- **Peak**: [deferred throughput metric] with 14 cores
 
 ### Cache-Aware Algorithms
-- **Naive reduction**: 15.6 ms
-- **Cache-aware reduction**: 0.053 ms
-- **Speedup**: 294x faster!
+- **Naive reduction**: [deferred latency]
+- **Cache-aware reduction**: [deferred latency]
+- **Speedup**: [deferred speedup] faster!
 
 ## Memory Wall Breakthrough
 
@@ -56,12 +56,12 @@ export SPARKLE_THREAD_RESERVE=2    # Or reserve 2 for system
 ## Optimization Tips
 
 ### For Memory-Bound Operations
-- Expect 1.4-2x parallel speedup (limited by bandwidth)
+- Expect [deferred speedup range] parallel speedup (limited by bandwidth)
 - Use operation fusion to reduce memory traffic
 - Process data in cache-friendly chunks
 
 ### For Compute-Bound Operations
-- Expect 2.5-14x parallel speedup (scales with cores)
+- Expect [deferred speedup range] parallel speedup (scales with cores)
 - Add SIMD hints: `!$OMP SIMD`
 - Increase arithmetic intensity
 
@@ -89,14 +89,14 @@ export SPARKLE_MAX_CPU_THREADS=14
 ## What's Next?
 
 ### GPU Execution (Coming Soon)
-- Target: 1-10 TFLOPS
-- 100x+ speedup over CPU
-- RX 7900 XT: 61 TFLOPS theoretical
+- Target: 1-[deferred throughput metric]
+- [deferred speedup]+ speedup over CPU
+- RX 7900 XT: [deferred throughput metric] theoretical
 
 ### Network Mesh
 - Distributed execution across devices
 - Collective operations optimization
-- Target: 50+ TFLOPS combined
+- Target: [deferred throughput metric] combined
 
 ## Performance Philosophy
 

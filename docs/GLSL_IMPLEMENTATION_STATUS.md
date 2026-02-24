@@ -117,10 +117,10 @@ call execute_kernel(conv_kernel, input, weights, output)
 ## Performance Expectations
 
 For AMD RX 5600M:
-- Theoretical peak: 5.2 TFLOPS
-- Expected GLSL performance: 2-3 TFLOPS (40-60% efficiency)
-- Overhead: ~5ms for initial shader compilation
-- Dispatch overhead: <0.1ms per kernel launch
+- Theoretical peak: [deferred throughput metric]
+- Expected GLSL performance: 2-[deferred throughput metric] (40-60% efficiency)
+- Overhead: ~[deferred latency] for initial shader compilation
+- Dispatch overhead: <[deferred latency] per kernel launch
 
 ## Conclusion
 

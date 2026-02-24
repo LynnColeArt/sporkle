@@ -227,8 +227,8 @@ Consider using texture objects for spatially-coherent access patterns
 ## Expected Performance
 
 For AMD RX 5600M:
-- Theoretical: 5.2 TFLOPS
-- Expected: 2-3 TFLOPS (40-60% efficiency)
+- Theoretical: [deferred throughput metric]
+- Expected: 2-[deferred throughput metric] (40-60% efficiency)
 - Target: Beat cuDNN equivalent
 
 ## Implementation Timeline

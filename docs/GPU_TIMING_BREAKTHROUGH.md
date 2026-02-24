@@ -24,7 +24,7 @@ call cpu_time(end_time)
 6. CPU polling/waiting
 7. OS scheduler delays
 
-**Result**: We're seeing 451 GFLOPS when the GPU might be doing 4,500+ GFLOPS!
+**Result**: We're seeing [deferred throughput metric] when the GPU might be doing [deferred throughput metric]!
 
 ## The Solution
 
@@ -64,9 +64,9 @@ Use the Raphael iGPU as a timing reference:
 ## Expected Real Performance
 
 Based on our 7900 XT specs:
-- **Measured**: 451 GFLOPS (with CPU overhead)
-- **Actual GPU**: Likely 4,000-8,000 GFLOPS
-- **Theoretical**: 27,000 GFLOPS
+- **Measured**: [deferred throughput metric] (with CPU overhead)
+- **Actual GPU**: Likely 4,000-[deferred throughput metric]
+- **Theoretical**: [deferred throughput metric]
 
 We're probably already at 20-30% efficiency, not 1.6%!
 

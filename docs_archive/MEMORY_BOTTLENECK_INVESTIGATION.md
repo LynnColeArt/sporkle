@@ -6,25 +6,25 @@
 
 ## Current Status: CONFIRMED Memory Residency Issue
 
-We've systematically proven that our 2,600 GFLOPS performance ceiling is due to a **host-visible memory trap**. The GPU driver is allocating our "device-local" buffers in system RAM instead of true VRAM, limiting us to system memory bandwidth instead of GPU memory bandwidth.
+We've systematically proven that our [deferred throughput metric] performance ceiling is due to a **host-visible memory trap**. The GPU driver is allocating our "device-local" buffers in system RAM instead of true VRAM, limiting us to system memory bandwidth instead of GPU memory bandwidth.
 
 ## Evidence Summary
 
 ### 1. Performance Ceiling Consistency
-- **256×256 workload**: 2,668 GFLOPS (our baseline)
-- **512×512 workload**: 821 GFLOPS (0.31× scaling vs 4× ideal)
-- **Ko=4 parallel**: 629 GFLOPS (register pressure regression)
+- **256×256 workload**: [deferred throughput metric] (our baseline)
+- **512×512 workload**: [deferred throughput metric] (0.31× scaling vs 4× ideal)
+- **Ko=4 parallel**: [deferred throughput metric] (register pressure regression)
 
 ### 2. Memory Residency Tests
 - **Two-dispatch speedup**: 1.15× (should be >1.5× for true VRAM)
 - **Device-local allocation hints**: No improvement
 - **GL_STATIC_DRAW + staging**: No improvement
-- **Persistent staging + unmapped SSBOs**: No improvement (2,645 GFLOPS)
+- **Persistent staging + unmapped SSBOs**: No improvement ([deferred throughput metric])
 
 ### 3. Scaling Analysis
 - **Universal Dispatcher (512×512)**: Poor scaling confirms fixed overhead dominance
 - **Arithmetic intensity**: 148 FLOP/byte (should easily saturate 400+ GB/s VRAM)
-- **Theoretical limit**: 57 TFLOPS available, but hitting 2.6 TFLOPS ceiling
+- **Theoretical limit**: [deferred throughput metric] available, but hitting [deferred throughput metric] ceiling
 
 ## Attempted Solutions (All Failed)
 
@@ -36,7 +36,7 @@ We've systematically proven that our 2,600 GFLOPS performance ceiling is due to 
 5. ✅ Persistent mapped staging + unmapped device SSBOs
 6. ✅ Various usage hints and allocation patterns
 
-**Result**: All approaches hit the same 2,600 GFLOPS ceiling.
+**Result**: All approaches hit the same [deferred throughput metric] ceiling.
 
 ## Key Insight: Driver Stubbornness
 
@@ -52,8 +52,8 @@ VkMemoryPropertyFlags memProps = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
 // This GUARANTEES true VRAM allocation
 ```
 
-**If Vulkan shows >4,000 GFLOPS**: OpenGL driver issue, rewrite justified
-**If Vulkan shows ~2,600 GFLOPS**: Deeper hardware/thermal/clock limit
+**If Vulkan shows >[deferred throughput metric]**: OpenGL driver issue, rewrite justified
+**If Vulkan shows ~[deferred throughput metric]**: Deeper hardware/thermal/clock limit
 
 ## Next Steps for Main Rig
 
@@ -93,12 +93,12 @@ The algorithm is not the problem - it's the memory subsystem.
 
 ## Performance Context
 
-2,600 GFLOPS represents:
-- **16% of GPU theoretical peak** (16.5 TFLOPS)
+[deferred throughput metric] represents:
+- **16% of GPU theoretical peak** ([deferred throughput metric])
 - **Excellent real-world performance** for many applications
 - **5× faster than CPU implementation**
 
-But if true VRAM residency can unlock 6,000+ GFLOPS, it's worth pursuing.
+But if true VRAM residency can unlock [deferred throughput metric], it's worth pursuing.
 
 ## Decision Point
 

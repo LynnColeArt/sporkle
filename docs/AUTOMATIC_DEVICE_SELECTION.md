@@ -31,12 +31,12 @@ Sporkle now includes intelligent automatic device selection that chooses the opt
 ```
 Tiny workload (1×3×32×32):
 - Device: CPU
-- Performance: 0.3 GFLOPS
+- Performance: [deferred throughput metric]
 - Reasoning: Avoids GPU overhead
 
 Large workload (4×128×56×56):
 - Device: GPU (async)
-- Performance: 247.1 GFLOPS  
+- Performance: [deferred throughput metric]  
 - Reasoning: Maximizes parallelism
 ```
 

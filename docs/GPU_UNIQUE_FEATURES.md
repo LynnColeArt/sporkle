@@ -5,7 +5,7 @@
 # GPU Unique Features We're Not Exploiting
 
 ## Current State
-We're getting 460 GFLOPS by optimizing compute shaders, but we're treating the GPU like a "fast CPU" rather than exploiting its unique architecture.
+We're getting [deferred throughput metric] by optimizing compute shaders, but we're treating the GPU like a "fast CPU" rather than exploiting its unique architecture.
 
 ## Unique GPU Features We're Missing
 
@@ -78,7 +78,7 @@ Instead of launch → compute → return:
 ### 2. **GPU-to-GPU Direct**
 - Use PCIe P2P between iGPU and dGPU
 - Skip CPU memory entirely
-- Theoretical 32 GB/s between GPUs
+- Theoretical [deferred bandwidth] between GPUs
 
 ### 3. **Async Everything**
 ```c
@@ -102,11 +102,11 @@ for (batch in batches) {
 
 ## Performance Potential
 
-Current: 460 GFLOPS (compute only)
-With async: ~500 GFLOPS (hide transfer latency)
-With dual GPU: ~600 GFLOPS (iGPU helps)
-With persistence: ~650 GFLOPS (no kernel overhead)
-With all optimizations: 700+ GFLOPS?
+Current: [deferred throughput metric] (compute only)
+With async: ~[deferred throughput metric] (hide transfer latency)
+With dual GPU: ~[deferred throughput metric] (iGPU helps)
+With persistence: ~[deferred throughput metric] (no kernel overhead)
+With all optimizations: [deferred throughput metric]?
 
 ## Next Steps
 

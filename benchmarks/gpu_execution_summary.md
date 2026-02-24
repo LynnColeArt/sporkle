@@ -9,15 +9,15 @@
 ### 1. Direct GPU Execution ✅
 - Successfully created EGL context for headless GPU execution on AMD GPUs
 - Implemented proper GPU timing using OpenGL timestamp queries
-- Achieved baseline performance: **493 GFLOPS** on AMD RX 7900 XTX
+- Achieved baseline performance: **[deferred throughput metric]** on AMD RX 7900 XTX
 
 ### 2. CPU vs GPU Comparison ✅
 - Fixed CPU baseline implementation (was producing incorrect results)
 - Achieved matching results between CPU and GPU (max difference: 0.0)
 - Measured performance:
-  - CPU: 83.19 ms, 2.84 GFLOPS
-  - GPU: 0.52 ms, 451.03 GFLOPS
-  - **Speedup: 158.97x**
+  - CPU: [deferred latency], [deferred throughput metric]
+  - GPU: [deferred latency], [deferred throughput metric]
+  - **Speedup: [deferred speedup]**
 
 ### 3. DSL Parser Integration ✅
 - Successfully parses Fortran DSL kernels and extracts metadata:
@@ -101,4 +101,4 @@ void main() {
 
 3. **Variable Scoping**: Fortran's implicit variable declarations can cause conflicts between loop indices and parameter constants. Solution: Use explicit variable names with suffixes (e.g., `n_idx` instead of `n`).
 
-4. **Performance**: Even a simple direct convolution on GPU achieves ~159x speedup over optimized CPU code for ResNet-50's first layer.
+4. **Performance**: Even a simple direct convolution on GPU achieves ~[deferred speedup] speedup over optimized CPU code for ResNet-50's first layer.

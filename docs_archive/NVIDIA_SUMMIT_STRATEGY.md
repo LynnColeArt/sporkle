@@ -3,21 +3,21 @@
 
 
 # NVIDIA RTX A4500 Summit Strategy
-## From 530 GFLOPS → 17,000 GFLOPS
+## From [deferred throughput metric] → [deferred throughput metric]
 
 ### Current State Analysis
-- **Performance**: 530 GFLOPS (3.2% of 16.5 TFLOPS peak)
-- **Bottleneck**: Memory bandwidth (384 GB/s)
+- **Performance**: [deferred throughput metric] (3.2% of [deferred throughput metric] peak)
+- **Bottleneck**: Memory bandwidth ([deferred bandwidth])
 - **Problem**: Naive direct convolution, no data reuse
 - **Measurement**: RDTSC gives most accurate CPU-side timing
 
 ### The Bandwidth Wall (AMD Claude's Discovery)
 ```
 Conv2d memory requirement: ~768 bytes per output pixel
-RTX A4500 bandwidth: 384 GB/s
-Maximum possible: 384 GB/s ÷ 768 bytes = 500M pixels/sec
-Theoretical limit: 2.3 TFLOPS (with naive algorithm)
-Current achievement: 530 GFLOPS = 23% of bandwidth limit
+RTX A4500 bandwidth: [deferred bandwidth]
+Maximum possible: [deferred bandwidth] ÷ 768 bytes = 500M pixels/sec
+Theoretical limit: [deferred throughput metric] (with naive algorithm)
+Current achievement: [deferred throughput metric] = 23% of bandwidth limit
 ```
 
 **Key Insight**: We're already at 23% of the theoretical bandwidth limit! The only way forward is to REDUCE memory traffic through data reuse.
@@ -45,7 +45,7 @@ for (int k = 0; k < output_channels; k++) {
 }
 ```
 
-**Expected**: 530 → 2,120 GFLOPS
+**Expected**: 530 → [deferred throughput metric]
 
 ### Phase 2: Vector Operations (2× speedup)
 **Problem**: Scalar loads/stores waste bandwidth
@@ -61,7 +61,7 @@ vec4 sum = vec4(0.0);
 sum = fma(input_vec, kernel_vec, sum);    // 4 FMAs in one instruction
 ```
 
-**Expected**: 2,120 → 4,240 GFLOPS
+**Expected**: 2,120 → [deferred throughput metric]
 
 ### Phase 3: Multiple Outputs Per Thread (1.5× speedup)
 **Problem**: Thread launch overhead, instruction fetch overhead
@@ -78,7 +78,7 @@ for (int oy = 0; oy < 4; oy++) {
 }
 ```
 
-**Expected**: 4,240 → 6,360 GFLOPS
+**Expected**: 4,240 → [deferred throughput metric]
 
 ### Phase 4: Memory Layout Optimization (1.3× speedup)
 **Problem**: NCHW layout causes strided access
@@ -89,7 +89,7 @@ NCHW: [N][C][H][W] - channels are far apart in memory
 NHWC: [N][H][W][C] - channels are contiguous (coalesced read)
 ```
 
-**Expected**: 6,360 → 8,268 GFLOPS
+**Expected**: 6,360 → [deferred throughput metric]
 
 ### Phase 5: Optimal Kernel Configuration (1.2× speedup)
 - **Workgroup size**: 256 threads (16×16) or 1024 (32×32)
@@ -97,7 +97,7 @@ NHWC: [N][H][W][C] - channels are contiguous (coalesced read)
 - **Unroll factor**: 12-16 for inner loops
 - **Bank conflict avoidance**: Pad shared memory arrays
 
-**Expected**: 8,268 → 9,922 GFLOPS
+**Expected**: 8,268 → [deferred throughput metric]
 
 ### Phase 6: Algorithmic Improvements
 
@@ -108,7 +108,7 @@ Winograd F(2,3): 4 multiplies per output
 Speedup: 2.25×
 ```
 
-**Expected**: 9,922 → 22,324 GFLOPS (exceeds hardware peak!)
+**Expected**: 9,922 → [deferred throughput metric] (exceeds hardware peak!)
 
 #### Option B: Implicit GEMM (im2col)
 - Transform conv → matrix multiply
@@ -142,7 +142,7 @@ After each optimization, verify:
 1. **Correctness**: Output matches reference
 2. **Performance**: GFLOPS increases as expected
 3. **GPU utilization**: Check with `nvidia-smi`
-4. **Memory bandwidth**: Should approach 384 GB/s
+4. **Memory bandwidth**: Should approach [deferred bandwidth]
 5. **No PCIe traffic**: Ensure compute stays on GPU
 
 ## The Summit Configuration
@@ -170,13 +170,13 @@ for (int i = 0; i < ...; i++) { ... }
 
 | Phase | Target GFLOPS | % of Peak | Bandwidth Used |
 |-------|--------------|-----------|----------------|
-| Current | 530 | 3.2% | 88 GB/s |
-| Phase 1 | 2,120 | 12.8% | 176 GB/s |
-| Phase 2 | 4,240 | 25.7% | 264 GB/s |
-| Phase 3 | 6,360 | 38.5% | 330 GB/s |
-| Phase 4 | 8,268 | 50.1% | 360 GB/s |
-| Phase 5 | 9,922 | 60.1% | 380 GB/s |
-| Winograd | 17,000+ | 103%* | 384 GB/s |
+| Current | 530 | 3.2% | [deferred bandwidth] |
+| Phase 1 | 2,120 | 12.8% | [deferred bandwidth] |
+| Phase 2 | 4,240 | 25.7% | [deferred bandwidth] |
+| Phase 3 | 6,360 | 38.5% | [deferred bandwidth] |
+| Phase 4 | 8,268 | 50.1% | [deferred bandwidth] |
+| Phase 5 | 9,922 | 60.1% | [deferred bandwidth] |
+| Winograd | 17,000+ | 103%* | [deferred bandwidth] |
 
 *Exceeds theoretical peak by doing fewer operations!
 
@@ -193,7 +193,7 @@ for (int i = 0; i < ...; i++) { ... }
 
 ## The Bottom Line
 
-We're not competing with hardware limits - we're competing with algorithmic efficiency. The path from 530 GFLOPS to 17,000 GFLOPS is:
+We're not competing with hardware limits - we're competing with algorithmic efficiency. The path from [deferred throughput metric] to [deferred throughput metric] is:
 1. **Stop reading from global memory repeatedly** (shared memory)
 2. **Stop wasting bandwidth on scalar ops** (vectorization)
 3. **Stop launching so many threads** (multiple outputs)

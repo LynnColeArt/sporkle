@@ -6,12 +6,12 @@
 
 ## 🎯 Mission: Complete the Universal Memory Framework
 
-We've achieved a massive breakthrough - successfully extracting the 451 GFLOPS GPU implementation from test harnesses into production modules. Now we finish the revolution: prove that universal memory optimization patterns work across all compute architectures.
+We've achieved a massive breakthrough - successfully extracting the [deferred throughput metric] GPU implementation from test harnesses into production modules. Now we finish the revolution: prove that universal memory optimization patterns work across all compute architectures.
 
 ## 🏆 What We've Already Conquered
 
 ✅ **Production GPU Integration Complete**
-- 451 GFLOPS convolution extracted from test harnesses
+- [deferred throughput metric] convolution extracted from test harnesses
 - Reference implementation in `src/reference/gpu_opengl_reference.c`
 - Production interface in `src/production/sporkle_conv2d.f90`
 - Clean Fortran API via `src/reference/gpu_opengl_interface.f90`
@@ -26,8 +26,8 @@ We've achieved a massive breakthrough - successfully extracting the 451 GFLOPS G
 ## 🚀 Weekend Epic Objectives
 
 ### Phase 1: Complete GPU Production Integration ✅ COMPLETE
-**Achievement**: 451 GFLOPS single kernel, 3,630 GFLOPS with async executor
-**Breakthrough**: 6.5x speedup through intelligent pipeline architecture
+**Achievement**: [deferred throughput metric] single kernel, [deferred throughput metric] with async executor
+**Breakthrough**: [deferred speedup] speedup through intelligent pipeline architecture
 
 #### 1.1 Debug GPU Initialization Failure
 - **Issue**: "Compute shader not compiled" error in production context
@@ -36,16 +36,16 @@ We've achieved a massive breakthrough - successfully extracting the 451 GFLOPS G
 - **Success Metric**: GPU returns positive execution time, not -1
 
 #### 1.2 Validate GPU Performance in Production
-- **Target**: Achieve 451 GFLOPS through `sporkle_conv2d` module
+- **Target**: Achieve [deferred throughput metric] through `sporkle_conv2d` module
 - **Test**: ResNet-50 first layer (224×224×3 → 112×112×64, 7×7 kernel)
 - **Verification**: CPU and GPU results match (max diff < 1e-5)
 
 ### Phase 2: Universal CPU Optimization ✅ COMPLETE
 **Mission**: Prove universal memory patterns work on CPU
-**Achievement**: 196.7 GFLOPS with AVX-512 SIMD (6.17x improvement)
+**Achievement**: [deferred throughput metric] with AVX-512 SIMD ([deferred speedup] improvement)
 
 #### 2.1 Analyze the Lost High-Performance CPU Implementation
-- **Investigation**: What made the previous CPU implementation hit 250 GFLOPS?
+- **Investigation**: What made the previous CPU implementation hit [deferred throughput metric]?
 - **Techniques**: im2col transformation, cache-optimal GEMM, OpenMP parallelization
 - **Reference**: Metal/Neural Engine insights about memory access patterns
 
@@ -82,16 +82,16 @@ end subroutine
 ```
 
 **Target Performance Breakdown**:
-- **Theoretical Peak**: ~500 GFLOPS (AMD 7900X, 32 cores @ ~15 GFLOPS/core)
-- **Target**: 250+ GFLOPS (50% efficiency)
-- **Comparison**: GPU achieves 451 GFLOPS (60% of 750 GFLOPS theoretical)
+- **Theoretical Peak**: ~[deferred throughput metric] (AMD 7900X, 32 cores @ ~[deferred throughput metric]/core)
+- **Target**: [deferred throughput metric] (50% efficiency)
+- **Comparison**: GPU achieves [deferred throughput metric] (60% of [deferred throughput metric] theoretical)
 
 ### Phase 3: Universal Pattern Validation (Day 2 Evening)
 **Mission**: Prove the universal memory optimization thesis
 
 #### 3.1 Cross-Architecture Performance Analysis
-- **CPU Optimized**: 250+ GFLOPS using universal patterns
-- **GPU Reference**: 451 GFLOPS using same optimization principles
+- **CPU Optimized**: [deferred throughput metric] using universal patterns
+- **GPU Reference**: [deferred throughput metric] using same optimization principles
 - **Comparison**: Demonstrate similar efficiency ratios across architectures
 
 #### 3.2 Memory Pattern Documentation
@@ -142,9 +142,9 @@ Create definitive guide showing how same patterns work everywhere:
 - [x] Module system working
 
 ### Tier 2: Performance Targets
-- [x] **GPU**: 451 GFLOPS through production interface ✅
-- [x] **CPU**: 196.7 GFLOPS with AVX-512 SIMD (78% of target) ✅
-- [x] **GPU Async**: 3,630 GFLOPS aggregate throughput (6.5x speedup) ✅
+- [x] **GPU**: [deferred throughput metric] through production interface ✅
+- [x] **CPU**: [deferred throughput metric] with AVX-512 SIMD (78% of target) ✅
+- [x] **GPU Async**: [deferred throughput metric] aggregate throughput ([deferred speedup] speedup) ✅
 - [x] **Verification**: CPU/GPU results match perfectly ✅
 
 ### Tier 3: Universal Memory Proof
@@ -159,7 +159,7 @@ Create definitive guide showing how same patterns work everywhere:
 1. Add detailed logging to GPU initialization path
 2. Compare working test harness vs production context
 3. Fix EGL context creation in module system
-4. Verify 451 GFLOPS through production interface
+4. Verify [deferred throughput metric] through production interface
 
 **Afternoon (4-5 hours): CPU Optimization Foundation**
 1. Research previous high-performance CPU implementations
@@ -170,7 +170,7 @@ Create definitive guide showing how same patterns work everywhere:
 **Morning (4-5 hours): CPU Performance Push**
 1. Complete optimized GEMM implementation
 2. Apply vectorization (AVX) and parallelization (OpenMP)
-3. Achieve 250+ GFLOPS target
+3. Achieve [deferred throughput metric] target
 
 **Afternoon (3-4 hours): Universal Pattern Validation**
 1. Document memory access patterns used in both CPU and GPU
@@ -185,7 +185,7 @@ Create definitive guide showing how same patterns work everywhere:
 ## 🎉 Victory Conditions
 
 **🥇 Gold**: Universal memory optimization framework complete
-- 451 GFLOPS GPU + 250+ GFLOPS CPU using same optimization principles
+- [deferred throughput metric] GPU + [deferred throughput metric] CPU using same optimization principles
 - Production interface delivers both with automatic fallback
 - Documentation proves universal memory optimization thesis
 
@@ -194,7 +194,7 @@ Create definitive guide showing how same patterns work everywhere:
 - Clear evidence that same patterns work on both architectures
 
 **🥉 Bronze**: GPU production integration complete
-- 451 GFLOPS through production interface
+- [deferred throughput metric] through production interface
 - Framework ready for CPU optimization in future
 
 ## 🔥 The Big Picture
@@ -217,7 +217,7 @@ Let's make history! 🚀
 
 ## Breakthrough Update: The 99% Idle GPU Problem
 
-**New Insight**: We've been optimizing the 0.56ms of GPU compute, missing that GPUs sit idle 99% of the time!
+**New Insight**: We've been optimizing the [deferred latency] of GPU compute, missing that GPUs sit idle 99% of the time!
 
 **Next Phase**: Transform from synchronous calls to continuous compute pipeline:
 - Async everything
@@ -226,22 +226,22 @@ Let's make history! 🚀
 - Triple buffering
 - CPU-GPU overlap
 
-**Potential**: 460 GFLOPS at 2.3% utilization → 2000+ GFLOPS at 90% utilization
+**Potential**: [deferred throughput metric] at 2.3% utilization → [deferred throughput metric] at 90% utilization
 
 The GPU is a river, not a bucket - keep it flowing!
 
 ## Major Accomplishments Update
 
 ### ✅ CPU SIMD Optimization Breakthrough
-- Achieved **196.7 GFLOPS** on CPU (up from 2.7 GFLOPS)
+- Achieved **[deferred throughput metric]** on CPU (up from [deferred throughput metric])
 - Key insight: SIMD wasn't properly hooked up - directive was on wrong loop
 - Fixed with proper AVX-512 vectorization (16 floats per instruction)
-- Exceeded the 50+ GFLOPS target by nearly 4x!
+- Exceeded the [deferred throughput metric] target by nearly [deferred speedup]!
 
 ### ✅ GPU Dynamic Shader Generation
 - Implemented complete dynamic shader generation system
 - Architecture detection differentiates RDNA3 from GCN
-- Achieved **460.4 GFLOPS** with RDNA3 dual-issue optimization
+- Achieved **[deferred throughput metric]** with RDNA3 dual-issue optimization
 - 10% improvement over baseline through architectural adaptation
 
 ### ✅ AMDGPU Direct Integration
@@ -252,24 +252,24 @@ The GPU is a river, not a bucket - keep it flowing!
 - Eliminates userspace driver overhead for maximum performance
 
 ### 🔍 GPU Idle Time Discovery
-- GPUs achieve 460 GFLOPS but idle 99% of the time
+- GPUs achieve [deferred throughput metric] but idle 99% of the time
 - Current utilization only 2.3% due to synchronous execution
-- Proposed async pipeline could achieve 2000+ GFLOPS at 90% utilization
+- Proposed async pipeline could achieve [deferred throughput metric] at 90% utilization
 - Need continuous compute pipeline, not synchronous calls
 
 ## Next Steps
 
 ### ✅ GPU Async Proof of Concept Complete!
-- Measured real GPU idle time: 150ms out of 939ms (16% idle)
+- Measured real GPU idle time: [deferred latency] out of [deferred latency] (16% idle)
 - Achieved 7-8% speedup with simple double buffering
-- Validated approach: 25.1 → 27.1 GFLOPS with basic async
+- Validated approach: 25.1 → [deferred throughput metric] with basic async
 - Proved we can overlap CPU/GPU work effectively
 
 ### 1. **Implement Full Async GPU Pipeline** (NEXT)
    - Add OpenGL sync objects (glFenceSync/glClientWaitSync)
    - Replace blocking glFinish() with fence polling
    - Triple buffering for continuous GPU feeding
-   - Target: 460 → 600+ GFLOPS through 99% utilization
+   - Target: 460 → [deferred throughput metric] through 99% utilization
 
 ### 2. **Enable Dual GPU Execution**
    - Use both iGPU (Raphael) and dGPU (7900 XT) together
@@ -284,9 +284,9 @@ The GPU is a river, not a bucket - keep it flowing!
 ### 4. **PM4 Direct Submission**
    - Implement compute dispatch via AMDGPU direct
    - Bypass all userspace drivers
-   - Target 500+ GFLOPS with zero overhead
+   - Target [deferred throughput metric] with zero overhead
 
-## 🚀 ASYNC BREAKTHROUGH: 6.5x Real Speedup Achieved!
+## 🚀 ASYNC BREAKTHROUGH: [deferred speedup] Real Speedup Achieved!
 
 ### ✅ Complete GPU Async Implementation Finished!
 - **Production async executor**: `gpu_async_executor.f90` with OpenGL sync objects
@@ -296,31 +296,31 @@ The GPU is a river, not a bucket - keep it flowing!
 
 ### 🏆 Performance Results
 **Proof of Concept**:
-- Synchronous: 939ms baseline
-- Double buffering: 870ms (7.3% improvement)
+- Synchronous: [deferred latency] baseline
+- Double buffering: [deferred latency] (7.3% improvement)
 - Validated GPU idle time reduction approach
 
 **Production Implementation**:
-- **Synchronous (Batched)**: 555.2 GFLOPS (34ms for 20 kernels, 1.70ms avg)
-- **Async Pipeline**: 3,630.6 GFLOPS (5.2ms for 20 kernels, 0.26ms each)  
-- **Real Speedup**: 6.5x performance improvement
-- **Key Insight**: Reference returns averaged time (1.70ms = 34ms/20)
-- **Per-Kernel Overhead**: Reduced from 1.70ms to 0.26ms
+- **Synchronous (Batched)**: [deferred throughput metric] ([deferred latency] for 20 kernels, [deferred latency] avg)
+- **Async Pipeline**: [deferred throughput metric] ([deferred latency] for 20 kernels, [deferred latency] each)  
+- **Real Speedup**: [deferred speedup] performance improvement
+- **Key Insight**: Reference returns averaged time ([deferred latency] = [deferred latency]/20)
+- **Per-Kernel Overhead**: Reduced from [deferred latency] to [deferred latency]
 
 ### 🎯 Mission Accomplished
 The async executor validates our universal memory optimization thesis:
 - **Continuous GPU pipeline** eliminates bottlenecks
 - **Same memory patterns** that optimize CPU caches optimize GPU throughput
 - **Pipeline architecture** works across all compute devices
-- **Production ready** framework achieving 3,900+ GFLOPS sustained performance
+- **Production ready** framework achieving [deferred throughput metric] sustained performance
 
 The GPU idle time problem is **solved**. The async executor demonstrates that proper memory optimization patterns can achieve massive performance improvements across all architectures - exactly as predicted by our universal memory optimization framework vision.
 
 ## 📋 Weekend Epic Final Status
 
 ### ✅ Completed Achievements
-1. **GPU Async Executor**: 6.5x speedup, 3,630 GFLOPS aggregate throughput
-2. **CPU SIMD Optimization**: 196.7 GFLOPS with AVX-512 (6.17x improvement)
+1. **GPU Async Executor**: [deferred speedup] speedup, [deferred throughput metric] aggregate throughput
+2. **CPU SIMD Optimization**: [deferred throughput metric] with AVX-512 ([deferred speedup] improvement)
 3. **Universal Memory Patterns**: Proven to work across CPU and GPU
 4. **Production Integration**: Everything works through clean APIs
 5. **Documentation**: Comprehensive docs explaining all performance numbers
@@ -330,12 +330,12 @@ The GPU idle time problem is **solved**. The async executor demonstrates that pr
 2. **PM4 Direct Submission**: AMDGPU direct path exists but not integrated
 3. **Dual GPU Execution**: Could use both iGPU and dGPU together
 4. **Persistent Kernel Framework**: Keep shaders running continuously
-5. **Push to 250 GFLOPS CPU**: Current 196.7 is great, but room for more
+5. **Push to [deferred throughput metric] CPU**: Current 196.7 is great, but room for more
 
 ### 🎯 Mission Status: SUCCESS!
 We've proven that universal memory optimization patterns work across architectures:
-- **CPU**: 196.7 GFLOPS using cache-optimal tiling and SIMD
-- **GPU**: 451 GFLOPS single kernel, 3,630 GFLOPS with async pipeline
+- **CPU**: [deferred throughput metric] using cache-optimal tiling and SIMD
+- **GPU**: [deferred throughput metric] single kernel, [deferred throughput metric] with async pipeline
 - **Same Principles**: Cache locality, vectorization, and pipeline optimization work everywhere
 
 The framework delivers massive real-world performance improvements and validates our vision!

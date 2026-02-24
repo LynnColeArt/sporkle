@@ -11,10 +11,10 @@
 - Measures cold (first run) vs hot (steady state) performance
 - Statistical analysis with min/max/mean/stddev
 - Created BENCHMARKS.md for tracking performance history
-- Results: Clear cache effects visible (14x speedup for L1-resident data)
+- Results: Clear cache effects visible ([deferred speedup] speedup for L1-resident data)
 
 ### 2. ✅ Memory Wall Breakthrough
-- **Cache-aware algorithms**: 294x speedup on reductions!
+- **Cache-aware algorithms**: [deferred speedup] speedup on reductions!
 - **Operation fusion**: Reduce memory passes from 6 to 3
 - **Tiled algorithms**: L1/L2/L3 cache-aware processing
 - Created `sporkle_cache_aware.f90` and `sporkle_fused_kernels.f90`
@@ -30,21 +30,21 @@
 - Full parallel implementations of core kernels
 - SIMD vectorization hints
 - Performance results:
-  - Memory-bound: 1.4-4.6x speedup
-  - Compute-bound: 2.8x speedup
-  - Peak: 17 GFLOPS, 32 GB/s bandwidth
+  - Memory-bound: [deferred speedup range] speedup
+  - Compute-bound: [deferred speedup] speedup
+  - Peak: [deferred throughput metric], [deferred bandwidth] bandwidth
 
 ## 📊 Performance Summary
 
 ### Before (Single-threaded)
-- Vector operations: 0.5-7.3 GFLOPS
-- Memory bandwidth: ~6-22 GB/s
+- Vector operations: 0.5-[deferred throughput metric]
+- Memory bandwidth: ~6-[deferred bandwidth]
 - No parallelization
 
 ### After (14 threads + optimizations)
-- Vector operations: Up to 17 GFLOPS
-- Memory bandwidth: 32 GB/s (64% of theoretical)
-- Cache-aware reduction: 294x faster
+- Vector operations: Up to [deferred throughput metric]
+- Memory bandwidth: [deferred bandwidth] (64% of theoretical)
+- Cache-aware reduction: [deferred speedup] faster
 - Thread-safe execution
 
 ## 🗂️ Files Created/Modified
@@ -73,7 +73,7 @@
 ## 💡 Key Insights
 
 1. **Memory is the bottleneck**: Simple ops limited by bandwidth, not compute
-2. **Cache awareness matters**: 294x speedup proves the point
+2. **Cache awareness matters**: [deferred speedup] speedup proves the point
 3. **Thread safety is critical**: 16 threads = crashed desktop
 4. **Pure Fortran rocks**: Achieving great performance without vendor SDKs
 
@@ -99,5 +99,5 @@ We stayed true to our principles:
 
 Session Duration: ~3 hours
 Lines of Code: ~2000+ new lines
-Performance Gain: Up to 294x on specific operations
+Performance Gain: Up to [deferred speedup] on specific operations
 Fun Level: Through the roof! 🎉

@@ -59,8 +59,8 @@ Per 32×32×64 tile computation:
 FLOPs: 32×32×64×Ci×9×2 = 302 MFLOPs (for Ci=256)
 Intensity: 302 MF / 2 MB = 151 FLOP/byte
 
-RTX A4500: 384 GB/s × 151 = 58 TFLOPS (achievable!)
-AMD 7900XT: 960 GB/s × 151 = 145 TFLOPS (achievable!)
+RTX A4500: [deferred bandwidth] × 151 = [deferred throughput metric] (achievable!)
+AMD 7900XT: [deferred bandwidth] × 151 = [deferred throughput metric] (achievable!)
 ```
 
 **We can achieve MORE than theoretical peak with smart algorithms!**
@@ -126,28 +126,28 @@ void main() {
 }
 ```
 
-**Expected**: 530 → 3,180 GFLOPS (6×)
+**Expected**: 530 → [deferred throughput metric] (6×)
 
 ### Phase 2: Optimal Memory Layout (1.5× speedup)
 - NHWC for coalesced access
 - Aligned vec4 operations throughout
 - No strided access patterns
 
-**Expected**: 3,180 → 4,770 GFLOPS
+**Expected**: 3,180 → [deferred throughput metric]
 
 ### Phase 3: Register Blocking Optimization (1.3× speedup)
 - Tune outputs per thread (4×4 vs 4×2)
 - Balance register pressure with thread count
 - Maintain ≥2 workgroups per CU/SM
 
-**Expected**: 4,770 → 6,201 GFLOPS
+**Expected**: 4,770 → [deferred throughput metric]
 
 ### Phase 4: Kernel Fusion (1.2× speedup)
 - Fuse bias + activation into kernel
 - Eliminate intermediate memory traffic
 - Single pass through data
 
-**Expected**: 6,201 → 7,441 GFLOPS
+**Expected**: 6,201 → [deferred throughput metric]
 
 ### Phase 5: Driver/Runtime Optimization
 - Non-coherent staging with explicit flush
@@ -155,7 +155,7 @@ void main() {
 - 4-8 deep ring with fence polling
 - Never call glFinish()
 
-**Expected**: 7,441 → 10,000+ GFLOPS
+**Expected**: 7,441 → [deferred throughput metric]
 
 ### Phase 6 (Optional): Algorithmic Improvements
 **Only after direct convolution is optimized!**
@@ -164,7 +164,7 @@ void main() {
 - **Implicit GEMM**: Better cache utilization
 - **FFT**: For large kernels only
 
-**Potential**: 10,000 → 17,000+ GFLOPS
+**Potential**: 10,000 → [deferred throughput metric]
 
 ## Critical Corrections to Previous Understanding
 
@@ -211,8 +211,8 @@ Our 32×32 tiling with 256 threads and 4×4 outputs works because:
 4. **Coalesced vec4 access** (no wasted bandwidth)
 
 This same pattern achieves:
-- **AMD**: 40,000+ GFLOPS potential
-- **NVIDIA**: 17,000+ GFLOPS potential
+- **AMD**: [deferred throughput metric] potential
+- **NVIDIA**: [deferred throughput metric] potential
 - **CPU**: Optimal cache utilization
 - **Future accelerators**: Will work there too!
 

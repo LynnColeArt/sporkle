@@ -109,7 +109,7 @@ With direct submission, we eliminate:
 - Userspace command validation
 - Extra memory copies
 
-This could push us from 460 GFLOPS → 500+ GFLOPS by removing software overhead.
+This could push us from [deferred throughput metric] → [deferred throughput metric] by removing software overhead.
 
 ## Testing
 

@@ -6,14 +6,14 @@
 
 ## Executive Summary
 
-After achieving 6.5x speedup with the GPU async executor and 196.7 GFLOPS on CPU with SIMD optimization, the next major performance breakthrough will come from **intelligent automatic device selection**. By routing workloads to the optimal compute device(s) and utilizing all available hardware simultaneously, we can achieve another 2-3x performance improvement.
+After achieving [deferred speedup] speedup with the GPU async executor and [deferred throughput metric] on CPU with SIMD optimization, the next major performance breakthrough will come from **intelligent automatic device selection**. By routing workloads to the optimal compute device(s) and utilizing all available hardware simultaneously, we can achieve another [deferred speedup range] performance improvement.
 
 ## Current State
 
 ### ✅ What We Have
 
 1. **Multiple High-Performance Backends**
-   - CPU: 196.7 GFLOPS with AVX-512 SIMD
+   - CPU: [deferred throughput metric] with AVX-512 SIMD
    - Vulkan: Modern GPU compute with SPIR-V shaders
      - Cross-platform GPU abstraction
      - Async compute queues for pipeline optimization
@@ -168,8 +168,8 @@ After achieving 6.5x speedup with the GPU async executor and 196.7 GFLOPS on CPU
 - **Better Throughput**: Large workloads to GPU with async pipeline
 
 ### Multi-Device Speedup
-- **iGPU + dGPU**: Use both AMD GPUs simultaneously (1.5-2x)
-- **CPU + GPU Pipeline**: Overlap preprocessing and compute (1.3x)
+- **iGPU + dGPU**: Use both AMD GPUs simultaneously ([deferred speedup range])
+- **CPU + GPU Pipeline**: Overlap preprocessing and compute ([deferred speedup])
 - **Heterogeneous Execution**: Different layers to different devices
 
 ### Platform-Specific Gains
@@ -190,9 +190,9 @@ end if
 ! With universal device selector
 call sporkle_execute(conv2d_op, input, weights, output)
 ! Automatically routes to:
-! - Neural Engine on M1 Mac (38 TOPS)
-! - GPU with async executor on Linux (3,630 GFLOPS)
-! - CPU with SIMD for small batches (196.7 GFLOPS)
+! - Neural Engine on M1 Mac ([deferred throughput metric])
+! - GPU with async executor on Linux ([deferred throughput metric])
+! - CPU with SIMD for small batches ([deferred throughput metric])
 ! - Split across CPU+GPU for optimal throughput
 ```
 
@@ -206,13 +206,13 @@ call sporkle_execute(conv2d_op, input, weights, output)
 ## Success Metrics
 
 1. **Automatic Performance**: Match or exceed manual device selection
-2. **Multi-Device Scaling**: >1.5x speedup using multiple devices
+2. **Multi-Device Scaling**: >[deferred speedup] speedup using multiple devices
 3. **Learning Effectiveness**: Performance improves over time
 4. **Zero Configuration**: Works out-of-the-box on any platform
 
 ## Conclusion
 
-Universal device selection represents the next major performance frontier for Sparkle. By intelligently utilizing all available compute resources and learning optimal configurations, we can achieve another 2-3x performance improvement beyond our already impressive gains.
+Universal device selection represents the next major performance frontier for Sparkle. By intelligently utilizing all available compute resources and learning optimal configurations, we can achieve another [deferred speedup range] performance improvement beyond our already impressive gains.
 
 This isn't just about raw performance - it's about making high-performance computing accessible. Users shouldn't need to know about GPU thread blocks or Neural Engine tiles. They should just call `sporkle_execute()` and get optimal performance automatically.
 

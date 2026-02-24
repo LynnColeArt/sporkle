@@ -8,7 +8,7 @@
 Extend the Fortran GPU DSL to support Metal Shading Language (MSL) and Neural Engine, creating a truly unified interface for heterogeneous compute across AMD, Apple, and future backends.
 
 ## Motivation
-We've successfully built a Fortran DSL that translates to GLSL for AMD GPUs with adaptive parameter optimization. The same approach could benefit Apple Silicon, where we previously achieved 14 TFLOPS (90% of theoretical) through manual optimization. A unified DSL would:
+We've successfully built a Fortran DSL that translates to GLSL for AMD GPUs with adaptive parameter optimization. The same approach could benefit Apple Silicon, where we previously achieved [deferred throughput metric] (90% of theoretical) through manual optimization. A unified DSL would:
 
 1. Enable write-once, run-anywhere GPU kernels
 2. Apply adaptive optimization insights across all platforms

@@ -10,8 +10,8 @@ All notable changes to Sparkle will be documented in this file.
 
 ### Added
 - **Memory Wall Breakthrough**
-  - Cache-aware algorithms achieving 294x speedup on reductions
-  - Fused kernel operations reducing memory traffic by 2x
+  - Cache-aware algorithms achieving [deferred speedup] speedup on reductions
+  - Fused kernel operations reducing memory traffic by [deferred speedup]
   - L1/L2/L3 cache-aware tiling for matrix operations
   - Pure Fortran implementation with no vendor dependencies
 
@@ -25,12 +25,12 @@ All notable changes to Sparkle will be documented in this file.
   - Full parallel implementations of core kernels
   - SIMD vectorization hints for compiler optimization
   - Thread-safe execution with configurable limits
-  - Performance gains: 1.4-4.6x speedup on 14 cores
+  - Performance gains: [deferred speedup range] speedup on 14 cores
 
 ### Performance
-- **Single-threaded baseline**: 0.5-7.3 GFLOPS
-- **Parallel performance**: Up to 17 GFLOPS, 32 GB/s bandwidth
-- **Cache-aware reduction**: 294x faster than naive approach
+- **Single-threaded baseline**: 0.5-[deferred throughput metric]
+- **Parallel performance**: Up to [deferred throughput metric], [deferred bandwidth] bandwidth
+- **Cache-aware reduction**: [deferred speedup] faster than naive approach
 - **Memory bandwidth**: 64% of theoretical DDR4 maximum
 
 ### Documentation

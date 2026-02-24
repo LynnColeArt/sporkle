@@ -13,12 +13,12 @@ The Persistent Kernel Framework aims to eliminate redundant shader compilation a
 ### What We Have Now
 - **Single Program Model**: One global `g_compute_program` compiled at initialization
 - **Per-Session Compilation**: Shaders recompiled every run
-- **Async Executor**: Triple-buffered execution with 6.5x speedup
+- **Async Executor**: Triple-buffered execution with [deferred speedup] speedup
 - **Dynamic Shader System**: Generates variants but doesn't persist them
 
 ### Performance Impact
-- **Compilation Time**: ~50-100ms per shader (one-time cost per run)
-- **Program Switching**: ~0.1ms overhead when changing kernels
+- **Compilation Time**: ~50-[deferred latency] per shader (one-time cost per run)
+- **Program Switching**: ~[deferred latency] overhead when changing kernels
 - **Memory Pressure**: Each program uses ~100KB GPU memory
 - **Startup Time**: Could be reduced by 90% with cached binaries
 
@@ -164,11 +164,11 @@ call prune_cache(cache, max_age_days=30)
 
 ## Performance Targets
 
-- **Startup Time**: < 10ms (vs 500ms+ currently)
-- **Program Switch**: < 0.01ms (10x improvement)
+- **Startup Time**: < [deferred latency] (vs [deferred latency]+ currently)
+- **Program Switch**: < [deferred latency] ([deferred speedup] improvement)
 - **Memory Usage**: < 50MB for 100 cached programs
 - **Cache Hit Rate**: > 95% after warmup
-- **Binary Load Time**: < 5ms per program
+- **Binary Load Time**: < [deferred latency] per program
 
 ## File Structure
 
@@ -212,7 +212,7 @@ shader_cache/
 ## Success Metrics
 
 - ✅ Zero shader recompilation across runs
-- ✅ Sub-10ms startup time
+- ✅ Sub-[deferred latency] startup time
 - ✅ Seamless integration with existing code
 - ✅ Measurable performance improvement (5-10%)
 - ✅ Production-ready error handling

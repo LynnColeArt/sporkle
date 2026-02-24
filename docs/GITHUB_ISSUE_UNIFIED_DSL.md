@@ -25,7 +25,7 @@ We've successfully implemented:
 - Adaptive parameter passing optimization 
 - Working GPU compute on AMD via OpenGL
 
-We previously achieved 14 TFLOPS (90% theoretical) on Apple Silicon through manual optimization. This feature would bring those optimizations into our unified framework.
+We previously achieved [deferred throughput metric] (90% theoretical) on Apple Silicon through manual optimization. This feature would bring those optimizations into our unified framework.
 
 ### Proposed Solution
 1. Extend the shader parser to support multiple backend targets

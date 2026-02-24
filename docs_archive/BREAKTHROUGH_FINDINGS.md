@@ -6,18 +6,18 @@
 
 ## 🎉 CRITICAL DISCOVERY: OpenGL Driver Memory Trap Confirmed!
 
-Pod Claude's investigation identified a 2,600 GFLOPS performance ceiling that we've now definitively traced to **OpenGL driver stubbornness**. The driver was ignoring all device-local allocation hints and keeping our data in system RAM instead of true VRAM.
+Pod Claude's investigation identified a [deferred throughput metric] performance ceiling that we've now definitively traced to **OpenGL driver stubbornness**. The driver was ignoring all device-local allocation hints and keeping our data in system RAM instead of true VRAM.
 
 ## Evidence Summary
 
 ### 1. OpenGL Ceiling Confirmed
-- **Consistent limit**: 2,600-2,700 GFLOPS across all optimization attempts
+- **Consistent limit**: 2,600-[deferred throughput metric] across all optimization attempts
 - **All allocation strategies failed**: GL_STATIC_DRAW, staging buffers, persistent mapping
 - **Scaling failure**: 512×512 workloads showed 0.31× scaling vs 4× ideal
 
 ### 2. Vulkan Memory Test Results ✅
 ```
-Host-visible memory: 6.14 GB/s (system RAM)
+Host-visible memory: [deferred bandwidth] (system RAM)
 Device-local memory: Instantaneous allocation (true VRAM)
 Memory types detected: 11 types including pure DEVICE_LOCAL
 ```
@@ -25,8 +25,8 @@ Memory types detected: 11 types including pure DEVICE_LOCAL
 **Key Finding**: Vulkan correctly allocates device-local memory while OpenGL does not.
 
 ### 3. Performance Implications
-- **OpenGL bottleneck**: ~100 GB/s system memory bandwidth
-- **VRAM potential**: ~960 GB/s theoretical (AMD 7900 XT)
+- **OpenGL bottleneck**: ~[deferred bandwidth] system memory bandwidth
+- **VRAM potential**: ~[deferred bandwidth] theoretical (AMD 7900 XT)
 - **Expected speedup**: 6-10× possible with proper VRAM utilization
 
 ## Technical Root Cause
@@ -36,7 +36,7 @@ The OpenGL driver on our system:
 1. **Ignores allocation hints** (`GL_STATIC_DRAW`, etc.)
 2. **Keeps compute buffers in system RAM** despite GPU context
 3. **Uses PCIe transfers** for every shader execution
-4. **Limits effective bandwidth** to ~100 GB/s system memory
+4. **Limits effective bandwidth** to ~[deferred bandwidth] system memory
 
 ### Why Vulkan Works
 Vulkan provides:
@@ -48,14 +48,14 @@ Vulkan provides:
 ## Performance Breakthrough Potential
 
 ### Current State (OpenGL)
-- **Performance**: 2,600 GFLOPS
-- **Efficiency**: 6.5% of GPU theoretical peak (40 TFLOPS)
-- **Memory bandwidth**: ~6 GB/s effective
+- **Performance**: [deferred throughput metric]
+- **Efficiency**: 6.5% of GPU theoretical peak ([deferred throughput metric])
+- **Memory bandwidth**: ~[deferred bandwidth] effective
 
 ### Projected State (Vulkan)
-- **Performance**: 10,000-15,000 GFLOPS (estimated)
+- **Performance**: 10,000-[deferred throughput metric] (estimated)
 - **Efficiency**: 25-35% of GPU theoretical peak
-- **Memory bandwidth**: 400-800 GB/s (true VRAM)
+- **Memory bandwidth**: 400-[deferred bandwidth] (true VRAM)
 
 ## Action Plan
 
@@ -79,8 +79,8 @@ Vulkan provides:
 ## Validation Approach
 
 ### Benchmark Targets
-1. **Memory bandwidth test**: >400 GB/s to confirm VRAM residency
-2. **Compute performance**: >8,000 GFLOPS (3× OpenGL improvement)
+1. **Memory bandwidth test**: >[deferred bandwidth] to confirm VRAM residency
+2. **Compute performance**: >[deferred throughput metric] (3× OpenGL improvement)
 3. **Scaling verification**: 4× performance on 512×512 workloads
 
 ### Fallback Plan
@@ -112,7 +112,7 @@ This breakthrough validates our **Universal Memory Optimization** thesis:
 
 ## Conclusion: The Memory Wall is API-Specific!
 
-**The 2.6 TFLOPS ceiling was not a fundamental hardware limit - it was an OpenGL driver limitation.** 
+**The [deferred throughput metric] ceiling was not a fundamental hardware limit - it was an OpenGL driver limitation.** 
 
 Vulkan's explicit memory management provides the foundation for breaking through to true GPU performance. With proper VRAM utilization, we can expect:
 
