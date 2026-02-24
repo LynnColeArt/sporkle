@@ -1,5 +1,7 @@
 # Sporkle: A Novel Heterogeneous Computing Framework for Device-Agnostic Parallel Execution
 
+> ⚠️ **Unstable + Active Migration Notice (2026-02-24):** Sporkle is currently unstable and in active development as GPU support is migrating to **Kronos-compute**. Until this migration is complete and validated end-to-end, GPU runtime claims are provisional.
+
 > **Production posture (2026-02-24): Sporkle intends to route compute execution through Kronos as the sole production backend.**
 > PM4 and legacy OpenGL paths are historical/experimental and not part of supported production runtime.
 
