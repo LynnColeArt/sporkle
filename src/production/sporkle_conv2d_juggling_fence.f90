@@ -1,11 +1,11 @@
 ! Production Convolution with Fence-Based Juggling
 ! ===============================================
 !
-! Updated juggling system with fence synchronization for 60x speedup
+! Updated juggling system with fence synchronization
 !
 ! Key improvements:
 !   - Replace glFinish() with lightweight fences
-!   - <1µs sync overhead (down from 50µs)
+!   - Lower sync overhead than legacy glFinish path
 !   - Non-blocking GPU status checks
 !   - Timeout-based recovery
 
@@ -101,10 +101,10 @@ contains
     if (devices%gpu_available) then
       print '(A,A)', "       ", trim(devices%gpu_name)
       if (devices%fence_support) then
-        print *, "       ⚡ Fence synchronization enabled (60x speedup!)"
+        print *, "       ⚡ Fence synchronization enabled"
       end if
       if (async_gpu_enabled) then
-        print *, "       🚀 Async pipeline enabled (6.5x additional speedup!)"
+        print *, "       🚀 Async pipeline enabled"
       end if
     end if
     print *, ""
@@ -132,7 +132,7 @@ contains
   ! Enable async GPU execution
   subroutine enable_async_gpu_fence()
     async_gpu_enabled = .true.
-    print *, "✅ Async GPU execution enabled (3,630 GFLOPS!)"
+    print *, "✅ Async GPU execution enabled"
   end subroutine enable_async_gpu_fence
   
   ! Disable async GPU execution

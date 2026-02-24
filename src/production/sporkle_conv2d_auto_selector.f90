@@ -83,8 +83,8 @@ contains
       selector%devices(i)%caps%memory_bandwidth = 83.2  ! DDR5-5200 dual channel
       
       ! Set initial pattern performance based on what we know
-      selector%devices(i)%pattern_performance(PATTERN_CONV) = 90.0  ! Adaptive tiling
-      selector%devices(i)%pattern_performance(PATTERN_GEMM) = 160.0 ! Peak with AVX-512
+      selector%devices(i)%pattern_performance(PATTERN_CONV) = dev_caps%cpu_gflops
+      selector%devices(i)%pattern_performance(PATTERN_GEMM) = dev_caps%cpu_gflops
     end if
     
     ! Add GPU if available
@@ -104,12 +104,12 @@ contains
       selector%devices(i)%caps%supports_matrix_ops = .true.
       selector%devices(i)%caps%supports_async = .true.
       selector%devices(i)%caps%warp_size = 32  ! AMD wavefront
-      selector%devices(i)%caps%peak_gflops = 3630.0  ! Async pipeline performance
+      selector%devices(i)%caps%peak_gflops = max(1.0_sp, dev_caps%gpu_gflops)
       selector%devices(i)%caps%memory_bandwidth = 960.0  ! 7900 XT bandwidth
       
       ! Set initial pattern performance
-      selector%devices(i)%pattern_performance(PATTERN_CONV) = 3630.0  ! With async
-      selector%devices(i)%pattern_performance(PATTERN_GEMM) = 4000.0  ! Theoretical
+      selector%devices(i)%pattern_performance(PATTERN_CONV) = selector%devices(i)%caps%peak_gflops
+      selector%devices(i)%pattern_performance(PATTERN_GEMM) = selector%devices(i)%caps%peak_gflops
     end if
     
     ! Calculate total system capabilities

@@ -415,7 +415,7 @@ contains
         return
       end if
       
-      ! For now, use the proven reference implementation that achieves 451 GFLOPS
+      ! For now, use the reference implementation while dynamic path lands
       ! TODO: Extend to support arbitrary shader source compilation
       if (gpu_compile_conv2d_shader() /= 0) then
         prog_id = gpu_get_program_id()

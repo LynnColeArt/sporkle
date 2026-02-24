@@ -1,8 +1,7 @@
 ! Production interface for convolution with intelligent device selection
 ! Uses Universal Device Selector for optimal performance
 !
-! ✅ REAL GPU IMPLEMENTATION: 451 GFLOPS single, 3630 GFLOPS async!
-! ✅ CPU IMPLEMENTATION: 196.7 GFLOPS with AVX-512
+! ⚠️  Throughput figures in this module are unverified placeholders.
 
 module sporkle_conv2d_v2
   use kinds
@@ -57,7 +56,7 @@ contains
     end if
     
     if (async_executor_enabled) then
-      print *, "⚡ GPU Async Executor enabled by default (3,630 GFLOPS potential)"
+      print *, "⚡ GPU Async Executor enabled by default"
     end if
   end subroutine conv2d_init
   
@@ -133,19 +132,16 @@ contains
     case(2, 3, 4)  ! GPU (discrete or integrated)
       if (async_requested .and. selected_device == 2 .and. async_executor_enabled) then
         ! Async executor for discrete GPU
-        if (profiling_enabled) print '(A)', " ⚡ Executing on GPU with async pipeline (6.5x speedup!)"
+        if (profiling_enabled) print '(A)', " ⚡ Executing on GPU with async pipeline (feature in development)"
         
-        ! For demonstration, we simulate the async speedup
-        ! In a real implementation, we would:
+        ! In the current implementation, async execution currently executes a
+        ! single calibrated path without synthetic multipliers.
         ! 1. Initialize async executor if not done (requires separate weight buffer management)
         ! 2. Use gpu_async_conv2d from the executor
         ! 3. Handle async completion tracking
         
         elapsed_ms = execute_conv2d_gpu(input, weights, output, &
                                        N, C, H, W, K, kernel_size, stride, pad, H_out, W_out)
-        
-        ! Apply async speedup factor based on our benchmarks
-        elapsed_ms = elapsed_ms / 6.5_real64
         
         if (profiling_enabled) print '(A)', " 💡 Note: Full async integration pending (weight buffer management)"
         
@@ -203,7 +199,7 @@ contains
       avg_time = total_time / real(conv_count, real64)
       avg_gflops = total_gflops / real(conv_count, real64)
       print '(A,F8.2,A)', " Average time: ", avg_time, " ms"
-      print '(A,F8.1,A)', " Average performance: ", avg_gflops, " GFLOPS"
+      print '(A,F8.1,A)', " Average measured throughput: ", avg_gflops, " GFLOPS"
     end if
     
     print *, ""

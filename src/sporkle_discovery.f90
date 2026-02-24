@@ -29,8 +29,8 @@ contains
     handle%caps%vram_mb = cpu%capabilities%memory_bytes / (1024 * 1024)
     handle%caps%peak_gflops = real(cpu%capabilities%compute_units, rk64) * &
                               real(cpu%capabilities%clock_speed_ghz, rk64) * &
-                              8.0_rk64  ! Assume 8 FLOPS/cycle for modern CPU
-    handle%caps%sustained_gflops = handle%caps%peak_gflops * 0.7_rk64  ! 70% efficiency typical
+                              8.0_rk64  ! Roughly estimated default
+    handle%caps%sustained_gflops = handle%caps%peak_gflops * 0.7_rk64  ! Calibration placeholder
     handle%caps%mem_bw_gbs = 50.0_rk64  ! Typical DDR4 bandwidth
     handle%healthy = .true.
     handle%native = c_null_ptr  ! CPU doesn't need special handle
@@ -118,7 +118,7 @@ contains
         print '(A,A)', "  Type: ", dev%caps%kind
         print '(A,I0)', "  Cores/SMs: ", dev%caps%cores
         print '(A,I0,A)', "  Memory: ", dev%caps%vram_mb, " MB"
-        print '(A,F0.1,A)', "  Peak Performance: ", dev%caps%peak_gflops, " GFLOPS"
+        print '(A,F0.1,A)', "  Estimated peak (unvalidated): ", dev%caps%peak_gflops, " GFLOPS"
         print '(A,F0.1,A)', "  Memory Bandwidth: ", dev%caps%mem_bw_gbs, " GB/s"
         print '(A,L1)', "  Unified Memory: ", dev%caps%unified_mem
         print '(A,L1)', "  P2P Capable: ", dev%caps%p2p_direct
@@ -242,7 +242,7 @@ contains
               handle%caps%cores = 60  ! Conservative estimate
               handle%caps%sm_count = 60
               handle%caps%mem_bw_gbs = 400.0_rk64  ! Conservative bandwidth
-              handle%caps%peak_gflops = 20000.0_rk64  ! Conservative FLOPS
+              handle%caps%peak_gflops = 20000.0_rk64  ! Placeholder for unvalidated topology probing
               handle%caps%sustained_gflops = 10000.0_rk64
               handle%caps%unified_mem = .false.
               handle%caps%p2p_direct = .false.

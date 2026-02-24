@@ -2,9 +2,9 @@
 ! ======================================================
 !
 ! This module integrates:
-!   - CPU: Adaptive K×N tiling with AVX-512 (90-160 GFLOPS)
-!   - GPU: OpenGL reference implementation (451 GFLOPS synchronous)
-!   - GPU: Async pipeline with triple buffering (3,630 GFLOPS aggregate)
+!   - CPU: Adaptive K×N tiling with AVX-512
+!   - GPU: OpenGL reference implementation
+!   - GPU: Async pipeline with triple buffering (status in telemetry only)
 !   - Intelligent device selection and workload distribution
 !   - Universal memory optimization principles
 
@@ -39,7 +39,7 @@ module sporkle_conv2d_juggling
   
   ! Async GPU executor state
   type(gpu_async_state), save :: async_state
-  logical, save :: async_gpu_enabled = .true.  ! Enable by default for 3,630 GFLOPS!
+  logical, save :: async_gpu_enabled = .true.
   logical, save :: async_gpu_initialized = .false.
   integer, save :: gpu_weight_buffer = 0
   integer(i64), save :: weight_hash = 0  ! Simple hash to detect weight changes
@@ -123,7 +123,7 @@ contains
     if (devices%gpu_available) then
       print '(A,A)', "       ", trim(devices%gpu_name)
       if (async_gpu_enabled) then
-        print *, "       🚀 Async pipeline enabled (6.5x speedup!)"
+        print *, "       🚀 Async pipeline enabled"
       end if
     end if
     print *, ""
@@ -205,13 +205,13 @@ contains
   ! Enable async GPU execution
   subroutine enable_async_gpu()
     async_gpu_enabled = .true.
-    print *, "✅ Async GPU execution enabled (3,630 GFLOPS!)"
+    print *, "✅ Async GPU execution enabled"
   end subroutine enable_async_gpu
   
   ! Disable async GPU execution
   subroutine disable_async_gpu()
     async_gpu_enabled = .false.
-    print *, "ℹ️  Async GPU execution disabled (using synchronous 400 GFLOPS)"
+    print *, "ℹ️  Async GPU execution disabled (using synchronous GPU path)"
   end subroutine disable_async_gpu
   
   ! Simple hash function for weight change detection
