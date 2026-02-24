@@ -285,7 +285,16 @@ void vk_clear_buffer(void* buffer) {
 
 // Get actual VkBuffer handle
 VkBuffer vk_get_buffer_handle(void* buffer) {
+    if (!buffer) {
+        printf("❌ vk_get_buffer_handle called with NULL buffer\n");
+        return VK_NULL_HANDLE;
+    }
+
     vulkan_buffer_full_t* buf = (vulkan_buffer_full_t*)buffer;
+    if (!buf->buffer) {
+        printf("❌ vk_get_buffer_handle found NULL VkBuffer\n");
+        return VK_NULL_HANDLE;
+    }
     return buf->buffer;
 }
 

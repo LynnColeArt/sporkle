@@ -240,6 +240,10 @@ static uint32_t find_memory_type(uint32_t type_filter, VkMemoryPropertyFlags pro
 
 // Allocate buffer with explicit memory control
 void* vk_allocate_buffer(size_t size_bytes, int device_local) {
+    if (!g_device || g_physical_device == VK_NULL_HANDLE) {
+        printf("❌ Vulkan device not initialized\n");
+        return NULL;
+    }
     if (size_bytes == 0) return NULL;
 
     vulkan_buffer_t* buf = calloc(1, sizeof(vulkan_buffer_t));
@@ -332,12 +336,22 @@ void vk_free_buffer(void* buffer) {
 void* vk_map_buffer(void* buffer) {
     if (!buffer) return NULL;
     vulkan_buffer_t* buf = (vulkan_buffer_t*)buffer;
-    return buf->mapped_ptr;  // Already mapped for HOST_VISIBLE buffers
+    if (!buf->mapped_ptr) {
+        printf("❌ vk_map_buffer called on non-mapped or device-local buffer\n");
+        return NULL;
+    }
+    return buf->mapped_ptr;
 }
 
 // Unmap buffer (no-op for persistent mapping)
 void vk_unmap_buffer(void* buffer) {
-    // No-op - we use persistent mapping
+    if (!buffer || !g_device) return;
+
+    vulkan_buffer_t* buf = (vulkan_buffer_t*)buffer;
+    if (buf->mapped_ptr) {
+        vkUnmapMemory(g_device, buf->memory);
+        buf->mapped_ptr = NULL;
+    }
 }
 
 // Shader and pipeline state
@@ -667,12 +681,19 @@ void vk_free_shader(void* shader) {
 
 // Fence operations
 void* vk_create_fence() {
+    if (!g_device) {
+        printf("❌ vk_create_fence called before Vulkan device init\n");
+        return NULL;
+    }
+
     VkFence fence;
     VkFenceCreateInfo fence_info = {
         .sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO
     };
 
-    if (vkCreateFence(g_device, &fence_info, NULL, &fence) != VK_SUCCESS) {
+    VkResult result = vkCreateFence(g_device, &fence_info, NULL, &fence);
+    if (result != VK_SUCCESS) {
+        printf("❌ Failed to create fence (error=%d)\n", result);
         return NULL;
     }
 
@@ -680,6 +701,10 @@ void* vk_create_fence() {
 }
 
 void vk_wait_fence(void* fence, uint64_t timeout_ns) {
+    if (!g_device) {
+        printf("❌ vk_wait_fence called before Vulkan device init\n");
+        return;
+    }
     if (!fence) return;
     VkFence vk_fence = (VkFence)fence;
     if (vkWaitForFences(g_device, 1, &vk_fence, VK_TRUE, timeout_ns) != VK_SUCCESS) {
@@ -688,6 +713,10 @@ void vk_wait_fence(void* fence, uint64_t timeout_ns) {
 }
 
 void vk_reset_fence(void* fence) {
+    if (!g_device) {
+        printf("❌ vk_reset_fence called before Vulkan device init\n");
+        return;
+    }
     if (!fence) return;
     VkFence vk_fence = (VkFence)fence;
     if (vkResetFences(g_device, 1, &vk_fence) != VK_SUCCESS) {

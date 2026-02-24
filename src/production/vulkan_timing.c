@@ -18,6 +18,11 @@ static float g_timestamp_period = 1.0f;
 
 // Initialize timing query pool
 int vk_init_timing() {
+    if (!g_device || !g_physical_device) {
+        printf("❌ Vulkan globals not initialized for timing\n");
+        return 0;
+    }
+
     // Get timestamp period
     VkPhysicalDeviceProperties props;
     vkGetPhysicalDeviceProperties(g_physical_device, &props);
@@ -51,12 +56,24 @@ void vk_cleanup_timing() {
 
 // Record timestamp in command buffer
 void vk_cmd_timestamp(VkCommandBuffer cmd, uint32_t query_index, VkPipelineStageFlagBits stage) {
+    if (!cmd || !g_query_pool) {
+        printf("❌ vk_cmd_timestamp called with invalid state\n");
+        return;
+    }
     vkCmdWriteTimestamp(cmd, stage, g_query_pool, query_index);
 }
 
 // Get elapsed time between two queries in milliseconds
 float vk_get_elapsed_ms(uint32_t start_query, uint32_t end_query) {
     uint64_t timestamps[2];
+    if (!g_device || !g_query_pool) {
+        printf("❌ vk_get_elapsed_ms called before timing resources are initialized\n");
+        return -1.0f;
+    }
+    if (end_query <= start_query) {
+        printf("❌ vk_get_elapsed_ms invalid query range\n");
+        return -1.0f;
+    }
 
     // Get query results
     VkResult result = vkGetQueryPoolResults(g_device, g_query_pool,
@@ -77,7 +94,7 @@ float vk_get_elapsed_ms(uint32_t start_query, uint32_t end_query) {
 
 // Reset queries before use
 void vk_reset_queries(uint32_t first_query, uint32_t query_count) {
-    if (!g_query_pool) {
+    if (!g_device || !g_query_pool || query_count == 0) {
         return;
     }
 
@@ -98,7 +115,8 @@ float vk_dispatch_compute_timed(VkCommandBuffer cmd_buffer,
     printf("DEBUG: g_device=%p, g_query_pool=%p, g_compute_queue=%p\n",
            (void*)g_device, (void*)g_query_pool, (void*)g_compute_queue);
 
-    if (!g_device || !g_query_pool || !g_compute_queue) {
+    if (!cmd_buffer || !g_device || !g_query_pool || !g_compute_queue ||
+        !pipeline || !layout || !descriptor_set || groups_x == 0 || groups_y == 0 || groups_z == 0) {
         printf("❌ Vulkan globals not initialized!\n");
         return -1.0f;
     }
