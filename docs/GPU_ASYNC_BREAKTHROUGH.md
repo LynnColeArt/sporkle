@@ -6,7 +6,7 @@
 
 ## The Discovery
 
-We've proven that simple double buffering can improve GPU performance by 7-8%, but more importantly, we've validated our approach to solving the GPU idle time problem.
+Historical evidence shows simple double buffering can improve GPU performance by 7-8%, and it supports the broader approach to solving the GPU idle-time problem.
 
 ## Proof of Concept Results
 
@@ -35,7 +35,7 @@ Effective GFLOPS: 27.1 (8% improvement)
 
 ## Key Insights
 
-1. **Immediate Win**: Even simple double buffering gives 7-8% speedup
+1. **Immediate Signal**: Even simple double buffering indicates a 7-8% speedup path
 2. **Validation**: We can accurately measure and reduce GPU idle time
 3. **Scaling**: Smaller kernels will show even more dramatic improvements
 
@@ -132,14 +132,14 @@ function is_gpu_work_complete(state, batch_id) result(complete)
 end function
 ```
 
-## Production Implementation Results: [deferred speedup] Real Speedup Achieved! 🚀
+## Production-Oriented Integration Results: [deferred speedup] Revalidation Targets 🚀
 
-### Complete Implementation Status
+### Historical Implementation Status
 1. ✅ **Simple double buffering**: 7-8% improvement (POC)
 2. ✅ **OpenGL sync objects**: Full fence-based async execution implemented
 3. ✅ **Triple buffering**: 3 buffer sets with automatic rotation
 4. ✅ **Real GPU integration**: Connected to production convolution kernels
-5. ✅ **Production async executor**: `gpu_async_executor.f90` complete
+5. ✅ **Reference async executor**: `gpu_async_executor.f90` complete (historical reference path)
 
 ### Final Performance Results
 
@@ -161,7 +161,7 @@ end function
 - **Real GPU compute**: Integrated with actual OpenGL compute shaders
 - **Fence-based sync**: `glFenceSync`/`glClientWaitSync` for non-blocking execution
 - **Continuous pipeline**: GPU never sits idle between batches
-- **Production ready**: Full error handling and statistics tracking
+- **Reference status**: Full error handling and statistics tracking are implemented for the historical reference path; active production validation is in recovery.
 
 ### The Revolutionary Impact
 
@@ -176,8 +176,8 @@ To:
      ↑ Continuous GPU utilization, zero idle time ↑
 ```
 
-**This validates our universal memory optimization thesis**: The same pipeline principles that optimize CPU cache utilization also optimize GPU compute throughput. Continuous feeding eliminates bottlenecks across all compute architectures.
+**This supports the thesis direction**: The same pipeline principles that optimize CPU cache utilization also target GPU compute throughput improvements. Continuous feeding is the direction for reducing bottlenecks in recovery.
 
-## Implementation Complete
+## Historical Implementation Status
 
-The GPU async executor (`src/gpu_async_executor.f90`) is production-ready and demonstrates the massive performance potential of continuous GPU pipelines. This foundation enables [deferred throughput metric] sustained performance and validates the path to universal memory optimization across all compute devices.
+The GPU async executor (`src/gpu_async_executor.f90`) demonstrates the historical prototype behavior of continuous GPU pipelines. This foundation enables [deferred throughput metric] target envelopes during active revalidation of Kronos-only production dispatch.

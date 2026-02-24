@@ -89,6 +89,6 @@ The adaptive parameter passing system is designed to benchmark and select the op
 
 ## Notes
 - The system architecture is sound
-- Parser and GLSL generation are production-ready
+- Parser and GLSL generation are implemented
 - GPU execution layer needs implementation
 - Consider whether INLINE method is worth the recompilation cost

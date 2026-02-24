@@ -6,7 +6,7 @@
 
 ## Summary
 
-The GPU async executor with triple buffering has been integrated into the production device juggling system. This provides a **[deferred speedup] speedup** over synchronous execution, achieving **[deferred throughput metric] aggregate throughput**.
+The GPU async executor with triple buffering is integrated into the recovery-oriented production device juggling path. The documented speedup and throughput values remain deferred placeholders and are revalidation targets, not final verified claims.
 
 ## Architecture
 
@@ -20,7 +20,7 @@ The GPU async executor with triple buffering has been integrated into the produc
 
 1. **sporkle_conv2d_juggling.f90**
    - Added async executor support
-   - Async enabled by default (`async_gpu_enabled = .true.`)
+   - Async is currently enabled by default in the recovery build (`async_gpu_enabled = .true.`)
    - Falls back to synchronous if disabled
    - Manages weight buffer lifetime
 
@@ -76,7 +76,7 @@ call enable_async_gpu()  ! Back to [deferred throughput metric]
 
 ## Testing
 
-The async executor will be tested in the morning with the full production test suite. Key tests:
+The async executor is staged for Kronos-first recovery verification. Required checks include:
 - Correctness validation
 - Performance benchmarking
 - Memory leak detection

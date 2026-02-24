@@ -2,24 +2,24 @@
 > Quantified performance and benchmark claims in this repository history are in recovery and should not be treated as current production facts until revalidated under the Kronos-first flow.
 
 
-# Universal Memory Optimization Breakthrough
+# Universal Memory Optimization Notes
 
 ## The Revolutionary Achievement
 
 **Date**: August 16, 2025  
-**Achievement**: First framework to prove identical memory optimization patterns achieve high performance across all compute architectures  
-**Performance**: [deferred throughput metric] GPU + [deferred throughput metric] CPU using the same optimization principles  
+**Achievement**: Recovery-oriented implementation of cross-architecture memory optimization patterns under deferred validation  
+**Performance**: [deferred throughput metric] GPU + [deferred throughput metric] CPU placeholders using the same optimization principles  
 
 ## Executive Summary
 
-Sparkle has achieved a fundamental breakthrough in heterogeneous computing: **the first demonstration that universal memory optimization patterns can achieve high performance across radically different compute architectures**. By applying the same optimization principles to both CPU and GPU, we've created a framework that:
+Sparkle has implemented a recovery-era thesis in heterogeneous computing: **universal memory optimization patterns can be applied across radically different compute architectures**. By applying the same optimization principles to both CPU and GPU, the framework tracks:
 
-- Achieves **[deferred throughput metric] on AMD RX 7900 XTX GPU** using OpenGL compute shaders
-- Achieves **[deferred throughput metric] on AMD Ryzen 7900X CPU** using the same optimization patterns  
+- Tracks **[deferred throughput metric] targets on AMD RX 7900 XTX GPU** using OpenGL compute shaders
+- Tracks **[deferred throughput metric] targets on AMD Ryzen 7900X CPU** using the same optimization patterns  
 - Implements **intelligent device juggling** that makes optimal scheduling decisions
 - Provides **universal memory optimization patterns** that work across architectures
 
-This breakthrough represents a paradigm shift from device-specific optimization to **universal optimization principles** that adapt to any compute architecture.
+This work documents a shift toward **universal optimization principles** intended to adapt across compute architectures.
 
 ## The Core Insight: Universal Memory Optimization Patterns
 
@@ -128,7 +128,7 @@ end if
 
 ## Performance Results
 
-### Production Performance Achievements
+### Historical Performance Profiles
 
 | Device | Architecture | Performance | Efficiency | Optimization Patterns |
 |--------|--------------|-------------|------------|---------------------|
@@ -158,8 +158,8 @@ The system correctly chooses optimal devices and learns from actual performance.
 Key functions:
 - `detect_memory_params()`: Auto-detect cache hierarchy and memory characteristics
 - `cache_optimal_tile_size()`: Calculate optimal tile sizes using cache-oblivious principles  
-- `gemm_universal_memory()`: High-performance GEMM using proven [deferred throughput metric] techniques
-- `fused_conv2d_cpu()`: Complete convolution pipeline with universal patterns
+- `gemm_universal_memory()`: High-performance GEMM using provisional [deferred throughput metric] techniques
+- `fused_conv2d_cpu()`: Convolution pipeline with universal patterns
 
 ### Intelligent Device Juggling Module
 **Location**: `src/reference/intelligent_device_juggling.f90`
@@ -170,10 +170,10 @@ Key functions:
 - `execute_intelligent_conv2d()`: Smart execution with learning
 - `update_performance_model()`: Adaptive learning based on actual results
 
-### Production Integration
+### Integration Path
 **Location**: `src/production/sporkle_conv2d.f90`
 
-The universal patterns are fully integrated into production:
+The universal patterns are currently routed through recovery-oriented integration points:
 ```fortran
 case("reference")
   ! Use high-performance reference implementation
@@ -186,26 +186,26 @@ case("reference")
 ### Before: Device-Specific Optimization
 - **GPU**: Write CUDA/OpenCL kernels with device-specific tricks
 - **CPU**: Write different algorithms optimized for x86 cache hierarchy  
-- **Result**: Completely different codebases, difficult to maintain
+- **Result**: Multiple codepaths remain across CPU and GPU paths; code unification work is ongoing
 
 ### After: Universal Memory Optimization
-- **GPU**: Apply universal memory patterns via OpenGL compute shaders ([deferred throughput metric])
+- **GPU**: Apply universal memory patterns via historical OpenGL compute shader path ([deferred throughput metric])
 - **CPU**: Apply same universal memory patterns via OpenMP SIMD ([deferred throughput metric])
-- **Result**: Same optimization principles, unified codebase, proven performance
+- **Result**: Same optimization principles are being revalidated across codepaths during recovery
 
-**The Breakthrough**: We've proven that **memory optimization patterns are universal**. The same techniques that make GPUs fast (cache-optimal tiling, vectorized access, arithmetic intensity amplification) also make CPUs fast when applied correctly.
+**The Breakthrough**: We maintain that **memory optimization patterns are universal** in principle. The same techniques that make GPUs fast (cache-optimal tiling, vectorized access, arithmetic intensity amplification) also apply to CPUs when applied correctly.
 
 ## Validation and Testing
 
 ### Test Suite
 - `test_universal_memory_optimization.f90`: Validates universal patterns work on both architectures
 - `test_intelligent_device_juggling.f90`: Demonstrates smart device selection
-- `test_production_conv2d.f90`: Verifies production integration
+- `test_production_conv2d.f90`: Exercises routed integration points
 
 ### Continuous Integration
-All tests pass with the universal framework maintaining:
+Recovery verification is actively in progress for the reported suite:
 - **Performance**: [deferred throughput metric] GPU, [deferred throughput metric] CPU
-- **Correctness**: CPU and GPU results match (when using correct implementations)
+- **Correctness**: Focus remains on reference-path behavior during revalidation
 - **Intelligence**: Optimal device selection for different workload sizes
 
 ## Future Directions
@@ -222,7 +222,7 @@ All tests pass with the universal framework maintaining:
 
 ## Conclusion
 
-The Universal Memory Optimization Breakthrough represents a fundamental shift in how we think about heterogeneous computing. By proving that the same optimization patterns can achieve high performance across radically different architectures, we've opened the door to:
+The Universal Memory Optimization notes document a recovery posture for heterogeneous computing. The same optimization patterns are intended to work across radically different architectures:
 
 - **Simplified development**: Write once, optimize everywhere
 - **Intelligent frameworks**: Systems that make smart decisions about resource usage
@@ -232,7 +232,7 @@ The Universal Memory Optimization Breakthrough represents a fundamental shift in
 
 ---
 
-*This breakthrough was achieved through the collaborative partnership of Lynn and Claude, demonstrating that human creativity combined with AI assistance can solve fundamental challenges in computer science.*
+*This status reflects collaborative tracking across the project and remains provisional pending Kronos-first revalidation.*
 
 ## References
 

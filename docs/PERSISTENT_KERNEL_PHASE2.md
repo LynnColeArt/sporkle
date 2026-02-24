@@ -2,11 +2,11 @@
 > Quantified performance and benchmark claims in this repository history are in recovery and should not be treated as current production facts until revalidated under the Kronos-first flow.
 
 
-# Persistent Kernel Framework - Phase 2 Complete ✅
+# Persistent Kernel Framework - Phase 2 Recovery-Oriented ✅
 
 ## Binary Persistence Implementation
 
-We've successfully implemented Phase 2 of the persistent kernel framework, adding binary persistence capabilities to eliminate shader recompilation across application restarts.
+Phase 2 of the persistent kernel framework is implemented with binary persistence work for reducing shader recompilation across application restarts in recovery-oriented integration.
 
 ## What We Built
 
@@ -24,7 +24,7 @@ We've successfully implemented Phase 2 of the persistent kernel framework, addin
 
 ### 3. **Binary Persistence Test** (`test_binary_persistence.f90`)
 - Demonstrates save/load cycle
-- Shows performance improvements
+- Tracks persistence behavior for follow-up revalidation
 - Validates error handling
 
 ## Architecture
@@ -101,11 +101,11 @@ call warm_cache_from_disk(cache, ["shader1", "shader2", "shader3"])
 - **Startup Time**: [deferred speedup] faster for shader-heavy applications
 - **Memory**: Reduced redundant GPU allocations
 
-### Current Test Results:
+### Current Test Results (recovery scope):
 - Successfully saves binaries to disk (6KB each)
 - Creates proper directory structure
 - Handles errors gracefully
-- Ready for integration with real shader compilation
+- Ready for integration with real shader compilation in production wiring work
 
 ## Error Handling
 
@@ -135,14 +135,14 @@ The implementation maintains Sparkle's high standards:
 - Clean separation of concerns
 - Comprehensive error handling
 - Clear logging and diagnostics
-- Ready for production use
+- Integration with active runtime remains recovery-scoped
 
 ## Summary
 
-Phase 2 successfully adds binary persistence to the persistent kernel framework. While the test uses simulated shaders (showing failed loads), the infrastructure is complete and ready for integration with real OpenGL shader compilation. The binary save/load mechanism works correctly, creating proper file structures and handling all edge cases.
+Phase 2 adds binary persistence to the persistent kernel framework. While the test uses simulated shaders (showing failed loads), the infrastructure is in recovery integration and is ready for wiring to real shader compilation. The binary save/load mechanism is in place, creating file structures and handling key edge cases.
 
-The foundation is now set for true "compile once, run forever" GPU kernels in Sparkle!
+The foundation is now set for persistent kernel reuse once execution wiring is complete under Kronos-first recovery.
 
 ---
 
-*Lynn, Phase 2 is complete! We've built a robust binary persistence layer that will eliminate shader recompilation overhead across application restarts. The infrastructure is solid and ready for integration with the production GPU pipeline. 🚀*
+*Lynn, Phase 2 is implemented at the framework level. The binary persistence layer is designed to reduce shader recompilation overhead across application restarts. Active integration with the production GPU pipeline remains under Kronos-first validation. 🚀*

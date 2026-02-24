@@ -135,7 +135,7 @@ program_id = get_cached_program_v2(cache, shader_source, cache_key, compile_real
 - Each unintegrated component represents working code that could provide performance benefits
 - Integration should be done incrementally with thorough testing
 - PM4 components are archived and non-production
-- The persistent kernel cache is the closest to being production-ready
+- The persistent kernel cache is the closest to Kronos-first integration readiness
 
 ---
 

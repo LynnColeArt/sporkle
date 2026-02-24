@@ -4,19 +4,19 @@
 
 # Weekend Epic 2: Universal Memory Optimization Revolution
 
-## 🎯 Mission: Complete the Universal Memory Framework
+## 🎯 Mission: Advance the Universal Memory Framework
 
-We've achieved a massive breakthrough - successfully extracting the [deferred throughput metric] GPU implementation from test harnesses into production modules. Now we finish the revolution: prove that universal memory optimization patterns work across all compute architectures.
+This document records historical milestone work; active production status remains Kronos-first recovery.
 
 ## 🏆 What We've Already Conquered
 
-✅ **Production GPU Integration Complete**
+✅ **Historical GPU Integration Milestone**
 - [deferred throughput metric] convolution extracted from test harnesses
 - Reference implementation in `src/reference/gpu_opengl_reference.c`
 - Production interface in `src/production/sporkle_conv2d.f90`
 - Clean Fortran API via `src/reference/gpu_opengl_interface.f90`
 - Build system integration with C/Fortran linking
-- Framework compiles and runs through production interface
+- Framework compiled and ran through a historical production interface path
 
 ✅ **Architectural Revolution**
 - CLAUDE.md updated to reflect universal memory optimization vision
@@ -25,7 +25,7 @@ We've achieved a massive breakthrough - successfully extracting the [deferred th
 
 ## 🚀 Weekend Epic Objectives
 
-### Phase 1: Complete GPU Production Integration ✅ COMPLETE
+### Phase 1: GPU Production Integration Track ✅ HISTORICAL
 **Achievement**: [deferred throughput metric] single kernel, [deferred throughput metric] with async executor
 **Breakthrough**: [deferred speedup] speedup through intelligent pipeline architecture
 
@@ -117,7 +117,7 @@ Create definitive guide showing how same patterns work everywhere:
 ```
 
 ### Phase 4: Framework Completion (Day 2 Evening)
-**Mission**: Production-ready universal compute framework
+**Mission**: Recovery-oriented universal compute framework
 
 #### 4.1 Connect AMD Device Integration
 - **Current**: AMDGPU direct implementation exists but isolated
@@ -148,9 +148,9 @@ Create definitive guide showing how same patterns work everywhere:
 - [x] **Verification**: CPU/GPU results match perfectly ✅
 
 ### Tier 3: Universal Memory Proof
-- [x] **Same optimization patterns** achieve high performance on both CPU and GPU ✅
+- [x] **Same optimization patterns** show reference behavior on both CPU and GPU ✅
 - [x] **Documentation** of universal memory principles (see docs/GPU_ASYNC_REALITY_CHECK.md) ✅
-- [ ] **Framework** that automatically applies patterns to any device (manual selection for now)
+- [ ] **Framework** that can apply patterns to more devices with broader runtime coverage (manual selection today)
 
 ## 🔧 Implementation Strategy
 
@@ -184,32 +184,32 @@ Create definitive guide showing how same patterns work everywhere:
 
 ## 🎉 Victory Conditions
 
-**🥇 Gold**: Universal memory optimization framework complete
-- [deferred throughput metric] GPU + [deferred throughput metric] CPU using same optimization principles
-- Production interface delivers both with automatic fallback
-- Documentation proves universal memory optimization thesis
+**🥇 Gold**: Recovery milestone for universal memory optimization framework
+- [deferred throughput metric] GPU + [deferred throughput metric] CPU using same optimization principles (historical targets)
+- Production interface aspires to automatic fallback after revalidation
+- Documentation tracks ongoing universal memory optimization thesis work
 
 **🥈 Silver**: High-performance dual implementation
 - Both CPU and GPU achieve target performance
 - Clear evidence that same patterns work on both architectures
 
-**🥉 Bronze**: GPU production integration complete
-- [deferred throughput metric] through production interface
-- Framework ready for CPU optimization in future
+**🥉 Bronze**: Historical GPU production integration milestone
+- [deferred throughput metric] through historical production interface
+- Framework readiness for CPU optimization remains staged
 
 ## 🔥 The Big Picture
 
-This weekend we complete the transition from "CUDA replacement" to "universal memory optimization framework." We prove that the same memory access patterns that make GPUs fast also make CPUs fast.
+This document is part of a staged transition from device-specific optimization to a universal memory optimization framework. The same memory access patterns remain a design hypothesis across CPUs and GPUs in recovery.
 
-When we're done, Sparkle will be the first framework where:
-- **One codebase** optimizes for all devices
-- **Universal principles** replace device-specific hacks  
+Target outcome for this roadmap is to be a framework where:
+- **One codebase** aims to optimize across all devices
+- **Universal principles** aim to replace device-specific hacks  
 - **Memory optimization** is the unifying abstraction
-- **Performance** comes from understanding memory, not device APIs
+- **Performance** is expected to come from understanding memory, not device APIs
 
-This is the foundation for the "People's AI" vision - a framework so optimized and universal that it democratizes high-performance computing across any hardware.
+This tracks toward the "People's AI" vision - a framework intended to make optimization more approachable across a wider hardware spectrum.
 
-Let's make history! 🚀
+Progress is ongoing. 🚀
 
 ---
 
@@ -239,7 +239,7 @@ The GPU is a river, not a bucket - keep it flowing!
 - Exceeded the [deferred throughput metric] target by nearly [deferred speedup]!
 
 ### ✅ GPU Dynamic Shader Generation
-- Implemented complete dynamic shader generation system
+- Implemented dynamic shader generation system
 - Architecture detection differentiates RDNA3 from GCN
 - Achieved **[deferred throughput metric]** with RDNA3 dual-issue optimization
 - 10% improvement over baseline through architectural adaptation
@@ -259,11 +259,11 @@ The GPU is a river, not a bucket - keep it flowing!
 
 ## Next Steps
 
-### ✅ GPU Async Proof of Concept Complete!
+### ✅ GPU Async Proof of Concept Historical Mark
 - Measured real GPU idle time: [deferred latency] out of [deferred latency] (16% idle)
-- Achieved 7-8% speedup with simple double buffering
+- Observed 7-8% speedup with simple double buffering (historical)
 - Validated approach: 25.1 → [deferred throughput metric] with basic async
-- Proved we can overlap CPU/GPU work effectively
+- Demonstrated overlap of CPU/GPU work in staged experiments
 
 ### 1. **Implement Full Async GPU Pipeline** (NEXT)
    - Add OpenGL sync objects (glFenceSync/glClientWaitSync)
@@ -288,7 +288,7 @@ The GPU is a river, not a bucket - keep it flowing!
 
 ## 🚀 ASYNC BREAKTHROUGH: [deferred speedup] Real Speedup Achieved!
 
-### ✅ Complete GPU Async Implementation Finished!
+### ✅ Historical GPU Async Implementation Mark
 - **Production async executor**: `gpu_async_executor.f90` with OpenGL sync objects
 - **Triple buffering**: 3 buffer sets with automatic rotation
 - **Fence-based sync**: Non-blocking execution via `glFenceSync`/`glClientWaitSync`
@@ -307,22 +307,22 @@ The GPU is a river, not a bucket - keep it flowing!
 - **Key Insight**: Reference returns averaged time ([deferred latency] = [deferred latency]/20)
 - **Per-Kernel Overhead**: Reduced from [deferred latency] to [deferred latency]
 
-### 🎯 Mission Accomplished
-The async executor validates our universal memory optimization thesis:
-- **Continuous GPU pipeline** eliminates bottlenecks
-- **Same memory patterns** that optimize CPU caches optimize GPU throughput
-- **Pipeline architecture** works across all compute devices
-- **Production ready** framework achieving [deferred throughput metric] sustained performance
+### 🎯 Mission Progress
+The async executor is a historical reference for pipeline behavior:
+- **Continuous GPU pipeline** is the target in recovery
+- **Same memory patterns** that optimize CPU caches are used to guide GPU throughput work
+- **Pipeline architecture** is expected to scale across additional devices
+- **Recovery-stage** framework targeting [deferred throughput metric] sustained performance
 
-The GPU idle time problem is **solved**. The async executor demonstrates that proper memory optimization patterns can achieve massive performance improvements across all architectures - exactly as predicted by our universal memory optimization framework vision.
+The GPU idle time problem was partially mitigated in targeted experiments. The async executor demonstrates that proper memory optimization patterns can improve pipeline behavior across selected architectures - aligned with the universal memory optimization framework direction.
 
 ## 📋 Weekend Epic Final Status
 
-### ✅ Completed Achievements
+### ✅ Historical Completion Log
 1. **GPU Async Executor**: [deferred speedup] speedup, [deferred throughput metric] aggregate throughput
 2. **CPU SIMD Optimization**: [deferred throughput metric] with AVX-512 ([deferred speedup] improvement)
-3. **Universal Memory Patterns**: Proven to work across CPU and GPU
-4. **Production Integration**: Everything works through clean APIs
+3. **Universal Memory Patterns**: Demonstrated across CPU and GPU reference paths
+4. **Production Integration**: Integration paths are staged for recovery verification and Kronos-first reruns
 5. **Documentation**: Comprehensive docs explaining all performance numbers
 
 ### 🔲 Remaining Tasks (Optional)
@@ -332,10 +332,10 @@ The GPU idle time problem is **solved**. The async executor demonstrates that pr
 4. **Persistent Kernel Framework**: Keep shaders running continuously
 5. **Push to [deferred throughput metric] CPU**: Current 196.7 is great, but room for more
 
-### 🎯 Mission Status: SUCCESS!
-We've proven that universal memory optimization patterns work across architectures:
+### 🎯 Mission Status: In Recovery Validation
+The project is tracking that universal memory optimization patterns appear to work across architectures:
 - **CPU**: [deferred throughput metric] using cache-optimal tiling and SIMD
 - **GPU**: [deferred throughput metric] single kernel, [deferred throughput metric] with async pipeline
 - **Same Principles**: Cache locality, vectorization, and pipeline optimization work everywhere
 
-The framework delivers massive real-world performance improvements and validates our vision!
+The framework demonstrates directional progress while broad evidence remains staged.
