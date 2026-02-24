@@ -141,6 +141,27 @@ contains
     integer, intent(in), optional :: flags
     character(len=*), intent(in), optional :: tag
     type(memory_handle) :: handle
+    type(sporkle_buffer) :: device_buffer
+    logical :: request_pinned
+
+    if (size <= 0_i64) then
+      print *, "ERROR: Invalid device allocation size:", size
+      handle%is_allocated = .false.
+      handle%size = 0
+      handle%ptr = c_null_ptr
+      handle%device_id = device%device_id
+      if (present(flags)) then
+        handle%flags = flags
+      else
+        handle%flags = MEM_DEFAULT
+      end if
+      if (present(tag)) then
+        handle%tag = tag
+      else
+        handle%tag = "device_mem"
+      end if
+      return
+    end if
     
     handle%size = size
     handle%device_id = device%device_id
@@ -156,18 +177,31 @@ contains
     else
       handle%tag = "device_mem"
     end if
-    
-    ! Device allocation delegated to device implementation
-    ! For now, use host memory until we update device interface
-    handle%ptr = c_null_ptr
-    handle%is_allocated = .false.
-    print *, "NOTE: Device memory allocation not yet implemented - using placeholder"
+
+    request_pinned = iand(handle%flags, MEM_PINNED) /= 0
+    if (request_pinned) then
+      device_buffer = device%allocate(size_bytes=size, pinned=.true.)
+    else
+      device_buffer = device%allocate(size_bytes=size)
+    end if
+
+    if (c_associated(device_buffer%data) .and. device_buffer%size_bytes > 0) then
+      handle%ptr = device_buffer%data
+      handle%size = device_buffer%size_bytes
+      handle%is_allocated = .true.
+    else
+      print *, "ERROR: Failed to allocate ", size, " bytes for ", trim(handle%tag), " on device ", device%device_id
+      handle%ptr = c_null_ptr
+      handle%size = 0
+      handle%is_allocated = .false.
+    end if
     
   end function create_memory_device
   
   subroutine destroy_memory(handle, device)
     type(memory_handle), intent(inout) :: handle
     class(compute_device), intent(in), optional :: device
+    type(sporkle_buffer) :: device_buffer
     
     if (.not. handle%is_allocated) return
     
@@ -177,10 +211,18 @@ contains
     else
       ! Device memory
       if (present(device)) then
-        ! For now, skip device deallocation until we update interface
-        print *, "NOTE: Device memory deallocation not yet implemented"
+        if (device%device_id /= handle%device_id) then
+          print *, "ERROR: Device mismatch when freeing memory handle for ", trim(handle%tag)
+          error stop "Memory handle freed on wrong device"
+        end if
+        device_buffer%data = handle%ptr
+        device_buffer%size_bytes = handle%size
+        device_buffer%owning_device = handle%device_id
+        device_buffer%is_pinned = iand(handle%flags, MEM_PINNED) /= 0
+        call device%deallocate(device_buffer)
       else
-        print *, "WARNING: Device memory leak - no device provided for deallocation"
+        print *, "ERROR: Device memory leak - missing deallocation device for ", trim(handle%tag)
+        error stop "Device memory deallocation requires explicit device context"
       end if
     end if
     
@@ -220,9 +262,8 @@ contains
       success = .true.
       
     case (MEM_HOST_TO_DEVICE, MEM_DEVICE_TO_HOST, MEM_DEVICE_TO_DEVICE)
-      ! These would need device-specific implementations
-      print *, "Device memory copy not yet implemented"
-      success = .false.
+      print *, "ERROR: Device memory copy requires backend-specific implementation"
+      error stop "Unsupported device-to-device or host/device memory copy"
       
     case default
       print *, "ERROR: Invalid copy direction"
@@ -261,7 +302,8 @@ contains
     if (handle%device_id == -1) then
       call c_memset(handle%ptr, int(value, c_int), set_size)
     else
-      print *, "Device memory set not yet implemented"
+      print *, "ERROR: Device memory set requires backend-specific implementation"
+      error stop "Unsupported device memory operation"
     end if
     
   end subroutine memory_set

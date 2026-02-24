@@ -219,6 +219,10 @@ Current development focuses on:
 
 #### Required Packages (Ubuntu/Debian)
 ```bash
+# Install Fortran compiler tooling (recommended cross-platform helper)
+# Run from repo root:
+./scripts/install_fortran_compiler.sh
+
 # Install build essentials and Fortran compiler
 sudo apt update
 sudo apt install -y build-essential gfortran

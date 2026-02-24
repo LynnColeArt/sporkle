@@ -1,5 +1,5 @@
 module sporkle_api_v2
-  ! Sparkle API v2 - Unified interface with real GPU support via PM4
+  ! Sparkle API v2 - Unified interface with Kronos-backed runtime
   ! This implements Mini's vision of a clean, unified API
   
   use kinds
@@ -29,22 +29,10 @@ contains
   subroutine sporkle_init()
     if (g_initialized) return
     
-    print *, "🚀 Initializing Sparkle v2 (PM4 GPU support)"
+    print *, "🚀 Initializing Sparkle v2 (Kronos-backed runtime)"
     
-    ! Count devices
-    g_num_devices = 1  ! CPU
-    
-    ! Check for AMD GPU
-    block
-      use pm4_device_discovery
-      integer :: gpu_count
-      
-      gpu_count = pm4_device_count()
-      if (gpu_count > 0) then
-        g_num_devices = g_num_devices + gpu_count
-        print '(A,I0,A)', "  Found ", gpu_count, " AMD GPU(s)"
-      end if
-    end block
+    ! Count devices (Kronos discovery path is defined in sporkle_gpu_* modules)
+    g_num_devices = 1  ! CPU baseline only; GPU integration is wired separately
     
     ! Allocate device arrays
     allocate(g_cpu_devices(1))
@@ -177,7 +165,7 @@ contains
     if (device_id == 0) then
       name = "CPU"
     else if (device_id > 0 .and. device_id < g_num_devices) then
-      name = "AMD GPU (PM4)"
+      name = "GPU (Kronos backend)"
     else
       name = "Unknown"
     end if

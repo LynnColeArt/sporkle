@@ -120,10 +120,10 @@ contains
     
     print *, "🔍 Discovering compute devices..."
     
-    ! This would interface with platform-specific detection
-    ! For now, we'll simulate a typical heterogeneous system
+    ! TODO: Replace synthetic discovery with live Kronos-backed platform descriptors
+    ! and persistence-based calibration before production use.
     
-    ! Example: AMD system with CPU + dGPU + iGPU
+    ! Temporary baseline: CPU + GPU capability placeholders until live discovery is active
     call discover_cpu_devices(this)
     call discover_gpu_devices(this)
     call discover_special_devices(this)
@@ -269,8 +269,8 @@ contains
     cpu_device%device_type = UNI_DEVICE_CPU_PERFORMANCE
     cpu_device%device_id = 0
     cpu_device%available = .true.
-    cpu_device%caps%peak_gflops = 196.7  ! From our benchmarks!
-    cpu_device%caps%memory_bandwidth = 50.0
+    cpu_device%caps%peak_gflops = 0.0_dp  ! Placeholder until live capability probe
+    cpu_device%caps%memory_bandwidth = 0.0_dp
     cpu_device%caps%supports_fp64 = .true.
     cpu_device%caps%supports_async = .true.
     cpu_device%caps%vector_width = 16  ! AVX-512
@@ -283,29 +283,29 @@ contains
     class(universal_device_selector), intent(inout) :: this
     type(universal_compute_unit) :: gpu_device
     
-    ! Discrete GPU (e.g., RX 7900 XT)
-    gpu_device%name = "AMD Radeon RX 7900 XT"
+    ! Discrete GPU (runtime-discovered descriptor should replace this placeholder)
+    gpu_device%name = "Discrete GPU (placeholder)"
     gpu_device%device_type = UNI_DEVICE_GPU_DISCRETE
     gpu_device%device_id = 0
     gpu_device%available = .true.
-    gpu_device%caps%peak_gflops = 451.0  ! Single kernel
-    gpu_device%caps%memory_bandwidth = 960.0  ! GDDR6
+    gpu_device%caps%peak_gflops = 0.0_dp
+    gpu_device%caps%memory_bandwidth = 0.0_dp
     gpu_device%caps%supports_fp16 = .true.
     gpu_device%caps%supports_async = .true.
-    gpu_device%caps%warp_size = 64  ! AMD wavefront
+    gpu_device%caps%warp_size = 0
     
-    ! Set async capability to 3630 GFLOPS!
-    gpu_device%pattern_performance(PATTERN_CONV) = 3630.0  ! With async
-    gpu_device%pattern_count(PATTERN_CONV) = 1
+    ! Placeholder performance until measured calibration exists
+    gpu_device%pattern_performance(PATTERN_CONV) = 0.0_dp
+    gpu_device%pattern_count(PATTERN_CONV) = 0
     
     call add_device(this, gpu_device)
     
-    ! Integrated GPU
-    gpu_device%name = "AMD Raphael iGPU"
+    ! Integrated GPU placeholder
+    gpu_device%name = "Integrated GPU (placeholder)"
     gpu_device%device_type = UNI_DEVICE_GPU_INTEGRATED
     gpu_device%device_id = 1
-    gpu_device%caps%peak_gflops = 50.0  ! Estimate
-    gpu_device%caps%memory_bandwidth = 50.0  ! Shares with CPU
+    gpu_device%caps%peak_gflops = 0.0_dp
+    gpu_device%caps%memory_bandwidth = 0.0_dp
     
     call add_device(this, gpu_device)
     
@@ -314,6 +314,7 @@ contains
   subroutine discover_special_devices(this)
     class(universal_device_selector), intent(inout) :: this
     ! Placeholder for Neural Engines, DSPs, etc.
+    ! These will be populated from Kronos descriptors before production launch.
   end subroutine discover_special_devices
   
   subroutine add_device(this, device)

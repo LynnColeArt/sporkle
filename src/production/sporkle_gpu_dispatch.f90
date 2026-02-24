@@ -2,8 +2,8 @@ module sporkle_gpu_dispatch
   ! GPU kernel dispatch implementation
   ! The Sporkle Way: Actually run stuff on the GPU!
   !
-  ! ✅ REAL IMPLEMENTATION: Using OpenGL reference implementation
-  ! Achieved performance: 451 GFLOPS on AMD RX 7900 XTX
+  ! Reference-only OpenGL/legacy path is retained for compatibility checks.
+  ! Production routing should treat this as non-authoritative for performance claims.
   
   use kinds
   use iso_c_binding
@@ -119,7 +119,7 @@ contains
       print '(A,F0.1,A)', "   Clock: ", device%clock_mhz, " MHz"
       print '(A,F0.1,A)', "   Memory: ", real(device%memory_total) / real(1024**3), " GB"
       if (device%opengl_ready) then
-        print *, "   ✅ OpenGL compute ready (Reference: 451 GFLOPS)"
+        print *, "   ✅ OpenGL compute reference path ready"
       else
         print *, "   ❌ OpenGL compute not available"
       end if

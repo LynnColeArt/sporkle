@@ -136,15 +136,15 @@ Create a global mesh network where anyone can contribute compute power for AI tr
 
 ### Technical
 - 1M+ simultaneous nodes
-- 90% efficiency vs native
-- <100ms node join time
+- [planned] 90% kernel efficiency vs baseline control
+- [planned] Improved node join latency
 - 99.9% uptime
 
 ### Community  
 - 10K+ contributors
 - 100+ institutions
 - 1000+ published papers
-- Training costs 10x lower
+- [aspirational] Lower training cost targets
 
 ## Moonshot Goals 🚀
 

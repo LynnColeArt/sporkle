@@ -44,7 +44,7 @@ contains
     
     call mesh%add_device(handle)
     
-    ! Sparkle uses vendor-neutral APIs only (OpenGL/Vulkan/PM4)
+    ! Sparkle uses vendor-neutral discovery; vendor adapters are optional.
     
     ! Try to scan for AMD GPUs
     call try_amd_discovery(mesh)
@@ -61,7 +61,7 @@ contains
     type(mesh_topology), intent(inout) :: mesh
     type(link_metrics) :: link
     integer :: i, j
-    real(rk64) :: start_time, end_time
+    integer(i64) :: clock_count, clock_rate
     
     ! For now, create basic host-memory links
     do i = 1, mesh%num_devices
@@ -93,16 +93,13 @@ contains
     ! - Allocate test buffers
     ! - Time transfers of various sizes
     ! - Check for P2P capability
-    
+    call system_clock(clock_count, clock_rate)
+    if (clock_rate > 0) then
+      mesh%profile_timestamp = real(clock_count, rk64) / real(clock_rate, rk64)
+    else
+      mesh%profile_timestamp = 0.0_rk64
+    end if
     mesh%profiled = .true.
-    mesh%profile_timestamp = real(time(), rk64)
-    
-  contains
-    ! Simple timer (would use system_clock in production)
-    function time() result(t)
-      integer :: t
-      t = 0  ! Placeholder
-    end function time
     
   end subroutine profile_links
   
